@@ -1,10 +1,24 @@
 ---
 title: "Biostat 200C Homework 1"
-subtitle: Due Apr 14 @ 11:59PM
-output: 
-  html_document:
+subtitle: Due Apr 12 @ 11:59PM
+date: today
+format:
+  html:
+    theme: cosmo
+    embed-resources: true
+    number-sections: true
     toc: true
-    toc_depth: 4
+    toc-depth: 4
+    toc-location: left
+    code-fold: false
+engine: knitr
+knitr:
+  opts_chunk: 
+    fig.align: 'center'
+    # fig.width: 6
+    # fig.height: 4
+    message: FALSE
+    cache: false
 ---
 
 ```{r setup, include=FALSE}
