@@ -1,0 +1,309 @@
+---
+title: "Biostat 200C Homework 1"
+subtitle: Due Apr 12 @ 11:59PM
+author: "Ziheng Zhang_606300061"
+date: today
+format:
+  html:
+    theme: cosmo
+    embed-resources: true
+    number-sections: true
+    toc: true
+    toc-depth: 4
+    toc-location: left
+    code-fold: false
+engine: knitr
+knitr:
+  opts_chunk: 
+    fig.align: 'center'
+    # fig.width: 6
+    # fig.height: 4
+    message: FALSE
+    cache: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = FALSE)
+```
+
+To submit homework, please submit Rmd and html files to bruinlearn by the deadline.
+
+
+## Q1. Reivew of linear models 
+### The swiss data — use Fertility as the response to practice
+- An initial data analysis that explores the numerical and graphical characteristics of the data.
+```{r}
+library(tidyverse)
+library(gtsummary)
+library(GGally)
+swiss1 <- as.tibble(swiss)
+tbl_summary(swiss1)
+ggpairs(swiss1)
+```
+**Answer:** The distributions of `Fertility` and `Agriculture` are left-skewed. The distributions of `Examination`, `Education`, and `Catholic` are right-skewed. The distribution of `Infant.Mortality` is normal. Also the distributions of `Education` and `Catholic` are bimodal. `Examination` is negatively correlated with `Fertility`, `Agriculture`, and `Catholic`. `Education` is negatively correlated with `Fertility` and `Agriculture`. `Examination` is positively correlated with `Education`.
+
+- Variable selection to choose the best model.
+```{r}
+swiss_model1 <- lm(Fertility ~ ., data = swiss1)
+summary(swiss_model1)
+small_swiss <- step(swiss_model1, trace = TRUE)
+summary(small_swiss)
+```
+- An exploration of transformations to improve the fit of the model.
+
+**Answer:** From the graphical characteristics of the data, we should go down the ladders of `Examination` and `Education` to see if the model fit improves. We can try to fit the model with the log-transformed `Examination` and `Education` variables.
+
+```{r}
+swiss1 <- swiss1 |>
+  mutate(log_Examination = log(Examination),
+         log_Education = log(Education))
+swiss_model2 <- lm(Fertility ~ Agriculture + log_Examination + log_Education + 
+                     Catholic + Infant.Mortality, data = swiss1)
+summary(swiss_model2)
+```
+It seems that the model fit does not improve after log-transforming the `Examination` and `Education` variables. So we should keep the original variables in the model.
+
+- Diagnostics to check the assumptions of your model.
+```{r}
+plot(swiss_model1)
+```
+
+
+**Answers:** From the diagnostic plots, we can see that the assumptions are approximately met. The `Residuals vs Fitted` plot shows the residuals are randomly scattered around the zero line so the linearity and constant variance assumptions are met.
+The `Normal Q-Q` plot shows all points roughly follow a straight line so the normality assumption is met.
+
+- Some predictions of future observations for interesting values of the predictors.
+```{r}
+new_data <- data.frame(Agriculture = runif(5, min(swiss1$Agriculture), 
+                                           max(swiss1$Agriculture)), 
+                       Examination = runif(5, min(swiss1$Examination), 
+                                            max(swiss1$Examination)),
+                       Education = runif(5, min(swiss1$Education), 
+                                         max(swiss1$Education)),
+                       Catholic = runif(5, min(swiss1$Catholic), 
+                                        max(swiss1$Catholic)),
+                       Infant.Mortality = runif(5, min(swiss1$Infant.Mortality), 
+                                                max(swiss1$Infant.Mortality)))
+predict(swiss_model1, newdata = new_data)
+```
+
+- An interpretation of the meaning of the model by writing a scientific abstract. (<150 words)
+
+  + BACKGROUND: The `swiss` data set represents `Swiss Fertility and Socioeconomic Indicators (1888) Data`. It provides information on the standardized fertility measure and socio-economic indicators for each of 47 French-speaking provinces of Switzerland at about 1888.
+  
+  + OBJECTIVE: This study aims to investigate the relationship between fertility (`Fertility`) and socio-economic indicators (`Agriculture`, `Examination`, `Education`, `Catholic`, and `Infant.Mortality`) in French-speaking provinces of Switzerland.
+  
+  + METHODS: We fit a linear regression model with `Fertility` as the response and all other variables as predictors. We perform variable selection and use AIC to select the best model and explore transformations based on each variable's characteristics to improve the fit of the model. We check the assumptions of the model and make predictions of future observations for interesting values of the predictors.
+  
+  + RESULTS: All the predictors except `Examination` are significant predictors of `Fertility` in the model.
+  
+  + CONCLUSIONS: The study of `swiss` data set explores clear relationship between socio-economic factors and fertility. `Agriculture`, `Examination`, and `Education` are negatively correlated with `Fertility`, while `Catholic` and `Infant.Mortality` are positively correlated with `Fertility`.
+
+
+## Q2. Concavity of logistic regression log-likelihood 
+
+### Q2.1
+
+Write down the log-likelihood function of logistic regression for binomial responses.
+
+**Answer:** 
+
+### Q2.2
+
+Derive the gradient vector and Hessian matrix of the log-likelhood function with respect to the regression coefficients $\boldsymbol{\beta}$. 
+
+**Answer:**
+
+
+### Q2.3
+
+Show that the log-likelihood function of logistic regression is a concave function in regression coefficients $\boldsymbol{\beta}$. (Hint: show that the negative Hessian is a positive semidefinite matrix.)
+
+**Answer:**
+
+
+## Q3.  
+
+The National Institute of Diabetes and Digestive and Kidney Diseases conducted a study on 768 adult female Pima Indians living near Phoenix. The purpose of the study was to investigate factors related to diabetes. The data may be found in the the dataset `pima`.
+
+```{r}
+library(faraway)
+library(tidyverse)
+pima1 <- as.tibble(pima) |>
+  print(width = Inf)
+```
+### Q3.1
+
+
+Create a factor version of the test results and use this to produce an interleaved histogram to show how the distribution of insulin differs between those testing positive and negative. Do you notice anything unbelievable about the plot?
+
+```{r}
+pima1 <- pima1 |> 
+  mutate(test = as.factor(test)) |>
+  mutate(test_result = ifelse(test == 1, "Positive", "Negative"))
+
+  ggplot(pima1, aes(insulin, fill = test_result)) +
+  geom_histogram(alpha = 0.8, position = "identity", bins = 30) +
+  labs(title = "Insulin distribution by test result",
+       x = "Insulin",
+       y = "Frequency") +
+    theme_bw()
+```
+**Answer:** From the plot, we can see that there are a lot of zero values in the insulin variable. It is impossible for a person to have zero insulin as insulin is a hormone in human's body. So zero values in the insulin variable are missing values.
+
+### Q3.2
+
+Replace the zero values of `insulin` with the missing value code `NA`. Recreate the interleaved histogram plot and comment on the distribution.
+
+```{r}
+pima1 <- pima1 |> 
+  mutate(insulin = ifelse(insulin == 0, NA, insulin))
+
+ggplot(pima1, aes(insulin, fill = test_result)) +
+  geom_histogram(alpha = 0.8, position = "identity", bins = 30) +
+  labs(title = "Insulin distribution by test result",
+       x = "Insulin",
+       y = "Frequency") +
+  theme_bw()
+```
+**Answer:** After replacing the zero values with missing value code `NA`, the plot shows that the distribution of insulin is right-skewed. The distribution of insulin is different between those testing positive and negative. The insulin level with the highest frequency (peak insulin level) for those who tested negative is lower than that of those who tested positive for diabetes.
+
+### Q3.3
+
+Replace the incredible zeroes in other variables with the missing value code. Fit a model with the result of the diabetes test as the response and all the other variables as predictors. How many observations were used in the model fitting? Why is this less than the number of observations in the data frame.
+
+```{r}
+summary(pima1)
+```
+**Answer:** It seems the incredible zeroes are in the variables `glucose`, `diastolic`, `triceps`, and `bmi`. We can replace the incredible zeroes with the missing value code `NA` for these variables.
+
+```{r}
+pima1 <- pima1 |> 
+  mutate(
+    glucose = ifelse(glucose == 0, NA, glucose),
+    diastolic = ifelse(diastolic == 0, NA, diastolic),
+    triceps = ifelse(triceps == 0, NA, triceps),
+    bmi = ifelse(bmi == 0, NA, bmi)
+  )
+```
+
+```{r}
+pima_model1 <- glm(test ~ pregnant + glucose + diastolic + triceps + insulin + 
+                     bmi + diabetes + age, data = pima1, family = binomial)
+summary(pima_model1)
+```
+**Answer:** The number of observations used in the model fitting is 392. This is less than the number of observations in the data frame because the incredible zeroes in the variables `glucose`, `diastolic`, `triceps`, `insulin` and `bmi` are replaced with the missing value code `NA`. And these 376 observations are deleted due to missingness. 
+
+### Q3.4
+
+Refit the model but now without the insulin and triceps predictors. How many observations were used in fitting this model? Devise a test to compare this model with that in the previous question.
+
+```{r}
+pima_model2 <- glm(test ~ pregnant + glucose + diastolic + bmi + diabetes + age, 
+                   data = pima1, family = binomial)
+summary(pima_model2)
+```
+**Answer:** There are 724 observations used in fitting this model and 44 observations are deleted due to missingness.
+
+```{r}
+pima_model1 <- glm(test ~ pregnant + glucose + diastolic + triceps + insulin + 
+                     bmi + diabetes + age, data = na.omit(pima1), 
+                   family = binomial)
+pima_model2 <- glm(test ~ pregnant + glucose + diastolic + bmi + diabetes + age,
+                   data = na.omit(pima1), family = binomial)
+anova(pima_model1, pima_model2, test = "Chi")
+```
+**Answer:** xxx
+
+
+### Q3.5
+
+Use AIC to select a model. You will need to take account of the missing values. Which predictors are selected? How many cases are used in your selected model?
+
+```{r}
+biglm <- glm(test ~ pregnant + glucose + diastolic + triceps + insulin + 
+               bmi + diabetes + age, data = na.omit(pima1), family = binomial)
+smalllm <- step(biglm, trace = TRUE)
+summary(smalllm)
+```
+**Answer:** The predictors selected by AIC are `pregnant`, `age`, `diabetes`, `bmi`, and `glucose`. There are 392 cases used in the selected model.
+
+### Q3.6
+
+Create a variable that indicates whether the case contains a missing value. Use this variable as a predictor of the test result. Is missingness associated with the test result? Refit the selected model, but now using as much of the data as reasonable. Explain why it is appropriate to do this.
+
+```{r}
+library(faraway)
+library(tidyverse)
+
+pima <- pima %>% 
+  mutate(
+    glucose2  = ifelse(glucose == 0, NA, glucose),
+    diastolic2 = ifelse(diastolic == 0, NA, diastolic),
+    triceps2 = ifelse(triceps == 0, NA, triceps),
+    insulin2 = ifelse(insulin == 0, NA, insulin),
+    bmi2 = ifelse(bmi == 0, NA, bmi), 
+    diabetes2 = ifelse(diabetes == 0, NA, diabetes),
+    age2 = ifelse(age == 0, NA, age))
+
+pima$missingNA = ifelse(apply(is.na(dplyr::select(pima, contains("2"))), 
+                              1, sum) > 0, 1, 0)
+
+missing.glm <- glm(test ~ missingNA, family = binomial(), data = pima)
+
+library(gtsummary)
+missing.glm %>%
+  tbl_regression() %>%
+  bold_labels() %>%
+  bold_p(t = 0.05)
+```
+From above regression, we found missingness was not associate with outcome. This means that the distribution of outcome when removing data with missing is still a representative of the original distribution. This justifies the use of "complete case" analysis. 
+
+**Answer:** It is appropriate to refit the selected model using as much of the data as reasonable because missingness is not associated with the test result. So we can assume that the missing data is missing completely at random and then if we only drop the missing data, the distribution of the outcome is still representative of the original distribution. Here we use 752 observations in the selected model.
+```{r}
+pima1 <- pima1 |>
+  drop_na(pregnant) |>
+  drop_na(glucose) |>
+  drop_na(bmi) |>
+  drop_na(diabetes) |>
+  drop_na(age) |>
+  print(width = Inf)
+
+pima_model3 <- glm(test ~ pregnant + glucose + bmi + diabetes + age, 
+                   data = pima1, family = binomial)
+summary(pima_model3)
+```
+
+### Q3.7
+
+Using the last fitted model of the previous question, what is the difference in the odds of testing positive for diabetes for a woman with a BMI at the first quartile compared with a woman at the third quartile, assuming that all other factors are held constant? Give a confidence interval for this difference.
+
+```{r}
+confint(pima_model3)
+```
+**Answer:** The $95\%$ confidence interval for log-odds with respect to `bmi` is $(0.059, 0.117)$. So we take exponential of these values and then the $95\%$ confidence interval for odds is $(1.061, 1.125)$. This means that we are $95\%$ confident that the odds of testing positive for diabetes for a woman with a BMI at the third quartile are between $1.061$ and $1.125$ times higher than the odds of testing positive for diabetes for a woman with a BMI at the first quartile, assuming that all other factors are held constant.
+
+### Q3.8 
+
+Do women who test positive have higher diastolic blood pressures? Is the diastolic blood pressure significant in the regression model? Explain the distinction between the two questions and discuss why the answers are only apparently contradictory.
+
+```{r}
+pima1 |> 
+  group_by(test) |> 
+  summarise(mean_diastolic = mean(diastolic, na.rm = TRUE), 
+            sd_diastolic = sd(diastolic, na.rm = TRUE), 
+            n = n())
+
+```
+**Answer:** From the above table, it seems that women who test positive have higher diastolic blood pressures. 
+
+```{r}
+pima1 <- pima1 |>
+  drop_na(diastolic)
+pima_model4 <- glm(test ~ pregnant + glucose + bmi + diabetes + age + diastolic, 
+                   data = pima1, family = binomial)
+summary(pima_model4)
+```
+**Answer:** The p-value for `diastolic` is 0.3 and it is not significant in the regression model. The distinction between the two questions is that the first question is about the relationship between the diastolic blood pressure and the test result, while the second question is about the relationship between the diastolic blood pressure and the test result after controlling for other variables. The answers are only apparently contradictory and this may be because the diastolic blood pressure is highly correlated with other variables in the model.
+
+
