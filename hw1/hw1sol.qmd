@@ -150,8 +150,13 @@ Show that the log-likelihood function of logistic regression is a concave functi
 -H_{\beta} = \sum_{i} \left[\frac{e^{-\mathbf{x}_{i}^T \boldsymbol{\beta}}}{(1 + e^{-\mathbf{x}_{i}^{T} \boldsymbol{\beta}})^{2}} \mathbf{x}_{i}\mathbf{x}_{i}^{T} \right]
 \end{eqnarray*}
 
+Let $\mathbf{v}$ be any vector such that $\mathbf{v} \in \mathbb{R}^{q}$ and $\mathbf{v} \ne \mathbf{0}$. So we can get
+$$
+\mathbf{v}^{T} (\mathbf{-H_{\beta}}) \mathbf{v} = \mathbf{v}^{T} \left( \sum_{i=1}^n \frac{e^{-\mathbf{x}_{i}^T \boldsymbol{\beta}}}{(1 + e^{-\mathbf{x}_{i}^{T} \boldsymbol{\beta}})^{2}} \mathbf{x}_{i}\mathbf{x}_{i}^{T} \right) \mathbf{v} = \sum_{i=1}^n \frac{e^{-\mathbf{x}_{i}^T \boldsymbol{\beta}}}{(1 + e^{-\mathbf{x}_{i}^{T} \boldsymbol{\beta}})^{2}} (\mathbf{x}_{i}^{T} \mathbf{v})^2 \ge 0,
+$$
+since $\frac{e^{-\mathbf{x}_{i}^T \boldsymbol{\beta}}}{(1 + e^{-\mathbf{x}_{i}^{T} \boldsymbol{\beta}})^{2}} \ge 0$ and $(\mathbf{x}_{i}^{T} \mathbf{v})^2 \ge 0$.
 
-
+So the negative Hessian is a positive semidefinite matrix and then the log-likelihood function of logistic regression is a concave function. 
 
 ## Q3.  
 
