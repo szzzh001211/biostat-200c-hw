@@ -127,19 +127,21 @@ The gradient vector is as follows:
 \ell(\boldsymbol{\beta}) &=& \sum_i \left[ y_i \cdot \mathbf{x}_i^T \boldsymbol{\beta} - \log (1 + e^{\mathbf{x}_i^T \boldsymbol{\beta}}) \right] \\
 \nabla_{\beta}(\mathbf{x}_{i}^{T} \boldsymbol{\beta}) &=& \nabla_{\beta}(1 \cdot \beta_0 + \mathbf{x}_{i1} \beta_1 + \cdots + \mathbf{x}_{iq} \beta_q) &=& \begin{pmatrix} 1 \\ \mathbf{x}_{i1} \\ \vdots \\ \mathbf{x}_{iq} \end{pmatrix} &=& \mathbf{x}_{i} \\
 \nabla_{\beta} \ell(\boldsymbol{\beta}) &=& \sum_{i} \left[y_{i}(\nabla_{\beta} \mathbf{x}_{i}^{T} \boldsymbol{\beta}) - \nabla_{\beta} (\log (1 + e^{\mathbf{x}_{i}^{T} \boldsymbol{\beta}})) \right] \\
-&=& \sum_{i} \left[y_{i} \mathbf{x}_{i} - \frac{e^{\mathbf{x}_{i}^T \boldsymbol{\beta}} \cdot \nabla_{\beta} \mathbf{x}_{i}^{T} \boldsymbol{\beta}}{1 + e^{\mathbf{x}_{i}^{T} \boldsymbol{\beta}}} \right] \\
-&=& \sum_{i} \left[y_{i} \mathbf{x}_{i} - \frac{e^{\mathbf{x}_{i}^T \boldsymbol{\beta}} \cdot \mathbf{x}_{i}}{1 + e^{\mathbf{x}_{i}^{T} \boldsymbol{\beta}}} \right]
+&=& \sum_{i} \left[y_{i} \mathbf{x}_{i} - \frac{e^{\mathbf{x}_{i}^T \boldsymbol{\beta}} \nabla_{\beta} \mathbf{x}_{i}^{T} \boldsymbol{\beta}}{1 + e^{\mathbf{x}_{i}^{T} \boldsymbol{\beta}}} \right] \\
+&=& \sum_{i} \left[y_{i} \mathbf{x}_{i} - \frac{e^{\mathbf{x}_{i}^T \boldsymbol{\beta}} \mathbf{x}_{i}}{1 + e^{\mathbf{x}_{i}^{T} \boldsymbol{\beta}}} \right]
 \end{eqnarray*}
 
 So the Hessian matrix is as follows:
-
+$$
 \begin{eqnarray*}
-H_{\beta} &=& \nabla^{2}_{\beta} \ell(\boldsymbol{\beta}) &=& \sum_{i} \left[-\nabla_{\beta}\frac{e^{\mathbf{x}_{i}^T \boldsymbol{\beta}} \cdot \mathbf{x}_{i}}{1 + e^{\mathbf{x}_{i}^{T} \boldsymbol{\beta}}}\right] \\
-&=& \sum_{i} \left[-\nabla_{\beta}\frac{1 \cdot \mathbf{x}_{i}}{1 + e^{-\mathbf{x}_{i}^{T} \boldsymbol{\beta}}}\right] &=& \sum_{i} \left[-\nabla_{\beta}(1 + e^{- \mathbf{x}_i^T \boldsymbol{\beta}})^{-1} \cdot \mathbf{x}_{i}\right] \\
-&=& \sum_{i} \left[\frac{e^{-\mathbf{x}_{i}^T \boldsymbol{\beta}} \cdot -\nabla_{\beta} \mathbf{x}_{i}^{T} \boldsymbol{\beta}}{(1 + e^{-\mathbf{x}_{i}^{T} \boldsymbol{\beta}})^{2}} \cdot \mathbf{x}_{i} \right] \\
-&=& \sum_{i} \left[-\frac{e^{-\mathbf{x}_{i}^T \boldsymbol{\beta}}}{(1 + e^{-\mathbf{x}_{i}^{T} \boldsymbol{\beta}})^{2}} \mathbf{x}_{i}\mathbf{x}_{i}^{T} \right]
+H_{\beta} &=& \nabla^{2}_{\beta} \ell(\boldsymbol{\beta})\\
+&=& \sum_{i} \left[-\nabla_{\beta}\frac{e^{\mathbf{x}_{i}^T \boldsymbol{\beta}} \mathbf{x}_{i}}{1 + e^{\mathbf{x}_{i}^{T} \boldsymbol{\beta}}}\right] \\
+&=& \sum_{i} \left[-\nabla_{\beta}\frac{\mathbf{x}_{i}}{1 + e^{-\mathbf{x}_{i}^{T} \boldsymbol{\beta}}}\right]\\
+&=& \sum_{i} \left[-\nabla_{\beta}(1 + e^{- \mathbf{x}_{i}^{T} \boldsymbol{\beta}})^{-1} \begin{pmatrix} 1 \\ \mathbf{x}_{i1} \\ \vdots \\ \mathbf{x}_{iq} \end{pmatrix}\right] \\
+&=& \sum_{i} \left[\frac{e^{-\mathbf{x}_{i}^T \boldsymbol{\beta}}}{(1 + e^{-\mathbf{x}_{i}^{T} \boldsymbol{\beta}})^{2}} \begin{pmatrix} 1 \cdot -\mathbf{x}_{i}^{T} \\ \mathbf{x}_{i1} \cdot -\mathbf{x}_{i}^{T} \\ \vdots \\ \mathbf{x}_{iq} \cdot -\mathbf{x}_{i}^{T} \end{pmatrix} \right] \\
+&=& \sum_{i} \left[-\frac{e^{-\mathbf{x}_{i}^{T} \boldsymbol{\beta}}}{(1 + e^{-\mathbf{x}_{i}^{T} \boldsymbol{\beta}})^{2}} \mathbf{x}_{i}\mathbf{x}_{i}^{T} \right]
 \end{eqnarray*}
-
+$$
 
 ### Q2.3
 
