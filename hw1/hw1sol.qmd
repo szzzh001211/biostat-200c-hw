@@ -40,7 +40,7 @@ swiss1 <- as.tibble(swiss)
 tbl_summary(swiss1)
 ggpairs(swiss1)
 ```
-**Answer:** The distributions of `Fertility` and `Agriculture` are left-skewed. The distributions of `Examination`, `Education`, and `Catholic` are right-skewed. The distribution of `Infant.Mortality` is normal. Also the distributions of `Education` and `Catholic` are bimodal. `Examination` is negatively correlated with `Fertility`, `Agriculture`, and `Catholic`. `Education` is negatively correlated with `Fertility` and `Agriculture`. `Examination` is positively correlated with `Education`.
+**Answer:** The distributions of `Fertility` and `Agriculture` are left-skewed. The distributions of `Examination`, `Education`, and `Catholic` are right-skewed. The distribution of `Infant.Mortality` is normal. Also the distributions of `Education` and `Catholic` are bimodal. `Examination` is negatively correlated with `Fertility`, `Agriculture`, and `Catholic`. `Education` is negatively correlated with `Fertility` and `Agriculture`. `Examination` is positively correlated with `Education`. 
 
 - Variable selection to choose the best model.
 ```{r}
@@ -49,23 +49,36 @@ summary(swiss_model1)
 small_swiss <- step(swiss_model1, trace = TRUE)
 summary(small_swiss)
 ```
+**Answers:** The best model deletes `Examination` from the model. The best model is `Fertility ~ Agriculture + Education + Catholic + Infant.Mortality`.
+
 - An exploration of transformations to improve the fit of the model.
 
-**Answer:** From the graphical characteristics of the data, we should go down the ladders of `Examination` and `Education` to see if the model fit improves. We can try to fit the model with the log-transformed `Examination` and `Education` variables.
+**Answer:** From the graphical characteristics of the data, we should go down the ladders of `Examination` and `Education` to see if the model fit improves. We can try to fit the model with the log-transformed `Examination` and `Education` variables. Also, it seems we need to add quadratic terms for `Catholic` to the model. 
 
 ```{r}
 swiss1 <- swiss1 |>
   mutate(log_Examination = log(Examination),
-         log_Education = log(Education))
+         log_Education = log(Education), 
+         Catholic2 = Catholic^2)
 swiss_model2 <- lm(Fertility ~ Agriculture + log_Examination + log_Education + 
-                     Catholic + Infant.Mortality, data = swiss1)
+                     Catholic + Catholic2 + Infant.Mortality, data = swiss1)
 summary(swiss_model2)
 ```
-It seems that the model fit does not improve after log-transforming the `Examination` and `Education` variables. So we should keep the original variables in the model.
+It seems that the model fit does not improve after log-transforming the `Examination` and `Education` variables. But the quadratic term for `Catholic` is significant. So we should keep the original variables and add the quadratic term for `Catholic` in the model.
+
+```{r}
+swiss_model3 <- lm(Fertility ~ Agriculture + Examination + Education + 
+                     Catholic + Catholic2 + Infant.Mortality, data = swiss1)
+summary(swiss_model3)
+small_swiss1 <- step(swiss_model3, trace = TRUE)
+summary(small_swiss1)
+
+```
+**Answers:** We use `AIC` to select the best model. The best model is `Fertility ~ Agriculture + Examination + Education + Catholic + Catholic2 + Infant.Mortality`. 
 
 - Diagnostics to check the assumptions of your model.
 ```{r}
-plot(swiss_model1)
+plot(swiss_model3)
 ```
 
 
@@ -83,9 +96,11 @@ new_data <- data.frame(Agriculture = runif(5, min(swiss1$Agriculture),
                        Catholic = runif(5, min(swiss1$Catholic), 
                                         max(swiss1$Catholic)),
                        Infant.Mortality = runif(5, min(swiss1$Infant.Mortality), 
-                                                max(swiss1$Infant.Mortality)))
-predict(swiss_model1, newdata = new_data)
+                                                max(swiss1$Infant.Mortality))) |> 
+  mutate(Catholic2 = Catholic^2)
+predict(swiss_model3, newdata = new_data)
 ```
+**Answers:** We randomly generate 5 observations for each predictor variable.
 
 - An interpretation of the meaning of the model by writing a scientific abstract. (<150 words)
 
@@ -251,7 +266,7 @@ pima_model2 <- glm(test ~ pregnant + glucose + diastolic + bmi + diabetes + age,
                    data = na.omit(pima1), family = binomial)
 anova(pima_model1, pima_model2, test = "Chi")
 ```
-**Answer:** xxx
+**Answer:** The p-value is $0.6507 > 0.05$, so we fail to reject the null hypothesis. There is no significant evidence that the model without `insulin` and `triceps` predictors gives a significantly better fit than the full model.
 
 
 ### Q3.5
@@ -271,10 +286,7 @@ summary(smalllm)
 Create a variable that indicates whether the case contains a missing value. Use this variable as a predictor of the test result. Is missingness associated with the test result? Refit the selected model, but now using as much of the data as reasonable. Explain why it is appropriate to do this.
 
 ```{r}
-library(faraway)
-library(tidyverse)
-
-pima <- pima %>% 
+pima2 <- pima |> 
   mutate(
     glucose2  = ifelse(glucose == 0, NA, glucose),
     diastolic2 = ifelse(diastolic == 0, NA, diastolic),
@@ -284,18 +296,18 @@ pima <- pima %>%
     diabetes2 = ifelse(diabetes == 0, NA, diabetes),
     age2 = ifelse(age == 0, NA, age))
 
-pima$missingNA = ifelse(apply(is.na(dplyr::select(pima, contains("2"))), 
-                              1, sum) > 0, 1, 0)
+pima2 <- pima2 |>
+  mutate(missingNA = ifelse(rowSums(is.na(pima2[, 10:16])) > 0, 1, 0))
 
-missing.glm <- glm(test ~ missingNA, family = binomial(), data = pima)
+pima_missing <- glm(test ~ missingNA, family = binomial(), data = pima2)
 
 library(gtsummary)
-missing.glm %>%
-  tbl_regression() %>%
-  bold_labels() %>%
+pima_missing |>
+  tbl_regression() |>
+  bold_labels() |>
   bold_p(t = 0.05)
 ```
-From above regression, we found missingness was not associate with outcome. This means that the distribution of outcome when removing data with missing is still a representative of the original distribution. This justifies the use of "complete case" analysis. 
+**Answers:** From above regression, we find missingness is not associate with outcome. This means that the distribution of outcome when removing data with missing is still a representative of the original distribution. This justifies the use of "complete case" analysis. 
 
 **Answer:** It is appropriate to refit the selected model using as much of the data as reasonable because missingness is not associated with the test result. So we can assume that the missing data is missing completely at random and then if we only drop the missing data, the distribution of the outcome is still representative of the original distribution. Here we use 752 observations in the selected model.
 ```{r}
@@ -315,11 +327,14 @@ summary(pima_model3)
 ### Q3.7
 
 Using the last fitted model of the previous question, what is the difference in the odds of testing positive for diabetes for a woman with a BMI at the first quartile compared with a woman at the third quartile, assuming that all other factors are held constant? Give a confidence interval for this difference.
+```{r}
+quantile(pima$bmi, 0.75) - quantile(pima$bmi, 0.25)
+```
 
 ```{r}
 confint(pima_model3)
 ```
-**Answer:** The $95\%$ confidence interval for log-odds with respect to `bmi` is $(0.059, 0.117)$. So we take exponential of these values and then the $95\%$ confidence interval for odds is $(1.061, 1.125)$. This means that we are $95\%$ confident that the odds of testing positive for diabetes for a woman with a BMI at the third quartile are between $1.061$ and $1.125$ times higher than the odds of testing positive for diabetes for a woman with a BMI at the first quartile, assuming that all other factors are held constant.
+**Answer:** The $IQR$ for `bmi` is $9.3$. So the difference in the odds of testing positive for diabetes for a women with a BMI at the first quartile compared with a women at the third quartile is $e^{0.088 \times 9.3} = 2.267$. The $95\%$ confidence interval for log-odds with respect to `bmi` is $(0.059, 0.117)$. So we first times $9.3$ to get the $95\%$ confidence interval for log-odds $(0.5487, 1.0881)$, then take exponential of these values and then the $95\%$ confidence interval for odds is $(1.73, 2.97)$. This means that we are $95\%$ confident that the odds of testing positive for diabetes for a woman with a BMI at the third quartile are between $1.73$ and $2.97$ times higher than the odds of testing positive for diabetes for a woman with a BMI at the first quartile, assuming that all other factors are held constant.
 
 ### Q3.8 
 
