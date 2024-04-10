@@ -311,14 +311,6 @@ pima_missing |>
 
 **Answer:** It is appropriate to refit the selected model using as much of the data as reasonable because missingness is not associated with the test result. So we can assume that the missing data is missing completely at random and then if we only drop the missing data, the distribution of the outcome is still representative of the original distribution. Here we use 752 observations in the selected model.
 ```{r}
-pima1 <- pima1 |>
-  drop_na(pregnant) |>
-  drop_na(glucose) |>
-  drop_na(bmi) |>
-  drop_na(diabetes) |>
-  drop_na(age) |>
-  print(width = Inf)
-
 pima_model3 <- glm(test ~ pregnant + glucose + bmi + diabetes + age, 
                    data = pima1, family = binomial)
 summary(pima_model3)
@@ -327,14 +319,19 @@ summary(pima_model3)
 ### Q3.7
 
 Using the last fitted model of the previous question, what is the difference in the odds of testing positive for diabetes for a woman with a BMI at the first quartile compared with a woman at the third quartile, assuming that all other factors are held constant? Give a confidence interval for this difference.
-```{r}
-quantile(pima$bmi, 0.75) - quantile(pima$bmi, 0.25)
-```
+
 
 ```{r}
-confint(pima_model3)
+library(kableExtra)
+bmi_iqr <- quantile(pima1$bmi, 0.75, na.rm = TRUE) - 
+  quantile(pima1$bmi, 0.25, na.rm = TRUE)
+cat("IQR:", bmi_iqr, "\n")
+odds_diff <- exp(bmi_iqr * coef(pima_model3)["bmi"])
+cat("Odds_Diff:", odds_diff, "\n")
+exp(confint(pima_model3, "bmi")[1] * bmi_iqr)
+exp(confint(pima_model3, "bmi")[2] * bmi_iqr)
 ```
-**Answer:** The $IQR$ for `bmi` is $9.3$. So the difference in the odds of testing positive for diabetes for a women with a BMI at the first quartile compared with a women at the third quartile is $e^{0.088 \times 9.3} = 2.267$. The $95\%$ confidence interval for log-odds with respect to `bmi` is $(0.059, 0.117)$. So we first times $9.3$ to get the $95\%$ confidence interval for log-odds $(0.5487, 1.0881)$, then take exponential of these values and then the $95\%$ confidence interval for odds is $(1.73, 2.97)$. This means that we are $95\%$ confident that the odds of testing positive for diabetes for a woman with a BMI at the third quartile are between $1.73$ and $2.97$ times higher than the odds of testing positive for diabetes for a woman with a BMI at the first quartile, assuming that all other factors are held constant.
+**Answer:** The $IQR$ for `bmi` is $9.1$. So the difference in the odds of testing positive for diabetes for a women with a BMI at the first quantile compared with a women at the third quantile is $e^{0.088 \times 9.1} = 2.227$. The $95\%$ confidence interval for coefficient of `bmi` is $(0.059, 0.117)$. So we first times $9.1$ to get the $95\%$ confidence interval for log-odds difference is $(0.537, 1.065)$, then take exponential of these values and then the $95\%$ confidence interval for odds ratio is $(1.71, 2.90)$. This means that we are $95\%$ confident that the odds of testing positive for diabetes for a woman with a BMI at the third quantile are between $1.73$ and $2.97$ times higher than the odds of testing positive for diabetes for a woman with a BMI at the first quantile, assuming that all other factors are held constant.
 
 ### Q3.8 
 
