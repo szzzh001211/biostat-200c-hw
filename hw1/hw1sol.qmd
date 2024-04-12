@@ -77,7 +77,7 @@ summary(swiss_model3)
 plot(swiss_model3)
 ```
 **Answers:** From the diagnostic plots, we can see that the assumptions are approximately met. The `Residuals vs Fitted` plot shows the residuals are randomly scattered around the zero line so the linearity and constant variance assumptions are met.
-The `Normal Q-Q` plot shows all points roughly follow a straight line so the normality assumption is met. From the `Scale-Location` plot, the constant variance assumption is met. The `Residuals vs Leverage` plot shows that there are 3 observations with high residuals and some observations with high leverage. There is one observation, 4, with relatively high Cook's distance.
+The `Normal Q-Q` plot shows all points roughly follow a straight line so the normality assumption is met. From the `Scale-Location` plot, there is no special pattern so the constant variance assumption is met. The `Residuals vs Leverage` plot shows that there are 3 observations with high residuals and some observations with high leverage. There is one observation, 4, with relatively high Cook's distance.
 
 - Some predictions of future observations for interesting values of the predictors.
 ```{r}
@@ -210,7 +210,7 @@ ggplot(pima1, aes(insulin, fill = test_result)) +
        y = "Frequency") +
   theme_bw()
 ```
-**Answer:** After replacing the zero values with missing value code `NA`, the plot shows that the distribution of insulin is right-skewed. The distribution of insulin is different between those testing positive and negative. The insulin level with the highest frequency (peak insulin level) for those who tested negative is lower than that of those who tested positive for diabetes.
+**Answer:** After replacing the zero values with missing value code `NA`, the plot shows that the distribution of insulin is right-skewed. The distribution of insulin is different between those testing positive and negative. There are more cases in low insulin level for those who tested negative than those who tested positive for diabetes.
 
 ### Q3.3
 
