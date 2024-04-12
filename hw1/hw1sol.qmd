@@ -37,10 +37,10 @@ library(tidyverse)
 library(gtsummary)
 library(GGally)
 swiss1 <- as.tibble(swiss)
-tbl_summary(swiss1)
+summary(swiss1)
 ggpairs(swiss1)
 ```
-**Answer:** The distributions of `Fertility` and `Agriculture` are left-skewed. The distributions of `Examination`, `Education`, and `Catholic` are right-skewed. The distribution of `Infant.Mortality` is normal. Also the distributions of `Education` and `Catholic` are bimodal. `Examination` is negatively correlated with `Fertility`, `Agriculture`, and `Catholic`. `Education` is negatively correlated with `Fertility` and `Agriculture`. `Examination` is positively correlated with `Education`. 
+**Answer:** The distributions of `Fertility` and `Agriculture` are left-skewed. The distributions of `Examination` and `Education` are right-skewed. The distribution of `Infant.Mortality` is roughly normal. Also the distributions of `Catholic` is bimodal. `Examination` is negatively correlated with `Fertility`, `Agriculture`, and `Catholic`. `Education` is negatively correlated with `Fertility` and `Agriculture`. `Examination` is positively correlated with `Education`. 
 
 - Variable selection to choose the best model.
 ```{r}
@@ -49,58 +49,50 @@ summary(swiss_model1)
 small_swiss <- step(swiss_model1, trace = TRUE)
 summary(small_swiss)
 ```
-**Answers:** The best model deletes `Examination` from the model. The best model is `Fertility ~ Agriculture + Education + Catholic + Infant.Mortality`.
+**Answers:** The best model deletes `Examination` from the model. The best model is `Fertility ~ Agriculture + Education + Catholic + Infant.Mortality` and the adjusted R-squared is 0.6707.
 
 - An exploration of transformations to improve the fit of the model.
 
-**Answer:** From the graphical characteristics of the data, we should go down the ladders of `Examination` and `Education` to see if the model fit improves. We can try to fit the model with the log-transformed `Examination` and `Education` variables. Also, it seems we need to add quadratic terms for `Catholic` to the model. 
+**Answer:** From the graphical characteristics of the data, we should go down the ladders of `Education` to see if the model fit improves. We can try to fit the model with the log-transformed `Education` variables. Also, it seems we need to add quadratic terms for `Catholic` to the model. 
 
 ```{r}
 swiss1 <- swiss1 |>
-  mutate(log_Examination = log(Examination),
-         log_Education = log(Education), 
+  mutate(log_Education = log(Education), 
          Catholic2 = Catholic^2)
-swiss_model2 <- lm(Fertility ~ Agriculture + log_Examination + log_Education + 
+swiss_model2 <- lm(Fertility ~ Agriculture + log_Education + 
                      Catholic + Catholic2 + Infant.Mortality, data = swiss1)
 summary(swiss_model2)
 ```
-It seems that the model fit does not improve after log-transforming the `Examination` and `Education` variables. But the quadratic term for `Catholic` is significant. So we should keep the original variables and add the quadratic term for `Catholic` in the model.
+It seems that the model fit does not improve after log-transforming the `Education` variables. But the quadratic term for `Catholic` is significant. So we should keep the original variables and add the quadratic term for `Catholic` in the model.
 
 ```{r}
-swiss_model3 <- lm(Fertility ~ Agriculture + Examination + Education + 
+swiss_model3 <- lm(Fertility ~ Agriculture + Education + 
                      Catholic + Catholic2 + Infant.Mortality, data = swiss1)
 summary(swiss_model3)
-small_swiss1 <- step(swiss_model3, trace = TRUE)
-summary(small_swiss1)
-
 ```
-**Answers:** We use `AIC` to select the best model. The best model is `Fertility ~ Agriculture + Examination + Education + Catholic + Catholic2 + Infant.Mortality`. 
+**Answers:** The best model is `Fertility ~ Agriculture + Education + Catholic + Catholic2 + Infant.Mortality`. And the adjusted R-squared is 0.6849.
 
 - Diagnostics to check the assumptions of your model.
 ```{r}
 plot(swiss_model3)
 ```
-
-
 **Answers:** From the diagnostic plots, we can see that the assumptions are approximately met. The `Residuals vs Fitted` plot shows the residuals are randomly scattered around the zero line so the linearity and constant variance assumptions are met.
-The `Normal Q-Q` plot shows all points roughly follow a straight line so the normality assumption is met.
+The `Normal Q-Q` plot shows all points roughly follow a straight line so the normality assumption is met. From the `Scale-Location` plot, the constant variance assumption is met. The `Residuals vs Leverage` plot shows that there are 3 observations with high residuals and some observations with high leverage. There is one observation, 4, with relatively high Cook's distance.
 
 - Some predictions of future observations for interesting values of the predictors.
 ```{r}
-new_data <- data.frame(Agriculture = runif(5, min(swiss1$Agriculture), 
-                                           max(swiss1$Agriculture)), 
-                       Examination = runif(5, min(swiss1$Examination), 
-                                            max(swiss1$Examination)),
-                       Education = runif(5, min(swiss1$Education), 
-                                         max(swiss1$Education)),
-                       Catholic = runif(5, min(swiss1$Catholic), 
-                                        max(swiss1$Catholic)),
-                       Infant.Mortality = runif(5, min(swiss1$Infant.Mortality), 
-                                                max(swiss1$Infant.Mortality))) |> 
+new_data <- data.frame(Agriculture = c(mean(swiss1$Agriculture), 
+                                       median(swiss1$Agriculture)), 
+                       Education = c(mean(swiss1$Education),
+                                      median(swiss1$Education)),
+                       Catholic = c(mean(swiss1$Catholic),
+                                     median(swiss1$Catholic)),
+                       Infant.Mortality = c(mean(swiss1$Infant.Mortality),
+                                            median(swiss1$Infant.Mortality))) |>
   mutate(Catholic2 = Catholic^2)
 predict(swiss_model3, newdata = new_data)
 ```
-**Answers:** We randomly generate 5 observations for each predictor variable.
+**Answers:** We are interested in the predictions of `Fertility` for the mean and median values of `Agriculture`, `Education`, `Catholic`, `Catholic^2`, and `Infant.Mortality`. The predictions are 63.91 and 66.83 for the mean and median values of the predictors, respectively.
 
 - An interpretation of the meaning of the model by writing a scientific abstract. (<150 words)
 
@@ -108,11 +100,11 @@ predict(swiss_model3, newdata = new_data)
   
   + OBJECTIVE: This study aims to investigate the relationship between fertility (`Fertility`) and socio-economic indicators (`Agriculture`, `Examination`, `Education`, `Catholic`, and `Infant.Mortality`) in French-speaking provinces of Switzerland.
   
-  + METHODS: We fit a linear regression model with `Fertility` as the response and all other variables as predictors. We perform variable selection and use AIC to select the best model and explore transformations based on each variable's characteristics to improve the fit of the model. We check the assumptions of the model and make predictions of future observations for interesting values of the predictors.
+  + METHODS: We fit a linear regression model with `Fertility` as the response and all other variables as predictors. We perform variable selection and use AIC to select the best model and explore transformations based on each variable's characteristics to improve the fit of the model. We check the assumptions of the model and make predictions of future observations for interesting values of the predictors. 
   
-  + RESULTS: All the predictors except `Examination` are significant predictors of `Fertility` in the model.
+  + RESULTS: We add the quadratic term for `Catholic` in the model. The best model is `Fertility ~ Agriculture + Education + Catholic + Catholic^2 + Infant.Mortality` and the adjusted R-squared is 0.6849 and only `Examination` is deleted from the model. `Catholic`, `Education`, and `Agriculture` have negative partial effects on `Fertility`. `Catholic^2` and `Infant.Mortality` have positive partial effects on `Fertility`.
   
-  + CONCLUSIONS: The study of `swiss` data set explores clear relationship between socio-economic factors and fertility. `Agriculture`, `Examination`, and `Education` are negatively correlated with `Fertility`, while `Catholic` and `Infant.Mortality` are positively correlated with `Fertility`.
+  + CONCLUSIONS: The study of `swiss` data set explores relationship between socio-economic factors and fertility. If the government wants to reduce fertility, it should focus on increasing `Education` and decreasing `Infant.Mortality`.
 
 
 ## Q2. Concavity of logistic regression log-likelihood 
@@ -153,7 +145,6 @@ H_{\beta} &=& \nabla^{2}_{\beta} \ell(\boldsymbol{\beta})\\
 &=& \sum_{i} \left[-\nabla_{\beta}\frac{e^{\mathbf{x}_{i}^T \boldsymbol{\beta}} \mathbf{x}_{i}}{1 + e^{\mathbf{x}_{i}^{T} \boldsymbol{\beta}}}\right] \\
 &=& \sum_{i} \left[-\nabla_{\beta}\frac{\mathbf{x}_{i}}{1 + e^{-\mathbf{x}_{i}^{T} \boldsymbol{\beta}}}\right]\\
 &=& \sum_{i} \left[-\nabla_{\beta}(1 + e^{- \mathbf{x}_{i}^{T} \boldsymbol{\beta}})^{-1} \begin{pmatrix} 1 \\ \mathbf{x}_{i1} \\ \vdots \\ \mathbf{x}_{iq} \end{pmatrix}\right] \\
-&=& \sum_{i} \left[\frac{e^{-\mathbf{x}_{i}^T \boldsymbol{\beta}}}{(1 + e^{-\mathbf{x}_{i}^{T} \boldsymbol{\beta}})^{2}} \begin{pmatrix} 1 \cdot -\mathbf{x}_{i}^{T} \\ \mathbf{x}_{i1} \cdot -\mathbf{x}_{i}^{T} \\ \vdots \\ \mathbf{x}_{iq} \cdot -\mathbf{x}_{i}^{T} \end{pmatrix} \right] \\
 &=& \sum_{i} \left[-\frac{e^{-\mathbf{x}_{i}^{T} \boldsymbol{\beta}}}{(1 + e^{-\mathbf{x}_{i}^{T} \boldsymbol{\beta}})^{2}} \mathbf{x}_{i}\mathbf{x}_{i}^{T} \right]
 \end{eqnarray*}
 $$
@@ -266,7 +257,7 @@ pima_model2 <- glm(test ~ pregnant + glucose + diastolic + bmi + diabetes + age,
                    data = na.omit(pima1), family = binomial)
 anova(pima_model1, pima_model2, test = "Chi")
 ```
-**Answer:** The p-value is $0.6507 > 0.05$, so we fail to reject the null hypothesis. There is no significant evidence that the model without `insulin` and `triceps` predictors gives a significantly better fit than the full model.
+**Answer:** The p-value is $0.6507 > 0.05$, so we fail to reject the null hypothesis. There is no significant evidence that the model without `insulin` and `triceps` predictors is significantly different from the model with them.
 
 
 ### Q3.5
@@ -279,7 +270,7 @@ biglm <- glm(test ~ pregnant + glucose + diastolic + triceps + insulin +
 smalllm <- step(biglm, trace = TRUE)
 summary(smalllm)
 ```
-**Answer:** The predictors selected by AIC are `pregnant`, `age`, `diabetes`, `bmi`, and `glucose`. There are 392 cases used in the selected model.
+**Answer:** The predictors selected are `pregnant`, `age`, `diabetes`, `bmi`, and `glucose`. There are 392 cases used in the selected model.
 
 ### Q3.6
 
@@ -307,7 +298,7 @@ pima_missing |>
   bold_labels() |>
   bold_p(t = 0.05)
 ```
-**Answers:** From above regression, we find missingness is not associate with outcome. This means that the distribution of outcome when removing data with missing is still a representative of the original distribution. This justifies the use of "complete case" analysis. 
+From above regression, we find missingness is not associate with outcome. This means that the distribution of outcome when removing data with missing is still a representative of the original distribution. This justifies the use of "complete case" analysis. 
 
 **Answer:** It is appropriate to refit the selected model using as much of the data as reasonable because missingness is not associated with the test result. So we can assume that the missing data is missing completely at random and then if we only drop the missing data, the distribution of the outcome is still representative of the original distribution. Here we use 752 observations in the selected model.
 ```{r}
@@ -318,42 +309,33 @@ summary(pima_model3)
 
 ### Q3.7
 
-Using the last fitted model of the previous question, what is the difference in the odds of testing positive for diabetes for a woman with a BMI at the first quartile compared with a woman at the third quartile, assuming that all other factors are held constant? Give a confidence interval for this difference.
+Using the last fitted model of the previous question, what is the difference in the log-odds of testing positive for diabetes for a woman with a BMI at the first quartile compared with a woman at the third quartile, assuming that all other factors are held constant? Give a confidence interval for this difference.
 
 
 ```{r}
 library(kableExtra)
 bmi_iqr <- quantile(pima1$bmi, 0.75, na.rm = TRUE) - 
   quantile(pima1$bmi, 0.25, na.rm = TRUE)
-cat("IQR:", bmi_iqr, "\n")
-odds_diff <- exp(bmi_iqr * coef(pima_model3)["bmi"])
-cat("Odds_Diff:", odds_diff, "\n")
-exp(confint(pima_model3, "bmi")[1] * bmi_iqr)
-exp(confint(pima_model3, "bmi")[2] * bmi_iqr)
+unname(bmi_iqr)
+logodds_diff <- bmi_iqr * coef(pima_model3)["bmi"]
+unname(logodds_diff)
+confint(pima_model3, "bmi")[1] * bmi_iqr
+confint(pima_model3, "bmi")[2] * bmi_iqr
 ```
-**Answer:** The $IQR$ for `bmi` is $9.1$. So the difference in the odds of testing positive for diabetes for a women with a BMI at the first quantile compared with a women at the third quantile is $e^{0.088 \times 9.1} = 2.227$. The $95\%$ confidence interval for coefficient of `bmi` is $(0.059, 0.117)$. So we first times $9.1$ to get the $95\%$ confidence interval for log-odds difference is $(0.537, 1.065)$, then take exponential of these values and then the $95\%$ confidence interval for odds ratio is $(1.71, 2.90)$. This means that we are $95\%$ confident that the odds of testing positive for diabetes for a woman with a BMI at the third quantile are between $1.73$ and $2.97$ times higher than the odds of testing positive for diabetes for a woman with a BMI at the first quantile, assuming that all other factors are held constant.
+**Answer:** The $IQR$ for `bmi` is $9.1$. So the difference in the log-odds of testing positive for diabetes for a women with a BMI at the first quantile compared with a women at the third quantile is $\hat{\beta}_{bmi} \times IQR = 0.08753 \times 9.1 = 0.797$. The $95\%$ confidence interval for coefficient of `bmi` is $(0.059, 0.117)$. So we multiply $9.1$ to get the $95\%$ confidence interval for log-odds difference, i.e. $(0.539, 1.065)$. This means that we are $95\%$ confident that the the difference in the log-odds is between $0.539$ and $1.065$.
 
 ### Q3.8 
 
 Do women who test positive have higher diastolic blood pressures? Is the diastolic blood pressure significant in the regression model? Explain the distinction between the two questions and discuss why the answers are only apparently contradictory.
 
 ```{r}
-pima1 |> 
-  group_by(test) |> 
-  summarise(mean_diastolic = mean(diastolic, na.rm = TRUE), 
-            sd_diastolic = sd(diastolic, na.rm = TRUE), 
-            n = n())
-
+wilcox.test(diastolic ~ test_result, data = pima1, alternative = "less")
 ```
-**Answer:** From the above table, it seems that women who test positive have higher diastolic blood pressures. 
+**Answer:** From the Wilcoxon test, we find that the p-value is $8.143*10^{-7} < 0.05$, so we conclude that women who test positive have higher diastolic blood pressures.
 
 ```{r}
-pima1 <- pima1 |>
-  drop_na(diastolic)
-pima_model4 <- glm(test ~ pregnant + glucose + bmi + diabetes + age + diastolic, 
-                   data = pima1, family = binomial)
-summary(pima_model4)
+summary(pima_model1)
 ```
-**Answer:** The p-value for `diastolic` is 0.3 and it is not significant in the regression model. The distinction between the two questions is that the first question is about the relationship between the diastolic blood pressure and the test result, while the second question is about the relationship between the diastolic blood pressure and the test result after controlling for other variables. The answers are only apparently contradictory and this may be because the diastolic blood pressure is highly correlated with other variables in the model.
+**Answer:** The p-value for `diastolic` is 0.9 and it is not significant in the regression model. The distinction between the two questions is that the first question is about the marginal relationship between the diastolic blood pressure and the test result, while the second question is about the partial relationship between the diastolic blood pressure and the test result after controlling for other variables. The answers are only apparently contradictory.
 
 
