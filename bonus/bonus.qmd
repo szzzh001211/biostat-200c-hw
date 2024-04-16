@@ -1,0 +1,251 @@
+---
+title: "Biostat 200C Bonus Question"
+author: "Ziheng Zhang_606300061"
+date: today
+format:
+  html:
+    theme: cosmo
+    embed-resources: true
+    number-sections: true
+    toc: true
+    toc-depth: 4
+    toc-location: left
+    code-fold: false
+engine: knitr
+knitr:
+  opts_chunk: 
+    fig.align: 'center'
+    # fig.width: 6
+    # fig.height: 4
+    message: FALSE
+    cache: false
+---
+**In class bonus exercise**: Simulate data for a logistic regression model with a quadratic term (e.g., $X_1^2$) as the true model and check the linearity assumption using the following plots:
+
+  - Binned deviance residuals against linear predictor $X_1$ when you model the systematic component as a linear function of the predictors
+  - Binned deviance residuals against the quadratic term $X_1^2$ when you model the systematic component as a quadratic function of the predictors
+  - Binned deviance residuals against fitted value ($\hat\eta$) when you model the systematic component as a quadratic function of the predictors
+  - Binned deviance residuals against fitted value ($\hat\eta$) when you model the systematic component as a linear function of the predictors
+  - Scatter plot of logit(binned $Y$) and $X_1^2$: break the range of $X1$ into bins, and within each bin, calculate the mean value of $X1$ and $Y$ for observations in that bin. We then transform the mean of $Y$ through the link function
+  - Scatter plot of logit(binned $Y$) and $\hat\eta$
+  - Scatter plot of logit(binned $Y$) and $X_1$
+
+### Simulate data
+```{r}
+library(faraway)
+
+set.seed(5)
+X1 <- rnorm(1000)
+X2 <- rnorm(1000)
+noise <- rnorm(1000)
+beta0 <- 1
+beta1 <- 2
+beta2 <- 3
+eta <- beta0 + beta1*X1^2 + beta2*X2 + noise
+p <- ilogit(eta)
+Y <- rbinom(1000, 1, p)
+simulate_data <- data.frame(Y, X1, X2)
+```
+
+### First Plot
+- Binned deviance residuals against linear predictor $X_1$ when you model the systematic component as a linear function of the predictors
+
+Fit the model:
+```{r}
+library(ggplot2)
+library(tidyverse)
+lmod <- glm(Y ~ X1 + X2, data = simulate_data, family = binomial)
+linpred <- predict(lmod)
+devres <- residuals(lmod)
+```
+
+Before the binning:
+```{r}
+simulate_data |>
+  mutate(devres = devres, X1 = X1) %>%
+  ggplot() +
+  geom_point(mapping = aes(x = X1, y = devres)) +
+  geom_hline(yintercept = 0, color = "black", linetype = "solid") +
+  labs(x = "X1", y = "Deviance residuals")
+```
+
+After the binning:
+```{r}
+
+simulate_data |>
+  mutate(devres = devres) |>
+  group_by(cut(X1, breaks = unique(quantile(X1, (1:50)/51)))) |>
+  summarize(devres = mean(devres), 
+            mean_X1 = mean(X1)) |>
+  ggplot() +
+  geom_point(mapping = aes(x = mean_X1, y = devres)) + 
+  geom_hline(yintercept = 0, color = "black", linetype = "solid") +
+  labs(x = "X1", y = "Binned deviance residual", title = 
+         "Binned deviance residuals against linear predictor X1")
+```
+**Interpretation**: If we model the systematic component as a linear function of the predictor $X_1$, the binned deviance residuals against the linear predictor $X_1$ show a quadratic pattern, which indicates there may not be linear relationship between the linear term $X_1$ and the binned deviance residuals. And from this plot, we can see that we should model the systematic component as a quadratic function of the predictor $X_1$.
+
+### Second Plot
+- Binned deviance residuals against the quadratic term $X_1^2$ when you model the systematic component as a quadratic function of the predictors
+
+Fit the model:
+```{r}
+lmod1 <- glm(Y ~ I(X1^2) + X2, data = simulate_data, family = binomial)
+linpred1 <- predict(lmod1)
+devres1 <- residuals(lmod1)
+```
+
+Before the binning:
+```{r}
+simulate_data |>
+  mutate(devres1 = devres1, X1_quad = X1^2) %>%
+  ggplot() +
+  geom_point(mapping = aes(x = X1_quad, y = devres1)) +
+  geom_hline(yintercept = 0, color = "black", linetype = "solid") +
+  labs(x = "X1^2", y = "Deviance residuals")
+```
+
+After the binning:
+```{r}
+simulate_data |>
+  mutate(devres1 = devres1, X1_qua = X1^2) |>
+  group_by(cut(X1_qua, breaks = unique(quantile(X1_qua, (1:50)/51)))) |>
+  summarize(devres1 = mean(devres1), 
+            mean_X1 = mean(X1_qua)) |>
+  ggplot() +
+  geom_point(mapping = aes(x = mean_X1, y = devres1)) + 
+  geom_hline(yintercept = 0, color = "black", linetype = "solid") +
+  geom_smooth(mapping = aes(x = mean_X1, y = devres1), method = "loess", 
+              se = FALSE, color = "red") +
+  labs(x = "X1^2", y = "Binned deviance residual", title = 
+         "Binned deviance residuals against quadratic term X1^2")
+```
+**Interpretation**: If we model the systematic component as a quadratic function of the predictor $X_1$, although there is a slight curve in the loess line, in general the binned deviance residuals are randomly scattered around the zero line and do not show any special pattern, which indicates that there may be linear relationship between the quadratic term $X_1^2$ and the binned deviance residuals. And this also proves that the true model is a quadratic function of the predictor $X_1$.
+
+### Third Plot
+- Binned deviance residuals against fitted value ($\hat\eta$) when you model the systematic component as a quadratic function of the predictors
+
+Before the binning:
+```{r}
+simulate_data |>
+  mutate(devres1 = devres1, linpred1 = linpred1) |>
+  ggplot() +
+  geom_point(mapping = aes(x = linpred1, y = devres1)) +
+  labs(x = "Fitted value", y = "Deviance residuals", title = 
+         "Deviance residuals against fitted value")
+```
+
+After the binning:
+```{r}
+simulate_data |>
+  mutate(devres1 = devres1, linpred1 = linpred1) |>
+  group_by(cut(linpred1, breaks = unique(quantile(linpred1, (1:50)/51)))) |>
+  summarize(devres1 = mean(devres1), 
+            mean_lin1 = mean(linpred1)) |>
+  ggplot() +
+  geom_point(mapping = aes(x = mean_lin1, y = devres1)) + 
+  geom_hline(yintercept = 0, color = "black", linetype = "solid") +
+  labs(x = "Fitted value", y = "Binned deviance residual", title = 
+         "Binned deviance residuals against fitted value")
+```
+**Interpretation**: Before the binning, the plot shows a hyperbolic pattern with one asymptote at $y=0$. But after the binning, the plot shows kind of hyperbolic pattern when binned deviance residuals $>0$.
+
+
+### Fourth Plot
+- Binned deviance residuals against fitted value ($\hat\eta$) when you model the systematic component as a linear function of the predictors
+
+Before the binning:
+```{r}
+simulate_data |>
+  mutate(devres = devres, linpred = linpred) |>
+  ggplot() +
+  geom_point(mapping = aes(x = linpred, y = devres)) +
+  labs(x = "Fitted value", y = "Deviance residuals", title = 
+         "Deviance residuals against fitted value")
+```
+
+After the binning:
+```{r}
+simulate_data |>
+  mutate(devres = devres, linpred = linpred) |>
+  group_by(cut(linpred, breaks = unique(quantile(linpred, (1:50)/51)))) |>
+  summarize(devres = mean(devres), 
+            mean_lin = mean(linpred)) |>
+  ggplot() +
+  geom_point(mapping = aes(x = mean_lin, y = devres)) + 
+  geom_hline(yintercept = 0, color = "black", linetype = "solid") +
+  labs(x = "Fitted value", y = "Binned deviance residual", title = 
+         "Binned deviance residuals against fitted value")
+```
+**Interpretation**: Before the binning, the plot also shows a hyperbolic pattern with one asymptote at $y=0$ but closer to straight line than the previous plot. After the binning, the plot shows some special patterns.
+
+### Fifth Plot
+- Scatter plot of logit(binned $Y$) and $X_1^2$: break the range of $X1$ into bins, and within each bin, calculate the mean value of $X1$ and $Y$ for observations in that bin. We then transform the mean of $Y$ through the link function
+
+```{r}
+simulate_data |>
+  mutate(X1_qua = X1^2, Y = Y) |>
+  group_by(cut(X1_qua, breaks = unique(quantile(X1_qua, (1:50)/51)))) |>
+  summarize(mean_qua = mean(X1_qua), 
+            logit_y = logit(mean(Y))) |>
+  ggplot() +
+  geom_point(mapping = aes(x = mean_qua, y = logit_y)) + 
+  geom_hline(yintercept = 0, color = "black", linetype = "solid") +
+  labs(x = "X1^2", y = "logit(binned Y)", title = 
+         "Scatter plot of logit(binned Y) and X1^2")
+```
+**Interpretation**: The plot shows a linear relationship between the logit of the binned $Y$ and the quadratic term $X_1^2$, which indicates that the true model is a quadratic function of the predictor $X_1$.
+
+
+### Sixth Plot
+- Scatter plot of logit(binned $Y$) and $\hat\eta$
+
+The model with quadratic term $X_1^2$:
+```{r}
+simulate_data |>
+  mutate(linpred1 = linpred1, Y = Y) |>
+  group_by(cut(linpred1, breaks = unique(quantile(linpred1, (1:50)/51)))) |>
+  summarize(mean_lin = mean(linpred1), 
+            logit_y = logit(mean(Y))) |>
+  ggplot() +
+  geom_point(mapping = aes(x = mean_lin, y = logit_y)) + 
+  geom_hline(yintercept = 0, color = "black", linetype = "solid") +
+  labs(x = "Fitted value", y = "logit(binned Y)", title = 
+         "Scatter plot of logit(binned Y) and fitted value")
+```
+The model with linear term $X_1$:
+```{r}
+simulate_data |>
+  mutate(linpred = linpred, Y = Y) |>
+  group_by(cut(linpred, breaks = unique(quantile(linpred, (1:50)/51)))) |>
+  summarize(mean_lin = mean(linpred), 
+            logit_y = logit(mean(Y))) |>
+  ggplot() +
+  geom_point(mapping = aes(x = mean_lin, y = logit_y)) + 
+  geom_hline(yintercept = 0, color = "black", linetype = "solid") +
+  labs(x = "Fitted value", y = "logit(binned Y)", title = 
+         "Scatter plot of logit(binned Y) and fitted value")
+```
+**Interpretation**: The plot with the quadratic term $X_1^2$ shows a roughly linear relationship between the logit of the binned $Y$ and the fitted value $\hat\eta$. The plot with the linear term $X_1$ shows a roughly quadratic relationship between the logit of the binned $Y$ and the fitted value $\hat\eta$.
+
+
+### Seventh Plot
+- Scatter plot of logit(binned $Y$) and $X_1$
+
+```{r}
+simulate_data |>
+  mutate(X1 = X1, Y = Y) |>
+  group_by(cut(X1, breaks = unique(quantile(X1, (1:50)/51)))) |>
+  summarize(mean_X1 = mean(X1), 
+            logit_y = logit(mean(Y))) |>
+  ggplot() +
+  geom_point(mapping = aes(x = mean_X1, y = logit_y)) + 
+  geom_hline(yintercept = 0, color = "black", linetype = "solid") +
+  labs(x = "X1", y = "logit(binned Y)", title = 
+         "Scatter plot of logit(binned Y) and X1")
+
+```
+**Interpretation**: The plot shows a quadratic relationship between the logit of the binned $Y$ and the predictor $X_1$. So this proves that the true model is a quadratic function of the predictor $X_1$.
+
+
+
