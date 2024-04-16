@@ -148,8 +148,7 @@ simulate_data |>
   labs(x = "Fitted value", y = "Binned deviance residual", title = 
          "Binned deviance residuals against fitted value")
 ```
-**Interpretation**: Before the binning, the plot shows a hyperbolic pattern with one asymptote at $y=0$. But after the binning, the plot shows kind of hyperbolic pattern when binned deviance residuals $>0$.
-
+**Interpretation**: Before the binning, the plot shows a hyperbolic pattern with one asymptote at $y=0$. But after the binning, the plot shows some special patterns.
 
 ### Fourth Plot
 - Binned deviance residuals against fitted value ($\hat\eta$) when you model the systematic component as a linear function of the predictors
