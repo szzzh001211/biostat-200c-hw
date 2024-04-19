@@ -257,7 +257,7 @@ covid_model <- glm(cbind(deaths, confirmed - deaths) ~ . - county,
                    data = county_data, family = binomial)
 
 covid_model  |>
-  tbl_regression() |>
+  tbl_regression(intercept = T) |>
   bold_labels() |>
   bold_p(t = 0.01) |>
   suppressWarnings()
@@ -278,34 +278,109 @@ Interpret the regression coefficients of 3 significant predictors with p-value <
 
 Apply analysis of deviance to (1) evaluate the goodness of fit of the model and (2) compare the model to the intercept-only model. 
 
-**Answer:** 
 ```{r}
-pchisq()
+pchisq(covid_model$deviance, covid_model$df.residual, lower = FALSE)
 ```
+**Answer:** The p-value is less than 0.05, which means that the model does not have an adequate fit.
+```{r}
+pchisq(covid_model$null.deviance - covid_model$deviance, 2, lower.tail = FALSE)
+```
+**Answer:** The p-value is less than 0.05, which means that the model is significantly better than the intercept-only model.
+
 ### Q1.6
 
 Perform analysis of deviance to evaluate the significance of each predictor. Display the 10 most significant predictors.
 
+```{r}
+drop1(covid_model, test = "Chisq") |>
+  arrange(`Pr(>Chi)`) |>
+  head(10)
+```
 ### Q1.7
 
 Construct confidence intervals of regression coefficients.
+
+```{r}
+confint(covid_model) |>
+  suppressWarnings()
+```
 
 ### Q1.8 
 
 Plot the deviance residuals against the fitted values. Are there potential outliers?
 
+```{r}
+library(ggplot2)
+library(faraway)
+county_data |>
+  mutate(devres  = residuals(covid_model, type = "deviance"),
+         linpred = predict(covid_model, type = "link")) %>%
+  ggplot + 
+  geom_point(mapping = aes(x = linpred, y = devres)) +
+  labs(x = "Fitted values", y = "Deviance residual")
+
+halfnorm(hatvalues(covid_model))
+
+county_data%>%
+  slice(c(367, 931))
+```
+**Answer:** It seems that there is on potential outlier with a residual less than -5.0.
+
 ### Q1.9
 
 Plot the half-normal plot. Are there potential outliers in predictor space?
+
+```{r}
+halfnorm(hatvalues(covid_model))
+
+county_data |>
+  slice(367, 931)
+```
+**Answer:** There are two potential outliers in predictor space, 367, 931. They are state of District of Columbia and New York. They have `percent_with_access_to_exercise_opportunities` values of 100, which are unusual.
 
 ### Q1.10
 
 Find the best sub-model using the AIC criterion.
 
+```{r}
+step(covid_model, trace = F)
+```
+**Answer:** The best model is the model dropped `percent_adults_with_obesity`, `percent_with_access_to_exercise_opportunities`, 
+`overcrowding`, `average_traffic_volume_per_meter_of_major_roadways`, `percent_65_and_over`, `percent_asian`, and `percent_rural`.
+
 ### Q1.11
 
 Find the best sub-model using the lasso with cross validation.
 
+```{r}
+# transform the dataset into a weighted Bernoulli data set
+
+obs_wt = c(rbind(county_data$deaths, county_data$confirmed - county_data$deaths))
+county_long = county_data |>
+  slice(rep(1:n(), each = 2)) |> # replicate each row twice
+  mutate(deaths = rep(c(1, 0), nrow(county_data))) |>
+  mutate(obs_wt = obs_wt)
+```
+
+```{r, eval = FALSE}
+library(glmnet)
+library(caret)
+
+state_dummy <- model.matrix(~ state - 1, data = county_long)
+
+x_all <- model.matrix(deaths ~ -1 + . -state - county - confirmed - obs_wt, 
+                      data = county_long)
+x_all <- cbind(state_dummy, x_all)
+y_all <- county_long$deaths
+
+covid_lasso <- cv.glmnet(x_all, y_all, alpha = 1, 
+                         weights = county_long$obs_wt, family = "binomial", 
+                         nfolds = 5)
+
+
+plot(covid_lasso)
+coef(covid_lasso, s = "lambda.min")
+```
 ## Q2. Odds ratios
 
 Consider a $2 \times 2$ contingency table from a prospective study in which people who were or were not exposed to some pollutant are followed up and, after several years, categorized according to the presense or absence of a disease. Following table shows the probabilities for each cell. The odds of disease for either exposure group is $O_i = \pi_i / (1 - \pi_i)$, for $i = 1,2$, and so the odds ratio is
@@ -327,6 +402,12 @@ $$
 $$
 show that if there is no difference between the exposed and not exposed groups (i.e., $\beta_1 = \beta_2$), then $\phi = 1$.
 
+**Answer:** If $\beta_1 = \beta_2$, then 
+$$
+\pi_1 = \frac{e^{\beta_{1}}}{1 + e^{\beta_{1}}} = \frac{e^{\beta_{2}}}{1 + e^{\beta_{2}}} = \pi_2.
+$$
+So $O_1 = O_2$ and $\phi = 1$.
+
 ### Q2.2 
 
 Consider $J$ $2 \times 2$ tables, one for each level $x_j$ of a factor, such as age group, with $j=1,\ldots, J$. For the logistic model
@@ -334,6 +415,20 @@ $$
 \pi_{ij} = \frac{e^{\alpha_i + \beta_i x_j}}{1 + e^{\alpha_i + \beta_i x_j}}, \quad i = 1,2, \quad j= 1,\ldots, J.
 $$
 Show that $\log \phi$ is constant over all tables if $\beta_1 = \beta_2$.
+
+**Answer:** 
+$$
+\pi_{1j} = \frac{e^{\alpha_{1} + \beta_{1} x_j}}{1 + e^{\alpha_{1} + \beta_{1} x_j}}, \quad 1- \pi_{1j} = \frac{1}{1 + e^{\alpha_{1} + \beta_{1} x_j}}
+$$
+$$
+\pi_{2j} = \frac{e^{\alpha_{2} + \beta_{2} x_j}}{1 + e^{\alpha_{2} + \beta_{2} x_j}}, \quad 1- \pi_{2j} = \frac{1}{1 + e^{\alpha_{2} + \beta_{2} x_j}}
+$$
+So 
+$$ 
+\phi = \frac{\pi_{1j}(1 - \pi_{2j})}{\pi_{2j}(1 - \pi_{1j})} = \frac{e^{\alpha_{1} + \beta_{1} x_j}}{e^{\alpha_{2} + \beta_{2} x_j}} = \frac{e^{\alpha_{1}}}{e^{\alpha_{2}}} = e^{\alpha_{1} - \alpha_{2}}. \text{ (since $\beta_1 = \beta_2$)}
+$$
+So $\log \phi = \alpha_{1} - \alpha_{2}$, which is constant over all tables.
+
 
 ## Q3. ELMR Chapter 4 Excercise 3
 
