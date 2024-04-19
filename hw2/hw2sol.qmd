@@ -244,18 +244,44 @@ Read and run above code to generate a data frame `county_data` that includes cou
 
 What assumptions of logistic regression may be violated by this data set?
 
+**Answer:** It seems that if we use logistic regression then we will use binomial logistic regression and we assume `confirmed` is batch size and `deaths` is the number of success for each county. Binomial distribution arises when we assume that the trials in a batch are independent and share the same “success” probability. However, in this case, the confirmed cases are not independent across counties. For example, if a county has a high number of confirmed cases, then the neighboring counties are more likely to have a high number of confirmed cases. This violates the assumption of independence.
+
 ### Q1.3 
 
 Run a logistic regression, using variables `state`, ..., `percent_rural` as predictors. 
+
+**Anser:** 
+```{r}
+library(gtsummary)
+covid_model <- glm(cbind(deaths, confirmed - deaths) ~ . - county, 
+                   data = county_data, family = binomial)
+
+covid_model  |>
+  tbl_regression() |>
+  bold_labels() |>
+  bold_p(t = 0.01) |>
+  suppressWarnings()
+```
 
 ### Q1.4
 
 Interpret the regression coefficients of 3 significant predictors with p-value <0.01.
 
+**Answer:** 
+`percent_fair_or_poor_health`: Every one percent increase in the proportion of people who report fair or poor health is associated with a 0.05 decrease in the log odds of death among confirmed cases of COVID, controlling for all other predictors.
+
+`percent_children_in_poverty`: Every one percent increase in the proportion of children in poverty is associated with a 0.03 increase in the log odds of death among confirmed cases of COVID, controlling for all other predictors.
+
+`percent_severe_housing_problems`: Every one percent increase in the proportion of people who report severe housing problems is associated with a 0.04 decrease in the log odds of death among confirmed cases of COVID, controlling for all other predictors.
+
 ### Q1.5 
 
 Apply analysis of deviance to (1) evaluate the goodness of fit of the model and (2) compare the model to the intercept-only model. 
 
+**Answer:** 
+```{r}
+pchisq()
+```
 ### Q1.6
 
 Perform analysis of deviance to evaluate the significance of each predictor. Display the 10 most significant predictors.
