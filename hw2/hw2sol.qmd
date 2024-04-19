@@ -268,11 +268,11 @@ covid_model  |>
 Interpret the regression coefficients of 3 significant predictors with p-value <0.01.
 
 **Answer:** 
-`percent_fair_or_poor_health`: Every one percent increase in the proportion of people who report fair or poor health is associated with a 0.05 decrease in the log odds of death among confirmed cases of COVID, controlling for all other predictors.
+`percent_fair_or_poor_health`: Every one percent increase in the proportion of people who report fair or poor health decreases the log odds of death among confirmed cases of COVID by 0.05, controlling for all other predictors.
 
-`percent_children_in_poverty`: Every one percent increase in the proportion of children in poverty is associated with a 0.03 increase in the log odds of death among confirmed cases of COVID, controlling for all other predictors.
+`percent_children_in_poverty`: Every one percent increase in the proportion of children in poverty increases the log odds of death among confirmed cases of COVID by 0.03, controlling for all other predictors.
 
-`percent_severe_housing_problems`: Every one percent increase in the proportion of people who report severe housing problems is associated with a 0.04 decrease in the log odds of death among confirmed cases of COVID, controlling for all other predictors.
+`percent_severe_housing_problems`: Every one percent increase in the proportion of people who report severe housing problems decreases the log odds of death among confirmed cases of COVID by 0.04, controlling for all other predictors.
 
 ### Q1.5 
 
@@ -431,6 +431,30 @@ So $\log \phi = \alpha_{1} - \alpha_{2}$, which is constant over all tables.
 
 
 ## Q3. ELMR Chapter 4 Excercise 3
+The `infert` dataset presents data from a study of secondary infertility (failure to conceive after at least one previous conception). The factors of interest are induced abortions and spontaneous abortions (e.g., miscarriages). The study matched each case of infertility with two controls who were not infertile, matching on age, education and parity (number of prior pregnancies).
 
+(a) Construct cross-classified tables by number of spontaneous and induced abortions separately for cases and controls. Comment on the differences between the two tables.
+
+(b) Fit a binary response model with only spontaneous and induced as predictors. Determine the statistical significance of these predictors. Express the effects of the predictors in terms of odds.
+
+```{r}
+lmod1 <- glm(case ~ spontaneous + induced, data = infert, family = binomial)
+
+lmod1 |>
+  tbl_regression() |>
+  bold_labels() |>
+  bold_p(t = 0.05)
+```
+**Answer:** The p-value of `spontaneous` is $<0.001$ so it is a significant predictor. Every one unit increase in the number of prior spontaneous abortions increases the odds of being a case by a factor of $e^{1.2} = 3.32$.\
+The p-value of `induced` is $0.042<0.05$ so it is also a significant predictor. Every one unit increase in the number of prior induced abortions increases the odds of being a case by a factor of $e^{0.42} = 1.52$.
+
+
+(c) Fit a binary response model with only education, age and parity as predictors. Explain how the significance (or lack thereof) of these predictors should be interpreted.
+
+(d) Now put all five predictors in a binary response model. Interpret the results in terms of odds.
+
+(e) Fit a matched case control model appropriate to the data. Interpret the output and compare the odds to those found in the previous model.
+
+(f) The spontaneous and induced predictors could be viewed as ordinal due to the grouping in the highest level. Refit the model using ordinal factors rather than numerical variables for these two predictors. Is there evidence that the ordinal representation is necessary?
 
 
