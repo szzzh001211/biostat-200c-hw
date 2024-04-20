@@ -1,0 +1,151 @@
+---
+title: "Bonus question, Binary Response (ELMR Chapter 2)"
+author: "Ziheng Zhang_606300061"
+subtitle: Biostat 200C
+date: today
+format:
+  html:
+    theme: cosmo
+    embed-resources: true
+    number-sections: true
+    toc: true
+    toc-depth: 4
+    toc-location: left
+    code-fold: false
+engine: knitr
+knitr:
+  opts_chunk: 
+    fig.align: 'center'
+    # fig.width: 6
+    # fig.height: 4
+    message: FALSE
+    cache: false
+---
+```{r}
+rm(list=ls())
+sessionInfo()
+library(tidyverse)
+library(faraway)
+library(gtsummary)
+```
+
+## Binomial model
+
+- We model $Y_i$ as a Binomial random variable with batch size $m_i$ and "success" probability $p_i$
+$$
+\mathbb{P}(Y_i = y_i) = \binom{m_i}{y_i} p_i^{y_i} (1 - p_i)^{m_i - y_i}.
+$$
+
+- The parameter $p_i$ is linked to the predictors $X_1, \ldots, X_{q}$ via an **inverse link function**
+$$
+p_i = \frac{e^{\eta_i}}{1 + e^{\eta_i}},
+$$
+where $\eta_i$ is the **linear predictor** or **systematic component**
+$$
+\eta_i = \beta_0 + \beta_1 x_{i1} + \cdots + \beta_{q} x_{iq} = \mathbf{x}_i^T \boldsymbol{\beta}
+$$
+
+- The log-likelihood is
+\begin{eqnarray*}
+\ell(\boldsymbol{\beta}) &=& \sum_{i=1}^n \left[ y_i \log p_i + (m_i - y_i) \log (1 - p_i) + \log \binom{m_i}{y_i} \right] \\
+&=& \sum_{i=1}^n \left[ y_i \eta_i - m_i \log ( 1 + e^{\eta_i}) + \log \binom{m_i}{y_i} \right] \\
+&=& \sum_{i=1}^n \left[ y_i \cdot \mathbf{x}_i^T \boldsymbol{\beta} - m_i \log ( 1 + e^{\mathbf{x}_i^T \boldsymbol{\beta}}) + \log \binom{m_i}{y_i} \right].
+\end{eqnarray*}
+
+## Binomial model vs Binomial model
+- The Bernoulli model in ELMR 2 is a special case with all batch sizes $m_i = 1$. 
+
+- Conversely, the Binomial model is equivalent to a Bernoulli model with $\sum_{i=1}^n m_i$ observations, or a Bernoulli model with observation weights $(y_i, m_i - y_i)$. 
+
+- **Q1.** Reformat the data to have $N = \sum_{i=1}^n m_i$ rows, with the binary outcome to represent there are $N = \sum_{i=1}^n m_i$ Bernoulli trials conducted. 
+
+**Answers:** Here we use `orings` data as an example. 
+
+```{r}
+orings <- orings |>
+  as_tibble(rownames = "mission") |>
+  print(n = Inf)
+```
+
+```{r}
+orings_long <- orings |>
+  slice(rep(1:n(), each = 6)) |>
+  mutate(row_number = rep(c(1:6), 23)) |>
+  mutate(damage = ifelse(row_number <= damage, 1, 0)) |>
+  select(-row_number) |>
+  print(n = Inf)
+```
+
+- **Q2.** Refitted the model using logistic regression (`glm`) using the reformatted data above (no weights are needed) and show it is equivalent to the Binomial model and Bernoulli model with weights. 
+
+**Answers:** 
+Reformatted data:
+```{r}
+lmod1 <- glm(damage ~ temp, data = orings_long, family = binomial)
+
+lmod1 |>
+  tbl_regression(intercept = TRUE)
+```
+
+Binomial model:
+```{r}
+lmod2 <- glm(cbind(damage, 6 - damage) ~ temp, family = binomial, data = orings)
+lmod2 |>
+  tbl_regression(intercept = TRUE)
+```
+
+Bernoulli model with weights:
+```{r}
+obs_wt = c(rbind(orings$damage, 6 - orings$damage))
+orings_weight = orings |>
+  slice(rep(1:n(), each = 2)) |>
+  mutate(damage = rep(c(1, 0), 23)) |>
+  mutate(obs_wt = obs_wt) 
+
+lmod3 <- glm(damage ~ temp, data = orings_weight, family = binomial, 
+             weights = obs_wt)
+
+lmod3 |>
+  tbl_regression(intercept = TRUE)
+```
+So three models are equivalent.
+
+- **Q3.** Write out the log-likelihood for above model and show it is equivalent to the Binomial model and Bernoulli model with weights.
+
+**Answers:**
+The log-likelihood for the Binomial model is:
+$$
+\begin{eqnarray*}
+\ell(\boldsymbol{\beta}) &=& \sum_{i=1}^n \left[ y_i \log p_i + (m_i - y_i) \log (1 - p_i) + \log \binom{m_i}{y_i} \right] \\
+&=& \sum_{i=1}^n \left[ y_i \eta_i - m_i \log ( 1 + e^{\eta_i}) + \log \binom{m_i}{y_i} \right] \\
+&=& \sum_{i=1}^n \left[ y_i \mathbf{x}_i^T \boldsymbol{\beta} - m_i \log ( 1 + e^{\mathbf{x}_i^T \boldsymbol{\beta}}) + \log \binom{m_i}{y_i} \right].
+\end{eqnarray*}
+$$
+
+So if we use the Bernoulli model with weights $(y_{i}, m_{i}-y_{i})$, the number of `success` is $y_{i}$ and the number of `failure` is $m_{i} - y_{i}$. The log-likelihood is:
+$$
+\begin{eqnarray*}
+\ell(\boldsymbol{\beta}) &=& \sum_{i}^n \log \left[p_{i}^{y_{i}} (1 - p_{i})^{m_{i} - y_{i}}\right] \\
+&=& \sum_{i=1}^n \left[ y_{i} \log p_{i} + (m_{i} - y_{i}) \log (1 - p_{i}) \right] \\
+&=& \sum_{i=1}^n \left[ y_{i} \log \frac{e^{\eta_{i}}}{1 + e^{\eta_{i}}} + (m_{i} - y_{i}) \log \frac{1}{1 + e^{\eta_{i}}}  \right] \\
+&=& \sum_{i=1}^n \left[ y_{i} \eta_{i} - m_{i}\log (1 + e^{\eta_{i}}) \right] \\
+&=& \sum_{i=1}^n \left[ y_{i} \mathbf{x}_{i}^{T} \boldsymbol{\beta} - m_{i}\log (1 + e^{\mathbf{x}_{i}^{T} \boldsymbol{\beta}}) \right]
+\end{eqnarray*}
+$$
+If we reformat the data to have $N = \sum_{i=1}^n m_i$ rows, with the binary outcome to represent there are $N = \sum_{i=1}^n m_i$ Bernoulli trials conducted, then for each observation $i$, the number of `success` $y_{i}$ = $\sum_{j=1}^{m_{i}} y_{ij}$, where $y_{ij}$ is the binary outcome for the $j$-th trial of observation $i$. The log-likelihood is:
+$$
+\begin{eqnarray*}
+\ell(\boldsymbol{\beta}) &=& \sum_{i=1}^n \sum_{j=1}^{m_{i}} \log \left[p_{i}^{y_{ij}} (1 - p_{i})^{1 - y_{ij}}\right] \\
+&=& \sum_{i=1}^n \sum_{j=1}^{m_{i}} \left[ y_{ij} \log p_{i} + (1 - y_{ij}) \log (1 - p_{i}) \right] \\
+&=& \sum_{i=1}^n \left [\log p_{i}\sum_{j=1}^{m_{i}}y_{ij} + \log (1 - p_{i}) \sum_{j=1}^{m_{i}}(1 - y_{ij}) \right] \\
+&=& \sum_{i=1}^n \left[ y_{i} \log p_{i} + (m_{i} - y_{i}) \log (1 - p_{i}) \right] \\
+&=& \sum_{i=1}^n \left[ y_{i} \log \frac{e^{\eta_{i}}}{1 + e^{\eta_{i}}} + (m_{i} - y_{i}) \log \frac{1}{1 + e^{\eta_{i}}}  \right] \\
+&=& \sum_{i=1}^n \left[ y_{i} \eta_{i} - m_{i}\log (1 + e^{\eta_{i}}) \right] \\
+&=& \sum_{i=1}^n \left[ y_{i} \mathbf{x}_{i}^{T} \boldsymbol{\beta} - m_{i}\log (1 + e^{\mathbf{x}_{i}^{T} \boldsymbol{\beta}}) \right]
+\end{eqnarray*}
+$$
+So the log-likelihood for above model is equivalent to the Binomial model and Bernoulli model with weights if we do not consider the constant term $\log \binom{m_i}{y_i}$.
+
+
+
+
