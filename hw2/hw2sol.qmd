@@ -359,30 +359,15 @@ Find the best sub-model using the lasso with cross validation.
 
 **Answer:** Here I reformat the data to have $N = \sum_{i=1}^n m_i$ rows, with the binary outcome to represent there are $N = \sum_{i=1}^n m_i$ Bernoulli trials conducted. 
 ```{r}
-county_long <- data.frame()
-
-for (i in 1:nrow(county_data)) {
-  row <- county_data[i, ]
-  death_num <- row$deaths
-  row <- row[rep(1, row$confirmed), ]
-  row$deaths[1:death_num] <- 1
-  row$deaths[(death_num + 1):nrow(row)] <- 0
-  county_long <- rbind(county_long, row)
-}
-
-county_long <- county_long |>
-  mutate(state = as.character(state)) |>
-  mutate(deaths = as.factor(deaths))
-```
-
-```{r, eval = FALSE}
-# transform the dataset into a weighted Bernoulli data set
-
 obs_wt = c(rbind(county_data$deaths, county_data$confirmed - county_data$deaths))
-county_long = county_data |>
+county_long <- county_data |> 
   slice(rep(1:n(), each = 2)) |> # replicate each row twice
   mutate(deaths = rep(c(1, 0), nrow(county_data))) |>
-  mutate(obs_wt = obs_wt) |>
+  mutate(obs_wt = obs_wt)
+
+county_long <- county_long |>
+  filter(obs_wt > 0) |>
+  uncount(weights = obs_wt) |>
   mutate(state = as.character(state)) |>
   mutate(deaths = as.factor(deaths))
 ```
