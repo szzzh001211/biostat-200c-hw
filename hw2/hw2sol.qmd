@@ -391,7 +391,6 @@ logit_recipe <-
   recipe(
     deaths ~ .,
     weights = obs_wt,
-    family = binomial,
     data = train_county
   ) |>
   step_rm(county) |>
