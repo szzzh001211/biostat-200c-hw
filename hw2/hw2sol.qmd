@@ -343,7 +343,13 @@ county_data |>
 Find the best sub-model using the AIC criterion.
 
 ```{r}
-step(covid_model, trace = F)
+aic_model <- step(covid_model, trace = F)
+
+aic_model |>
+  tbl_regression(intercept = T) |>
+  bold_labels() |>
+  bold_p(t = 0.05) |>
+  suppressWarnings()
 ```
 **Answer:** The best model is the model dropped `percent_adults_with_obesity`, `percent_with_access_to_exercise_opportunities`, 
 `overcrowding`, `average_traffic_volume_per_meter_of_major_roadways`, `percent_65_and_over`, `percent_asian`, and `percent_rural`.
@@ -359,27 +365,113 @@ obs_wt = c(rbind(county_data$deaths, county_data$confirmed - county_data$deaths)
 county_long = county_data |>
   slice(rep(1:n(), each = 2)) |> # replicate each row twice
   mutate(deaths = rep(c(1, 0), nrow(county_data))) |>
-  mutate(obs_wt = obs_wt)
+  mutate(obs_wt = obs_wt) |>
+  mutate(state = as.character(state)) |>
+  mutate(deaths = as.factor(deaths))
 ```
 
-```{r, eval = FALSE}
-library(glmnet)
-library(caret)
+```{r}
+library(tidymodels)
 
-state_dummy <- model.matrix(~ state - 1, data = county_long)
+set.seed(5)
 
-x_all <- model.matrix(deaths ~ -1 + . -state - county - confirmed - obs_wt, 
-                      data = county_long)
-x_all <- cbind(state_dummy, x_all)
-y_all <- county_long$deaths
+data_split <- initial_split(
+  county_long, 
+  strata = "deaths", 
+  prop = 0.7)
 
-covid_lasso <- cv.glmnet(x_all, y_all, alpha = 1, 
-                         weights = county_long$obs_wt, family = "binomial", 
-                         nfolds = 5)
+data_split
 
+train_county <- training(data_split)
+test_county <- testing(data_split)
+```
 
-plot(covid_lasso)
-coef(covid_lasso, s = "lambda.min")
+```{r}
+logit_recipe <- 
+  recipe(
+    deaths ~ .,
+    weights = obs_wt,
+    family = binomial,
+    data = train_county
+  ) |>
+  step_rm(county) |>
+  step_rm(confirmed) |>
+  step_rm(obs_wt) |>
+  # create traditional dummy variables
+  step_dummy(all_nominal_predictors(), -all_outcomes()) |>
+  # zero-variance filter
+  step_zv(all_numeric_predictors()) |>
+  # center and scale numeric data
+  step_normalize(all_numeric_predictors())
+
+logit_recipe
+```
+
+```{r}
+logit_mod <- 
+  logistic_reg(
+    penalty = tune(), 
+    mixture = 1
+  ) |>
+  set_engine("glmnet", standardize = FALSE)
+logit_mod
+```
+
+```{r}
+logit_wf <- workflow() |>
+  add_recipe(logit_recipe) |>
+  add_model(logit_mod)
+logit_wf
+```
+
+```{r}
+param_grid <- grid_regular(
+  penalty(range = c(-3, 0)), 
+  levels = 20
+  ) |>
+  print()
+```
+```{r}
+set.seed(5)
+
+folds <- vfold_cv(train_county, v = 5)
+folds
+```
+
+```{r}
+logit_fit <- logit_wf |>
+  tune_grid(
+    resamples = folds,
+    grid = param_grid,
+    metrics = metric_set(roc_auc, accuracy)
+    )
+
+logit_fit |>
+  collect_metrics() |>
+  print(width = Inf) |>
+  filter(.metric == "roc_auc") |>
+  ggplot(mapping = aes(x = penalty, y = mean)) +
+  geom_point() +
+  labs(x = "Penalty", y = "CV AUC") +
+  scale_x_log10()
+```
+
+```{r}
+best_logit <- logit_fit |>
+  select_best("roc_auc")
+
+final_wf <- logit_wf |>
+  finalize_workflow(best_logit)
+
+final_fit <- 
+  final_wf |>
+  last_fit(data_split)
+
+final_fit |>
+  collect_metrics()
+
+tidy(extract_model(final_fit)) |>
+  filter(lambda > 0.001 & lambda < 0.0011)
 ```
 ## Q2. Odds ratios
 
@@ -435,6 +527,11 @@ The `infert` dataset presents data from a study of secondary infertility (failur
 
 (a) Construct cross-classified tables by number of spontaneous and induced abortions separately for cases and controls. Comment on the differences between the two tables.
 
+```{r}
+xtabs(~ spontaneous + induced + case, infert)
+```
+**Answer:** There are more control cases with no spontaneous or induced abortions than the infertile cases. Both case and control groups have no observation with 2 or more spontaneous abortions and 2 or more induced abortions.
+
 (b) Fit a binary response model with only spontaneous and induced as predictors. Determine the statistical significance of these predictors. Express the effects of the predictors in terms of odds.
 
 ```{r}
@@ -445,9 +542,8 @@ lmod1 |>
   bold_labels() |>
   bold_p(t = 0.05)
 ```
-**Answer:** The p-value of `spontaneous` is $<0.001$ so it is a significant predictor. Every one unit increase in the number of prior spontaneous abortions increases the odds of being a case by a factor of $e^{1.2} = 3.32$.\
-The p-value of `induced` is $0.042<0.05$ so it is also a significant predictor. Every one unit increase in the number of prior induced abortions increases the odds of being a case by a factor of $e^{0.42} = 1.52$.
-
+**Answer:** The p-value of `spontaneous` is $<0.001$ so it is a significant predictor. Every one unit increase in the number of prior spontaneous abortions increases the odds of being a case by a factor of $e^{1.2} = 3.32$, controlling for all other predictors.\
+The p-value of `induced` is $0.042<0.05$ so it is also a significant predictor. Every one unit increase in the number of prior induced abortions increases the odds of being a case by a factor of $e^{0.42} = 1.52$, controlling for all other predictors.
 
 (c) Fit a binary response model with only education, age and parity as predictors. Explain how the significance (or lack thereof) of these predictors should be interpreted.
 
@@ -459,6 +555,7 @@ lmod2 |>
   bold_labels() |>
   bold_p(t = 0.05)
 ```
+**Answer:** The p-values of `education`, `age` and `parity` are all $\ge 0.9$ so none of them are significant predictors. This means that the odds of being a case does not change with the level of education, age or parity.
 
 (d) Now put all five predictors in a binary response model. Interpret the results in terms of odds.
 
@@ -471,6 +568,13 @@ lmod3 |>
   bold_labels() |>
   bold_p(t = 0.05)
 ```
+**Answer:** Every one unit increase in the number of prior spontaneous abortions increases the odds of being a case by a factor of $e^{2} = 7.39$, controlling for all other predictors.\
+Every one unit increase in the number of prior induced abortions increases the odds of being a case by a factor of $e^{1.3} = 3.67$, controlling for all other predictors.\
+Every one year increase in age increases the odds of being a case by a factor of $e^{0.04} = 1.04$, controlling for all other predictors.\
+Every one unit increase in the number of parity decrease the odds of being a case by a factor of $e^{-0.83} = 0.436$, controlling for all other predictors.\
+The odds of being a case decreases by a factor of $e^{-1} = 0.368$ for education level 6-11 years compared to education level 0-5 years, controlling for all other predictors.\
+The odds of being a case decreases by a factor of $e^{-1.4} = 0.247$ for education level 12+ years compared to education level 0-5 years, controlling for all other predictors.
+
 
 (e) Fit a matched case control model appropriate to the data. Interpret the output and compare the odds to those found in the previous model.
 
@@ -484,11 +588,12 @@ lmod4 |>
   bold_labels() |>
   bold_p(t = 0.05)
 ```
+**Answer:** The coefficients and p-values do not change much from the previous model. Every one unit increase in the number of prior spontaneous abortions increases the odds of being a case by a factor of $e^{2} = 7.39$, controlling for all other predictors. Every one unit increase in the number of prior induced abortions increases the odds of being a case by a factor of $e^{1.3} = 3.67$, controlling for all other predictors.
 
 (f) The spontaneous and induced predictors could be viewed as ordinal due to the grouping in the highest level. Refit the model using ordinal factors rather than numerical variables for these two predictors. Is there evidence that the ordinal representation is necessary?
 
 ```{r}
-lmod5 <- clogit(case ~ as.factor(spontaneous) + as.factor(induced) + 
+lmod5 <- clogit(case ~ ordered(spontaneous) + ordered(induced) + 
                strata(stratum), data = infert)
 
 lmod5 |>
@@ -496,6 +601,5 @@ lmod5 |>
   bold_labels() |>
   bold_p(t = 0.05)
 ```
-
-
+**Answer:** When considering lienar effects, the p-values of `ordered(spontaneous)` and `ordered(induced)` are both $<0.001$. This means that the linear effects of these two predictors are significant. When considering the quadratic effects, the p-values of `ordered(spontaneous)` and `ordered(induced)` are $0.8$ and $>0.9$, respectively. This means that the quadratic effects of these two predictors are not significant. So the ordinal representation is not necessary because we can check linear effects even if we do not use ordinal factors.
 
