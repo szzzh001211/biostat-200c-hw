@@ -240,6 +240,10 @@ With acknowledgement of these severe limitations, we continue to use `deaths/con
 
 Read and run above code to generate a data frame `county_data` that includes county-level COVID-19 confirmed cases and deaths, demographic, and health related information. 
 
+```{r}
+county_data
+```
+
 ### Q1.2 
 
 What assumptions of logistic regression may be violated by this data set?
@@ -281,11 +285,11 @@ Apply analysis of deviance to (1) evaluate the goodness of fit of the model and 
 ```{r}
 pchisq(covid_model$deviance, covid_model$df.residual, lower = FALSE)
 ```
-**Answer:** The p-value is less than 0.05, which means that the model does not have an adequate fit.
+**Answer:** The p-value is very small, which means that the model does not have an adequate fit.
 ```{r}
 pchisq(covid_model$null.deviance - covid_model$deviance, 2, lower.tail = FALSE)
 ```
-**Answer:** The p-value is less than 0.05, which means that the model is significantly better than the intercept-only model.
+**Answer:** The p-value is less than 0.05 and close to 0, which means that the model is significantly better than the intercept-only model.
 
 ### Q1.6
 
@@ -317,14 +321,9 @@ county_data |>
          linpred = predict(covid_model, type = "link")) %>%
   ggplot + 
   geom_point(mapping = aes(x = linpred, y = devres)) +
-  labs(x = "Fitted values", y = "Deviance residual")
-
-halfnorm(hatvalues(covid_model))
-
-county_data%>%
-  slice(c(367, 931))
+  labs(x = "Linear predictor", y = "Deviance residual")
 ```
-**Answer:** It seems that there is on potential outlier with a residual less than -5.0.
+**Answer:** It seems that there is on potential outlier with a residual less than -5.0. There are some potential outliers with small linear predictor.
 
 ### Q1.9
 
@@ -358,7 +357,25 @@ aic_model |>
 
 Find the best sub-model using the lasso with cross validation.
 
+**Answer:** Here I reformat the data to have $N = \sum_{i=1}^n m_i$ rows, with the binary outcome to represent there are $N = \sum_{i=1}^n m_i$ Bernoulli trials conducted. 
 ```{r}
+county_long <- data.frame()
+
+for (i in 1:nrow(county_data)) {
+  row <- county_data[i, ]
+  death_num <- row$deaths
+  row <- row[rep(1, row$confirmed), ]
+  row$deaths[1:death_num] <- 1
+  row$deaths[(death_num + 1):nrow(row)] <- 0
+  county_long <- rbind(county_long, row)
+}
+
+county_long <- county_long |>
+  mutate(state = as.character(state)) |>
+  mutate(deaths = as.factor(deaths))
+```
+
+```{r, eval = FALSE}
 # transform the dataset into a weighted Bernoulli data set
 
 obs_wt = c(rbind(county_data$deaths, county_data$confirmed - county_data$deaths))
@@ -390,12 +407,12 @@ test_county <- testing(data_split)
 logit_recipe <- 
   recipe(
     deaths ~ .,
-    weights = obs_wt,
+    #weights = obs_wt,
     data = train_county
   ) |>
   step_rm(county) |>
   step_rm(confirmed) |>
-  step_rm(obs_wt) |>
+  #step_rm(obs_wt) |>
   # create traditional dummy variables
   step_dummy(all_nominal_predictors(), -all_outcomes()) |>
   # zero-variance filter
@@ -425,7 +442,7 @@ logit_wf
 
 ```{r}
 param_grid <- grid_regular(
-  penalty(range = c(-3, 0)), 
+  penalty(range = c(-7, -3)), 
   levels = 20
   ) |>
   print()
@@ -524,13 +541,15 @@ So $\log \phi = \alpha_{1} - \alpha_{2}$, which is constant over all tables.
 ## Q3. ELMR Chapter 4 Excercise 3
 The `infert` dataset presents data from a study of secondary infertility (failure to conceive after at least one previous conception). The factors of interest are induced abortions and spontaneous abortions (e.g., miscarriages). The study matched each case of infertility with two controls who were not infertile, matching on age, education and parity (number of prior pregnancies).
 
+### Q3.1
 (a) Construct cross-classified tables by number of spontaneous and induced abortions separately for cases and controls. Comment on the differences between the two tables.
 
 ```{r}
 xtabs(~ spontaneous + induced + case, infert)
 ```
-**Answer:** There are more control cases with no spontaneous or induced abortions than the infertile cases. Both case and control groups have no observation with 2 or more spontaneous abortions and 2 or more induced abortions.
+**Answer:** There are more control cases with no spontaneous or induced abortions than the infertile cases. Both case and control groups have no observation with 2 or more spontaneous abortions and 2 or more induced abortions. For control group, there are more people with induced abortions than spontaneous abortions. For case group, there are more people with spontaneous abortions than induced abortions.
 
+### Q3.2
 (b) Fit a binary response model with only spontaneous and induced as predictors. Determine the statistical significance of these predictors. Express the effects of the predictors in terms of odds.
 
 ```{r}
@@ -544,6 +563,7 @@ lmod1 |>
 **Answer:** The p-value of `spontaneous` is $<0.001$ so it is a significant predictor. Every one unit increase in the number of prior spontaneous abortions increases the odds of being a case by a factor of $e^{1.2} = 3.32$, controlling for all other predictors.\
 The p-value of `induced` is $0.042<0.05$ so it is also a significant predictor. Every one unit increase in the number of prior induced abortions increases the odds of being a case by a factor of $e^{0.42} = 1.52$, controlling for all other predictors.
 
+### Q3.3
 (c) Fit a binary response model with only education, age and parity as predictors. Explain how the significance (or lack thereof) of these predictors should be interpreted.
 
 ```{r}
@@ -556,6 +576,7 @@ lmod2 |>
 ```
 **Answer:** The p-values of `education`, `age` and `parity` are all $\ge 0.9$ so none of them are significant predictors. This means that the odds of being a case does not change with the level of education, age or parity.
 
+### Q3.4
 (d) Now put all five predictors in a binary response model. Interpret the results in terms of odds.
 
 ```{r}
@@ -571,10 +592,10 @@ lmod3 |>
 Every one unit increase in the number of prior induced abortions increases the odds of being a case by a factor of $e^{1.3} = 3.67$, controlling for all other predictors.\
 Every one year increase in age increases the odds of being a case by a factor of $e^{0.04} = 1.04$, controlling for all other predictors.\
 Every one unit increase in the number of parity decrease the odds of being a case by a factor of $e^{-0.83} = 0.436$, controlling for all other predictors.\
-The odds of being a case decreases by a factor of $e^{-1} = 0.368$ for education level 6-11 years compared to education level 0-5 years, controlling for all other predictors.\
-The odds of being a case decreases by a factor of $e^{-1.4} = 0.247$ for education level 12+ years compared to education level 0-5 years, controlling for all other predictors.
+The odds of being a case decreases by a factor of $e^{-1} = 0.368$ for people with education level 6-11 years compared to people with education level 0-5 years, controlling for all other predictors.\
+The odds of being a case decreases by a factor of $e^{-1.4} = 0.247$ for people with education level 12+ years compared to people with education level 0-5 years, controlling for all other predictors.
 
-
+### Q3.5
 (e) Fit a matched case control model appropriate to the data. Interpret the output and compare the odds to those found in the previous model.
 
 ```{r}
@@ -589,6 +610,7 @@ lmod4 |>
 ```
 **Answer:** The coefficients and p-values do not change much from the previous model. Every one unit increase in the number of prior spontaneous abortions increases the odds of being a case by a factor of $e^{2} = 7.39$, controlling for all other predictors. Every one unit increase in the number of prior induced abortions increases the odds of being a case by a factor of $e^{1.3} = 3.67$, controlling for all other predictors.
 
+### Q3.6
 (f) The spontaneous and induced predictors could be viewed as ordinal due to the grouping in the highest level. Refit the model using ordinal factors rather than numerical variables for these two predictors. Is there evidence that the ordinal representation is necessary?
 
 ```{r}
