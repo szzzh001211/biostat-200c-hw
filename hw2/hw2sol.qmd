@@ -287,7 +287,8 @@ pchisq(covid_model$deviance, covid_model$df.residual, lower = FALSE)
 ```
 **Answer:** The p-value is very small, which means that the model does not have an adequate fit.
 ```{r}
-pchisq(covid_model$null.deviance - covid_model$deviance, 2, lower.tail = FALSE)
+pchisq(covid_model$null.deviance - covid_model$deviance, 
+       covid_model$df.null - covid_model$df.residual, lower.tail = FALSE)
 ```
 **Answer:** The p-value is less than 0.05 and close to 0, which means that the model is significantly better than the intercept-only model.
 
@@ -472,7 +473,7 @@ final_fit |>
   collect_metrics()
 
 tidy(extract_model(final_fit)) |>
-  filter(lambda > 0.001 & lambda < 0.0011)
+  print()
 ```
 ## Q2. Odds ratios
 
@@ -545,8 +546,8 @@ lmod1 |>
   bold_labels() |>
   bold_p(t = 0.05)
 ```
-**Answer:** The p-value of `spontaneous` is $<0.001$ so it is a significant predictor. Every one unit increase in the number of prior spontaneous abortions increases the odds of being a case by a factor of $e^{1.2} = 3.32$, controlling for all other predictors.\
-The p-value of `induced` is $0.042<0.05$ so it is also a significant predictor. Every one unit increase in the number of prior induced abortions increases the odds of being a case by a factor of $e^{0.42} = 1.52$, controlling for all other predictors.
+**Answer:** The p-value of `spontaneous` is $<0.001$ so it is a significant predictor. Every one unit increase in the number of prior spontaneous abortions increases the odds of being an infertile case by a factor of $e^{1.2} = 3.32$, controlling for all other predictors.\
+The p-value of `induced` is $0.042<0.05$ so it is also a significant predictor. Every one unit increase in the number of prior induced abortions increases the odds of being an infertile case by a factor of $e^{0.42} = 1.52$, controlling for all other predictors.
 
 ### Q3.3
 (c) Fit a binary response model with only education, age and parity as predictors. Explain how the significance (or lack thereof) of these predictors should be interpreted.
@@ -573,12 +574,17 @@ lmod3 |>
   bold_labels() |>
   bold_p(t = 0.05)
 ```
-**Answer:** Every one unit increase in the number of prior spontaneous abortions increases the odds of being a case by a factor of $e^{2} = 7.39$, controlling for all other predictors.\
-Every one unit increase in the number of prior induced abortions increases the odds of being a case by a factor of $e^{1.3} = 3.67$, controlling for all other predictors.\
-Every one year increase in age increases the odds of being a case by a factor of $e^{0.04} = 1.04$, controlling for all other predictors.\
-Every one unit increase in the number of parity decrease the odds of being a case by a factor of $e^{-0.83} = 0.436$, controlling for all other predictors.\
-The odds of being a case decreases by a factor of $e^{-1} = 0.368$ for people with education level 6-11 years compared to people with education level 0-5 years, controlling for all other predictors.\
-The odds of being a case decreases by a factor of $e^{-1.4} = 0.247$ for people with education level 12+ years compared to people with education level 0-5 years, controlling for all other predictors.
+**Answer:** Every one unit increase in the number of prior spontaneous abortions increases the odds of being an infertile case by a factor of $e^{2} = 7.39$, controlling for all other predictors.
+
+Every one unit increase in the number of prior induced abortions increases the odds of being an infertile case by a factor of $e^{1.3} = 3.67$, controlling for all other predictors.
+
+Every one year increase in age increases the odds of being an infertile case by a factor of $e^{0.04} = 1.04$, controlling for all other predictors.
+
+Every one unit increase in the number of parity decrease the odds of being an infertile case by a factor of $e^{-0.83} = 0.436$, controlling for all other predictors.
+
+The odds of being an infertile case is estimated to decrease by a factor of $e^{-1} = 0.368$ for people with education level 6-11 years compared to people with education level 0-5 years, controlling for all other predictors.
+
+The odds of being an infertile case is estimated to decrease by a factor of $e^{-1.4} = 0.247$ for people with education level 12+ years compared to people with education level 0-5 years, controlling for all other predictors.
 
 ### Q3.5
 (e) Fit a matched case control model appropriate to the data. Interpret the output and compare the odds to those found in the previous model.
@@ -593,19 +599,27 @@ lmod4 |>
   bold_labels() |>
   bold_p(t = 0.05)
 ```
-**Answer:** The coefficients and p-values do not change much from the previous model. Every one unit increase in the number of prior spontaneous abortions increases the odds of being a case by a factor of $e^{2} = 7.39$, controlling for all other predictors. Every one unit increase in the number of prior induced abortions increases the odds of being a case by a factor of $e^{1.3} = 3.67$, controlling for all other predictors.
+**Answer:** The coefficients change much from the previous model. Every one unit increase in the number of prior spontaneous abortions increases the odds of being an infertile case by a factor of $e^{2} = 7.39$, controlling for all other predictors. 
+
+Every one unit increase in the number of prior induced abortions increases the odds of being an infertile case by a factor of $e^{1.3} = 3.67$, controlling for all other predictors. 
+
+These changes may be because case control model can control the confounding factors more effectively.
 
 ### Q3.6
 (f) The spontaneous and induced predictors could be viewed as ordinal due to the grouping in the highest level. Refit the model using ordinal factors rather than numerical variables for these two predictors. Is there evidence that the ordinal representation is necessary?
 
 ```{r}
-lmod5 <- clogit(case ~ ordered(spontaneous) + ordered(induced) + 
-               strata(stratum), data = infert)
+lmod5 <- glm(case ~ ordered(spontaneous) + ordered(induced), family = binomial,
+               data = infert)
 
 lmod5 |>
   tbl_regression() |>
   bold_labels() |>
   bold_p(t = 0.05)
 ```
-**Answer:** When considering lienar effects, the p-values of `ordered(spontaneous)` and `ordered(induced)` are both $<0.001$. This means that the linear effects of these two predictors are significant. When considering the quadratic effects, the p-values of `ordered(spontaneous)` and `ordered(induced)` are $0.8$ and $>0.9$, respectively. This means that the quadratic effects of these two predictors are not significant. So the ordinal representation is not necessary because we can check linear effects even if we do not use ordinal factors.
+```{r}
+pchisq(lmod1$deviance - lmod5$deviance, lmod1$df.residual - lmod5$df.residual, 
+       lower.tail = FALSE)
+```
+**Answer:** Considering the quadratic effects, the p-values of `ordered(spontaneous)` and `ordered(induced)` are both $>0.05$. And using deviance test to compare this model with the model using numerical variables before, the p-value is $0.93>0.05$. So the ordinal representation is not necessary.
 
