@@ -248,7 +248,7 @@ county_data
 
 What assumptions of logistic regression may be violated by this data set?
 
-**Answer:** It seems that if we use logistic regression then we will use binomial logistic regression and we assume `confirmed` is batch size and `deaths` is the number of success for each county. Binomial distribution arises when we assume that the trials in a batch are independent and share the same “success” probability. However, in this case, the confirmed cases are not independent across counties. For example, if a county has a high number of confirmed cases, then the neighboring counties are more likely to have a high number of confirmed cases. This violates the assumption of independence.
+**Answer:** It seems that if we use logistic regression then we will use binomial logistic regression and we assume `confirmed` is batch size and `deaths` is the number of success for each observation. Binomial distribution arises when we assume that the trials in a batch are independent and share the same “success” probability. However, in this case, the confirmed cases may not be independent across observations. This violates the assumption of independence.
 
 ### Q1.3 
 
@@ -496,7 +496,7 @@ Coefficient of `induced` = $1.3$. Every one unit increase in the number of prior
 
 Coefficient of `age` = $0.04$. Every one year increase in age increases the odds of being an infertile case by a factor of $e^{0.04} = 1.04$, controlling for all other predictors.
 
-Coefficient of `parity` = $-0.83$. Every one unit increase in the number of parity decrease the odds of being an infertile case by a factor of $e^{-0.83} = 0.436$, controlling for all other predictors.
+Coefficient of `parity` = $-0.83$. Every one unit increase in the number of parity decreases the odds of being an infertile case by a factor of $e^{-0.83} = 0.436$, controlling for all other predictors.
 
 Coefficient of `education 6-11yrs` = $-1$. The odds of being an infertile case decrease by a factor of $e^{-1} = 0.368$ for people with education level 6-11 years compared to people with education level 0-5 years, controlling for all other predictors.
 
