@@ -375,109 +375,19 @@ county_long <- county_long |>
 ```
 
 ```{r}
-library(tidymodels)
-
-set.seed(5)
-
-data_split <- initial_split(
-  county_long, 
-  strata = "deaths", 
-  prop = 0.7)
-
-data_split
-
-train_county <- training(data_split)
-test_county <- testing(data_split)
+library(glmnet)
+library(caret)
+state_dummy <- model.matrix(~ state - 1, data = county_long)
+x_all <- model.matrix(deaths ~ -1 + . -state - county - confirmed, 
+                      data = county_long)
+x_all <- cbind(state_dummy, x_all)
+y_all <- county_long$deaths
+covid_lasso <- cv.glmnet(x_all, y_all, alpha = 1, family = "binomial", 
+                         nfolds = 5, type.measure = "auc")
+plot(covid_lasso)
+coef(covid_lasso, s = "lambda.min")
 ```
 
-```{r}
-logit_recipe <- 
-  recipe(
-    deaths ~ .,
-    #weights = obs_wt,
-    data = train_county
-  ) |>
-  step_rm(county) |>
-  step_rm(confirmed) |>
-  #step_rm(obs_wt) |>
-  # create traditional dummy variables
-  step_dummy(all_nominal_predictors(), -all_outcomes()) |>
-  # zero-variance filter
-  step_zv(all_numeric_predictors()) |>
-  # center and scale numeric data
-  step_normalize(all_numeric_predictors())
-
-logit_recipe
-```
-
-```{r}
-logit_mod <- 
-  logistic_reg(
-    penalty = tune(), 
-    mixture = 1
-  ) |>
-  set_engine("glmnet", standardize = FALSE)
-logit_mod
-```
-
-```{r}
-logit_wf <- workflow() |>
-  add_recipe(logit_recipe) |>
-  add_model(logit_mod)
-logit_wf
-```
-
-```{r}
-param_grid <- grid_regular(
-  penalty(range = c(-7, -3)), 
-  levels = 20
-  ) |>
-  print()
-```
-```{r}
-set.seed(5)
-
-folds <- vfold_cv(train_county, v = 5)
-folds
-```
-
-```{r}
-logit_fit <- logit_wf |>
-  tune_grid(
-    resamples = folds,
-    grid = param_grid,
-    metrics = metric_set(roc_auc, accuracy)
-    )
-
-logit_fit |>
-  collect_metrics() |>
-  print(width = Inf) |>
-  filter(.metric == "roc_auc") |>
-  ggplot(mapping = aes(x = penalty, y = mean)) +
-  geom_point() +
-  labs(x = "Penalty", y = "CV AUC") +
-  scale_x_log10()
-```
-
-```{r}
-best_logit <- logit_fit |>
-  select_best("roc_auc")
-best_logit
-
-final_wf <- logit_wf |>
-  finalize_workflow(best_logit)
-final_wf
-
-final_fit <- 
-  final_wf |>
-  last_fit(data_split)
-
-final_fit |>
-  collect_metrics()
-
-tidy(extract_model(final_fit)) |>
-  filter(lambda > 0.001 & lambda < 0.0011)
-```
 ## Q2. Odds ratios
 
 Consider a $2 \times 2$ contingency table from a prospective study in which people who were or were not exposed to some pollutant are followed up and, after several years, categorized according to the presense or absence of a disease. Following table shows the probabilities for each cell. The odds of disease for either exposure group is $O_i = \pi_i / (1 - \pi_i)$, for $i = 1,2$, and so the odds ratio is
@@ -605,11 +515,11 @@ lmod4 |>
   bold_labels() |>
   bold_p(t = 0.05)
 ```
-**Answer:** The coefficients change much from the previous model. Coefficient of `spontaneous` = $2$. Every one unit increase in the number of prior spontaneous abortions increases the odds of being an infertile case by a factor of $e^{2} = 7.39$, controlling for all other predictors. 
+**Answer:** The coefficients are larger than the previous model. Coefficient of `spontaneous` = $2$. Every one unit increase in the number of prior spontaneous abortions increases the odds of being an infertile case by a factor of $e^{2} = 7.39$, controlling for all other predictors. 
 
 Coefficient of `induced` = $1.3$. Every one unit increase in the number of prior induced abortions increases the odds of being an infertile case by a factor of $e^{1.3} = 3.67$, controlling for all other predictors. 
 
-These changes may be because case control model can control the confounding factors more effectively and then the effects of spontaneous and induced abortions xxx.
+These changes may be because matched case control model can control the confounding factors more effectively.
 
 ### Q3.6
 (f) The spontaneous and induced predictors could be viewed as ordinal due to the grouping in the highest level. Refit the model using ordinal factors rather than numerical variables for these two predictors. Is there evidence that the ordinal representation is necessary?
