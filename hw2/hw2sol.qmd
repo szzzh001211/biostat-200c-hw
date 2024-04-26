@@ -545,7 +545,7 @@ xtabs(~ spontaneous + induced + case, infert)
 lmod1 <- glm(case ~ spontaneous + induced, data = infert, family = binomial)
 
 lmod1 |>
-  tbl_regression() |>
+  tbl_regression(intercept = T) |>
   bold_labels() |>
   bold_p(t = 0.05)
 ```
@@ -560,7 +560,7 @@ The p-value of `induced` is $0.042<0.05$ so it is also a significant predictor. 
 lmod2 <- glm(case ~ education + age + parity, data = infert, family = binomial)
 
 lmod2 |>
-  tbl_regression() |>
+  tbl_regression(intercept = T) |>
   bold_labels() |>
   bold_p(t = 0.05)
 ```
@@ -574,11 +574,13 @@ lmod3 <- glm(case ~ education + age + parity + spontaneous + induced,
              data = infert, family = binomial)
 
 lmod3 |>
-  tbl_regression() |>
+  tbl_regression(intercept = T) |>
   bold_labels() |>
   bold_p(t = 0.05)
 ```
-**Answer:** Coefficient of `spontaneous` = $2$. Every one unit increase in the number of prior spontaneous abortions increases the odds of being an infertile case by a factor of $e^{2} = 7.39$, controlling for all other predictors.
+**Answer:** Intercept = $-1.1$. The odds of being an infertile case is $e^{-1.1} = 0.33$ when the number of prior spontaneous abortions and induced abortions are 0, age is 0, the number of parity is 0, and education is 0-5 years.
+
+Coefficient of `spontaneous` = $2$. Every one unit increase in the number of prior spontaneous abortions increases the odds of being an infertile case by a factor of $e^{2} = 7.39$, controlling for all other predictors.
 
 Coefficient of `induced` = $1.3$. Every one unit increase in the number of prior induced abortions increases the odds of being an infertile case by a factor of $e^{1.3} = 3.67$, controlling for all other predictors.
 
@@ -599,7 +601,7 @@ library(survival)
 lmod4 <- clogit(case ~ spontaneous + induced + strata(stratum), data = infert)
 
 lmod4 |>
-  tbl_regression() |>
+  tbl_regression(intercept = T) |>
   bold_labels() |>
   bold_p(t = 0.05)
 ```
@@ -617,7 +619,7 @@ lmod5 <- glm(case ~ ordered(spontaneous) + ordered(induced), family = binomial,
                data = infert)
 
 lmod5 |>
-  tbl_regression() |>
+  tbl_regression(intercept = T) |>
   bold_labels() |>
   bold_p(t = 0.05)
 ```
