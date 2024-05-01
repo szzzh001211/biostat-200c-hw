@@ -3111,7 +3111,17 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
   <li><a href="#q1.4" id="toc-q1.4" class="nav-link" data-scroll-target="#q1.4"><span class="header-section-number">1.4</span> Q1.4</a></li>
   </ul></li>
   <li><a href="#q2.-show-negative-binomial-distribution-mean-and-variance" id="toc-q2.-show-negative-binomial-distribution-mean-and-variance" class="nav-link" data-scroll-target="#q2.-show-negative-binomial-distribution-mean-and-variance"><span class="header-section-number">2</span> Q2. Show negative binomial distribution mean and variance</a></li>
-  <li><a href="#q3.-elmr-chapter-5-exercise-5-page-100" id="toc-q3.-elmr-chapter-5-exercise-5-page-100" class="nav-link" data-scroll-target="#q3.-elmr-chapter-5-exercise-5-page-100"><span class="header-section-number">3</span> Q3. ELMR Chapter 5 Exercise 5 (page 100)</a></li>
+  <li><a href="#q3.-elmr-chapter-5-exercise-5-page-100" id="toc-q3.-elmr-chapter-5-exercise-5-page-100" class="nav-link" data-scroll-target="#q3.-elmr-chapter-5-exercise-5-page-100"><span class="header-section-number">3</span> Q3. ELMR Chapter 5 Exercise 5 (page 100)</a>
+  <ul>
+  <li><a href="#q3.1" id="toc-q3.1" class="nav-link" data-scroll-target="#q3.1"><span class="header-section-number">3.1</span> Q3.1</a></li>
+  <li><a href="#q3.2" id="toc-q3.2" class="nav-link" data-scroll-target="#q3.2"><span class="header-section-number">3.2</span> Q3.2</a></li>
+  <li><a href="#q3.3" id="toc-q3.3" class="nav-link" data-scroll-target="#q3.3"><span class="header-section-number">3.3</span> Q3.3</a></li>
+  <li><a href="#q3.4" id="toc-q3.4" class="nav-link" data-scroll-target="#q3.4"><span class="header-section-number">3.4</span> Q3.4</a></li>
+  <li><a href="#q3.5" id="toc-q3.5" class="nav-link" data-scroll-target="#q3.5"><span class="header-section-number">3.5</span> Q3.5</a></li>
+  <li><a href="#q3.6" id="toc-q3.6" class="nav-link" data-scroll-target="#q3.6"><span class="header-section-number">3.6</span> Q3.6</a></li>
+  <li><a href="#q3.7" id="toc-q3.7" class="nav-link" data-scroll-target="#q3.7"><span class="header-section-number">3.7</span> Q3.7</a></li>
+  <li><a href="#q3.8" id="toc-q3.8" class="nav-link" data-scroll-target="#q3.8"><span class="header-section-number">3.8</span> Q3.8</a></li>
+  </ul></li>
   <li><a href="#q4.-uniform-association" id="toc-q4.-uniform-association" class="nav-link" data-scroll-target="#q4.-uniform-association"><span class="header-section-number">4</span> Q4. Uniform association</a></li>
   </ul>
 </nav>
@@ -3157,26 +3167,73 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 <section id="q1.1" class="level3" data-number="1.1">
 <h3 data-number="1.1" class="anchored" data-anchor-id="q1.1"><span class="header-section-number">1.1</span> Q1.1</h3>
 <p>Write down the log-likelihood function.</p>
-<p>We have <span class="math display">\[
+<p><strong>Answer:</strong> We have <span class="math display">\[
 \mathbb{P}(Y_i = y_i) = e^{-\mu_i} \frac{\mu_i^{y_i}}{y_i!}.
 \]</span> So the log-likelihood is <span class="math display">\[
-\ell(\boldsymbol{\beta}) &amp;=&amp; \sum_i y_i \log \mu_i - \mu_i - \log y_i! \\
-&amp;=&amp; \sum_i^n y_i \cdot \mathbf{x}_i^T \boldsymbol{\beta} - e^{\mathbf{x}_i^T \boldsymbol{\beta}} - \log y_i!
+\begin{eqnarray*}
+\ell(\boldsymbol{\beta}) &amp;=&amp; \sum_{i=1}^n y_i \log \mu_i - \mu_i - \log y_i! \\
+&amp;=&amp; \sum_{i=1}^n \left[ y_i \mathbf{x}_i^T \boldsymbol{\beta} - e^{\mathbf{x}_i^T \boldsymbol{\beta}} - \log y_i! \right]
+\end{eqnarray*}
 \]</span></p>
 </section>
 <section id="q1.2" class="level3" data-number="1.2">
 <h3 data-number="1.2" class="anchored" data-anchor-id="q1.2"><span class="header-section-number">1.2</span> Q1.2</h3>
 <p>Derive the gradient vector and Hessian matrix of the log-likelhood function with respect to the regression coefficients <span class="math inline">\(\boldsymbol{\beta}\)</span>.</p>
+<p><strong>Answer:</strong> The gradient is <span class="math display">\[
+\begin{eqnarray*}
+\ell(\boldsymbol{\beta}) &amp;=&amp; \sum_{i=1}^n \left[ y_i \mathbf{x}_i^T \boldsymbol{\beta} - e^{\mathbf{x}_i^T \boldsymbol{\beta}} - \log y_i! \right] \\
+\nabla_{\beta}(\mathbf{x}_{i}^{T} \boldsymbol{\beta}) &amp;=&amp; \nabla_{\beta}(1 \beta_0 + \mathbf{x}_{i1} \beta_1 + \cdots + \mathbf{x}_{iq} \beta_q) &amp;=&amp; \begin{pmatrix} 1 \\ \mathbf{x}_{i1} \\ \vdots \\ \mathbf{x}_{iq} \end{pmatrix} &amp;=&amp; \mathbf{x}_{i} \\
+\nabla_{\beta} \ell(\boldsymbol{\beta}) &amp;=&amp; \sum_{i=1}^n \left[y_{i}\nabla_{\beta} (\mathbf{x}_{i}^{T} \boldsymbol{\beta}) - \nabla_{\beta} (e^{\mathbf{x}_i^T \boldsymbol{\beta}}) \right] \\
+&amp;=&amp; \sum_{i=1}^n \left[y_{i} \mathbf{x}_{i} - e^{\mathbf{x}_{i}^T \boldsymbol{\beta}} \nabla_{\beta} \mathbf{x}_{i}^{T} \boldsymbol{\beta} \right] \\
+&amp;=&amp; \sum_{i=1}^n \left[y_{i} \mathbf{x}_{i} - e^{\mathbf{x}_{i}^T \boldsymbol{\beta}} \mathbf{x}_{i} \right]
+\end{eqnarray*}
+\]</span></p>
+<p>The Hessian matrix is <span class="math display">\[
+\begin{eqnarray*}
+H_{\beta} &amp;=&amp; \nabla^{2}_{\beta} \ell(\boldsymbol{\beta})\\
+&amp;=&amp; \sum_{i=1}^n \left[-\nabla_{\beta}(e^{\mathbf{x}_{i}^T \boldsymbol{\beta}} \mathbf{x}_{i})\right] \\
+&amp;=&amp; \sum_{i=1}^n \left[-\nabla_{\beta}(e^{\mathbf{x}_{i}^T \boldsymbol{\beta}}) \begin{pmatrix} 1 \\ \mathbf{x}_{i1} \\ \vdots \\ \mathbf{x}_{iq} \end{pmatrix}\right] \\
+&amp;=&amp; \sum_{i=1}^n \left[-e^{\mathbf{x}_{i}^{T} \boldsymbol{\beta}} \mathbf{x}_{i} \mathbf{x}_{i}^{T} \right]
+\end{eqnarray*}
+\]</span></p>
 </section>
 <section id="q1.3" class="level3" data-number="1.3">
 <h3 data-number="1.3" class="anchored" data-anchor-id="q1.3"><span class="header-section-number">1.3</span> Q1.3</h3>
 <p>Show that the log-likelihood function of the log-linear model is a concave function in regression coefficients <span class="math inline">\(\boldsymbol{\beta}\)</span>. (Hint: show that the negative Hessian is a positive semidefinite matrix.)</p>
+<p><strong>Answer:</strong> The negative Hessian matrix is as follows: <span class="math display">\[
+\begin{eqnarray*}
+-H_{\beta} = \sum_{i=1}^n \left[e^{\mathbf{x}_{i}^{T} \boldsymbol{\beta}} \mathbf{x}_{i} \mathbf{x}_{i}^{T} \right]
+\end{eqnarray*}
+\]</span> Let <span class="math inline">\(\mathbf{v}\)</span> be any vector such that <span class="math inline">\(\mathbf{v} \in \mathbb{R}^{q}\)</span> and <span class="math inline">\(\mathbf{v} \ne \mathbf{0}\)</span>. So we can get <span class="math display">\[
+\mathbf{v}^{T} (\mathbf{-H_{\beta}}) \mathbf{v} = \mathbf{v}^{T} \left( \sum_{i=1}^n e^{\mathbf{x}_{i}^{T} \boldsymbol{\beta}} \mathbf{x}_{i} \mathbf{x}_{i}^{T}  \right) \mathbf{v} = \sum_{i=1}^n e^{\mathbf{x}_{i}^{T} \boldsymbol{\beta}} (\mathbf{x}_{i}^{T} \mathbf{v})^2 \ge 0,
+\]</span> since <span class="math inline">\(e^{\mathbf{x}_{i}^{T} \boldsymbol{\beta}} \ge 0\)</span> and <span class="math inline">\((\mathbf{x}_{i}^{T} \mathbf{v})^2 \ge 0\)</span>.</p>
+<p>So the negative Hessian is a positive semidefinite matrix and then the log-likelihood function of the log-linear model is a concave function.</p>
 </section>
 <section id="q1.4" class="level3" data-number="1.4">
 <h3 data-number="1.4" class="anchored" data-anchor-id="q1.4"><span class="header-section-number">1.4</span> Q1.4</h3>
 <p>Show that for the fitted values <span class="math inline">\(\widehat{\mu}_i\)</span> from maximum likelihood estimates <span class="math display">\[
 \sum_i \widehat{\mu}_i = \sum_i y_i.
 \]</span> Therefore the deviance reduces to <span class="math display">\[
+D = 2 \sum_i y_i \log \frac{y_i}{\widehat{\mu}_i}.
+\]</span> <strong>Answer:</strong> The deviance for the Poisson regression is <span class="math display">\[
+\begin{eqnarray*}
+  D &amp;=&amp; 2 \sum_i [y_i \log(y_i) - y_i] - 2 \sum_i [y_i \log (\widehat{\mu}_i) - \widehat{\mu}_i] \\
+  &amp;=&amp; 2 \sum_i [y_i \log \frac{y_i}{\widehat{\mu}_i} - (y_i - \widehat{\mu}_i)],
+\end{eqnarray*}
+\]</span> where <span class="math inline">\(\widehat{\mu}_i\)</span> are the fitted values from the model.</p>
+<p>In order to find maximum likelihood estimates, we need to maximize the log-likelihood function. The log-likelihood function is <span class="math display">\[
+\ell(\boldsymbol{\beta}) = \sum_i \left[ y_i \mathbf{x}_i^T \boldsymbol{\beta} - e^{\mathbf{x}_i^T \boldsymbol{\beta}} - \log y_i! \right]
+\]</span> Taking the derivative with respect to <span class="math inline">\(\boldsymbol{\beta}\)</span>, we get <span class="math display">\[
+\begin{eqnarray*}
+\nabla_{\beta} \ell(\boldsymbol{\beta}) &amp;=&amp; \sum_i \left[y_{i} \mathbf{x}_{i} - e^{\mathbf{x}_{i}^T \boldsymbol{\beta}} \mathbf{x}_{i} \right] = 0 \\
+\sum_i y_{i}  &amp;=&amp; \sum_ie^{\mathbf{x}_{i}^T \boldsymbol{\beta}}
+\end{eqnarray*}
+\]</span> Since the fitted values <span class="math inline">\(\widehat{\mu}_i\)</span> are from maximum likelihood estimates, then <span class="math display">\[
+\begin{eqnarray*}
+\sum_i y_{i}  = \sum_ie^{\mathbf{x}_{i}^T \boldsymbol{\beta}} &amp;=&amp; \sum_i \widehat{\mu}_i \\
+\sum_i (y_{i} - \widehat{\mu}_i) &amp;=&amp; 0
+\end{eqnarray*}
+\]</span> So the deviance reduces to <span class="math display">\[
 D = 2 \sum_i y_i \log \frac{y_i}{\widehat{\mu}_i}.
 \]</span></p>
 </section>
@@ -3186,9 +3243,73 @@ D = 2 \sum_i y_i \log \frac{y_i}{\widehat{\mu}_i}.
 <p>Recall the probability mass function of negative binomial distribution is <span class="math display">\[
 \mathbb{P}(Y = y) = \binom{y + r - 1}{r - 1} (1 - p)^r p^y, \quad y = 0, 1, \ldots
 \]</span> Show <span class="math inline">\(\mathbb{E}Y = \mu = rp / (1 - p)\)</span> and <span class="math inline">\(\operatorname{Var} Y = r p / (1 - p)^2\)</span>.</p>
+<p><strong>Answer:</strong> <span class="math inline">\(Y\)</span> is the number of failures until the <span class="math inline">\(r\)</span>th success with probability of failure <span class="math inline">\(p\)</span>. Let <span class="math inline">\(Y_i\)</span> be iid Geometric random variables with probability of failure <span class="math inline">\(p\)</span>. Then <span class="math inline">\(Y = Y_1 + Y_2 + \ldots + Y_r\)</span>. So the expectation of <span class="math inline">\(Y\)</span> is <span class="math inline">\(r \mathbb{E}Y_i\)</span> and the variance of <span class="math inline">\(Y\)</span> is <span class="math inline">\(r \operatorname{Var}Y_i\)</span>. The <span class="math inline">\(pdf\)</span> of <span class="math inline">\(Y_i\)</span> is <span class="math display">\[
+\mathbb{P}(Y_i = y) = p^y (1-p), \quad y = 0, 1, \ldots
+\]</span> So the moment generating function of <span class="math inline">\(Y_i\)</span> is <span class="math display">\[
+\begin{eqnarray*}
+M_{Y_i}(t) &amp;=&amp; \mathbb{E}e^{tY_i} = \sum_{y=0}^{\infty} e^{ty} p^y (1-p) \\
+&amp;=&amp; \sum_{y=0}^{\infty} (pe^{t})^y (1-p) \\
+&amp;=&amp; \frac{1-p}{1 - pe^{t} } \quad \text{for } |pe^{t}| &lt; 1.
+\end{eqnarray*}
+\]</span></p>
+<p>Define <span class="math inline">\(\psi_{Y_i}(t) = log M_{Y_i}(t) = \log \frac{1-p}{1 - pe^{t}} = \log(1-p) - \log(1 - pe^{t})\)</span>. Then <span class="math display">\[
+\begin{eqnarray*}
+EY_i = \psi_{Y_i}&#39;(t)|_{t=0} = \frac{pe^{t}}{1 - pe^{t}}|_{t=0} = \frac{p}{1 - p} \\
+VarY_i = \psi_{Y_i}&#39;&#39;(t)|_{t=0} = \frac{p^2e^{2t}+pe^{t}(1-pe^t)}{(1 - pe^{t})^2}|_{t=0} = \frac{p}{(1 - p)^2}
+\end{eqnarray*}
+\]</span> So <span class="math inline">\(\mathbb{E}Y = \mu = r \mathbb{E}Y_i = \frac{rp}{1 - p}\)</span> and <span class="math inline">\(\operatorname{Var} Y = r \operatorname{Var}Y_i = \frac{r p}{(1 - p)^2}\)</span>.</p>
 </section>
 <section id="q3.-elmr-chapter-5-exercise-5-page-100" class="level2" data-number="3">
 <h2 data-number="3" class="anchored" data-anchor-id="q3.-elmr-chapter-5-exercise-5-page-100"><span class="header-section-number">3</span> Q3. ELMR Chapter 5 Exercise 5 (page 100)</h2>
+<p>The <code>dvisits</code> data comes from the Australian Health Survey of 1977–1978 and consist of 5190 single adults where young and old have been oversampled.</p>
+<section id="q3.1" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="q3.1"><span class="header-section-number">3.1</span> Q3.1</h3>
+<ol type="a">
+<li>Make plots which show the relationship between the response variable, <code>doctorco</code>, and the potential predictors, <code>age</code> and <code>illness</code>.</li>
+</ol>
+</section>
+<section id="q3.2" class="level3" data-number="3.2">
+<h3 data-number="3.2" class="anchored" data-anchor-id="q3.2"><span class="header-section-number">3.2</span> Q3.2</h3>
+<ol start="2" type="a">
+<li>Combine the predictors <code>chcond1</code> and <code>chcond2</code> into a single three-level factor. Make an appropriate plot showing the relationship between this factor and the response. Comment.</li>
+</ol>
+</section>
+<section id="q3.3" class="level3" data-number="3.3">
+<h3 data-number="3.3" class="anchored" data-anchor-id="q3.3"><span class="header-section-number">3.3</span> Q3.3</h3>
+<ol start="3" type="a">
+<li>Build a Poisson regression model with <code>doctorco</code> as the response and <code>sex</code>, <code>age</code>, <code>agesq</code>, <code>income</code>, <code>levyplus</code>, <code>freepoor</code>, <code>freerepa</code>, <code>illness</code>, <code>actdays</code>, <code>hscore</code> and the three-level condition factor as possible predictor variables. Considering the deviance of this model, does this model fit the data?</li>
+</ol>
+</section>
+<section id="q3.4" class="level3" data-number="3.4">
+<h3 data-number="3.4" class="anchored" data-anchor-id="q3.4"><span class="header-section-number">3.4</span> Q3.4</h3>
+<ol start="4" type="a">
+<li>Plot the residuals and the fitted values — why are there lines of observations on the plot? Make a QQ plot of the residuals and comment.</li>
+</ol>
+</section>
+<section id="q3.5" class="level3" data-number="3.5">
+<h3 data-number="3.5" class="anchored" data-anchor-id="q3.5"><span class="header-section-number">3.5</span> Q3.5</h3>
+<ol start="5" type="a">
+<li>Use a stepwise AIC-based model selection method. What sort of person would be predicted to visit the doctor the most under your selected model?</li>
+</ol>
+</section>
+<section id="q3.6" class="level3" data-number="3.6">
+<h3 data-number="3.6" class="anchored" data-anchor-id="q3.6"><span class="header-section-number">3.6</span> Q3.6</h3>
+<ol start="6" type="a">
+<li>For the last person in the dataset, compute the predicted probability distribution for their visits to the doctor, i.e., give the probability they visit 0, 1, 2, etc. times.</li>
+</ol>
+</section>
+<section id="q3.7" class="level3" data-number="3.7">
+<h3 data-number="3.7" class="anchored" data-anchor-id="q3.7"><span class="header-section-number">3.7</span> Q3.7</h3>
+<ol start="7" type="a">
+<li>Tabulate the frequencies of the number of doctor visits. Compute the expected frequencies of doctor visits under your most recent model. Compare the ob- served with the expected frequencies and comment on whether it is worth fitting a zero-inflated count model.</li>
+</ol>
+</section>
+<section id="q3.8" class="level3" data-number="3.8">
+<h3 data-number="3.8" class="anchored" data-anchor-id="q3.8"><span class="header-section-number">3.8</span> Q3.8</h3>
+<ol start="8" type="a">
+<li>Fit a comparable (Gaussian) linear model and graphically compare the fits. Describe how they differ.</li>
+</ol>
+</section>
 </section>
 <section id="q4.-uniform-association" class="level2" data-number="4">
 <h2 data-number="4" class="anchored" data-anchor-id="q4.-uniform-association"><span class="header-section-number">4</span> Q4. Uniform association</h2>

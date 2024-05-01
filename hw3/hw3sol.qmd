@@ -104,6 +104,38 @@ Therefore the deviance reduces to
 $$
 D = 2 \sum_i y_i \log \frac{y_i}{\widehat{\mu}_i}.
 $$
+**Answer:**
+The deviance for the Poisson regression is
+$$
+\begin{eqnarray*}
+  D &=& 2 \sum_i [y_i \log(y_i) - y_i] - 2 \sum_i [y_i \log (\widehat{\mu}_i) - \widehat{\mu}_i] \\
+  &=& 2 \sum_i [y_i \log \frac{y_i}{\widehat{\mu}_i} - (y_i - \widehat{\mu}_i)], 
+\end{eqnarray*}
+$$
+where $\widehat{\mu}_i$ are the fitted values from the model.
+
+In order to find maximum likelihood estimates, we need to maximize the log-likelihood function. The log-likelihood function is
+$$
+\ell(\boldsymbol{\beta}) = \sum_i \left[ y_i \mathbf{x}_i^T \boldsymbol{\beta} - e^{\mathbf{x}_i^T \boldsymbol{\beta}} - \log y_i! \right]
+$$
+Taking the derivative with respect to $\boldsymbol{\beta}$, we get
+$$
+\begin{eqnarray*}
+\nabla_{\beta} \ell(\boldsymbol{\beta}) &=& \sum_i \left[y_{i} \mathbf{x}_{i} - e^{\mathbf{x}_{i}^T \boldsymbol{\beta}} \mathbf{x}_{i} \right] = 0 \\
+\sum_i y_{i}  &=& \sum_ie^{\mathbf{x}_{i}^T \boldsymbol{\beta}}
+\end{eqnarray*}
+$$
+Since the fitted values $\widehat{\mu}_i$ are from maximum likelihood estimates, then 
+$$
+\begin{eqnarray*}
+\sum_i y_{i}  = \sum_ie^{\mathbf{x}_{i}^T \boldsymbol{\beta}} &=& \sum_i \widehat{\mu}_i \\
+\sum_i (y_{i} - \widehat{\mu}_i) &=& 0
+\end{eqnarray*}
+$$
+So the deviance reduces to
+$$
+D = 2 \sum_i y_i \log \frac{y_i}{\widehat{\mu}_i}.
+$$
 
 ## Q2. Show negative binomial distribution mean and variance 
 
@@ -113,7 +145,55 @@ $$
 $$
 Show $\mathbb{E}Y = \mu = rp / (1 - p)$ and $\operatorname{Var} Y = r p / (1 - p)^2$.
 
+**Answer:**
+$Y$ is the number of failures until the $r$th success with probability of failure $p$. Let $Y_i$ be iid Geometric random variables with probability of failure $p$. Then $Y = Y_1 + Y_2 + \ldots + Y_r$. So the expectation of $Y$ is $r \mathbb{E}Y_i$ and the variance of $Y$ is $r \operatorname{Var}Y_i$. The $pdf$ of $Y_i$ is
+$$
+\mathbb{P}(Y_i = y) = p^y (1-p), \quad y = 0, 1, \ldots
+$$
+So the moment generating function of $Y_i$ is
+$$
+\begin{eqnarray*}
+M_{Y_i}(t) &=& \mathbb{E}e^{tY_i} = \sum_{y=0}^{\infty} e^{ty} p^y (1-p) \\
+&=& \sum_{y=0}^{\infty} (pe^{t})^y (1-p) \\
+&=& \frac{1-p}{1 - pe^{t} } \quad \text{for } |pe^{t}| < 1.
+\end{eqnarray*}
+$$
+
+Define $\psi_{Y_i}(t) = log M_{Y_i}(t) = \log \frac{1-p}{1 - pe^{t}} = \log(1-p) - \log(1 - pe^{t})$. Then 
+$$
+\begin{eqnarray*}
+EY_i = \psi_{Y_i}'(t)|_{t=0} = \frac{pe^{t}}{1 - pe^{t}}|_{t=0} = \frac{p}{1 - p} \\
+VarY_i = \psi_{Y_i}''(t)|_{t=0} = \frac{p^2e^{2t}+pe^{t}(1-pe^t)}{(1 - pe^{t})^2}|_{t=0} = \frac{p}{(1 - p)^2}
+\end{eqnarray*}
+$$
+So $\mathbb{E}Y = \mu = r \mathbb{E}Y_i = \frac{rp}{1 - p}$ and $\operatorname{Var} Y = r \operatorname{Var}Y_i = \frac{r p}{(1 - p)^2}$.
+
 ## Q3. ELMR Chapter 5 Exercise 5 (page 100)
+The `dvisits` data comes from the Australian Health Survey of 1977–1978 and consist of 5190 single adults where young and old have been oversampled.
+
+### Q3.1
+(a) Make plots which show the relationship between the response variable, `doctorco`, and the potential predictors, `age` and `illness`.
+
+### Q3.2
+(b) Combine the predictors `chcond1` and `chcond2` into a single three-level factor. Make an appropriate plot showing the relationship between this factor and the response. Comment.
+
+### Q3.3
+(c) Build a Poisson regression model with `doctorco` as the response and `sex`, `age`, `agesq`, `income`, `levyplus`, `freepoor`, `freerepa`, `illness`, `actdays`, `hscore` and the three-level condition factor as possible predictor variables. Considering the deviance of this model, does this model fit the data?
+
+### Q3.4
+(d) Plot the residuals and the fitted values — why are there lines of observations on the plot? Make a QQ plot of the residuals and comment.
+
+### Q3.5
+(e) Use a stepwise AIC-based model selection method. What sort of person would be predicted to visit the doctor the most under your selected model?
+
+### Q3.6
+(f) For the last person in the dataset, compute the predicted probability distribution for their visits to the doctor, i.e., give the probability they visit 0, 1, 2, etc. times.
+
+### Q3.7
+(g) Tabulate the frequencies of the number of doctor visits. Compute the expected frequencies of doctor visits under your most recent model. Compare the ob- served with the expected frequencies and comment on whether it is worth fitting a zero-inflated count model.
+
+### Q3.8
+(h) Fit a comparable (Gaussian) linear model and graphically compare the fits. Describe how they differ.
 
 ## Q4. Uniform association 
 
