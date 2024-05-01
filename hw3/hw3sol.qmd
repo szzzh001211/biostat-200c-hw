@@ -120,10 +120,11 @@ $$
 $$
 Taking the derivative with respect to $\boldsymbol{\beta}$, we get
 $$
-\begin{eqnarray*}
-\nabla_{\beta} \ell(\boldsymbol{\beta}) &=& \sum_i \left[y_{i} \mathbf{x}_{i} - e^{\mathbf{x}_{i}^T \boldsymbol{\beta}} \mathbf{x}_{i} \right] = 0 \\
-\sum_i y_{i}  &=& \sum_ie^{\mathbf{x}_{i}^T \boldsymbol{\beta}}
-\end{eqnarray*}
+\nabla_{\beta} \ell(\boldsymbol{\beta}) = \sum_i \left[y_{i} \mathbf{x}_{i} - e^{\mathbf{x}_{i}^T \boldsymbol{\beta}} \mathbf{x}_{i} \right] = 0
+$$
+Since $\mathbf{x}_{i} = \begin{pmatrix} 1 \\ \mathbf{x}_{i1} \\ \vdots \\ \mathbf{x}_{iq} \end{pmatrix}$, then if we consider the first row of $\mathbf{x}_{i}$, we can get
+$$
+\sum_i y_{i}  = \sum_ie^{\mathbf{x}_{i}^T \boldsymbol{\beta}}
 $$
 Since the fitted values $\widehat{\mu}_i$ are from maximum likelihood estimates, then 
 $$
@@ -173,27 +174,118 @@ The `dvisits` data comes from the Australian Health Survey of 1977–1978 and co
 
 ### Q3.1
 (a) Make plots which show the relationship between the response variable, `doctorco`, and the potential predictors, `age` and `illness`.
+```{r}
+library(faraway)
+library(tidyverse)
+library(ggplot2)
+
+dvisits |>
+  head(width = Inf)
+```
+
+```{r}
+ggplot(dvisits) +
+  geom_point(aes(x = age*100, y = doctorco), alpha = 0.5, position = "jitter") +
+  labs(x = "Age", y = "Doctorco", title = "Doctorco vs Age")
+
+ggplot(dvisits) +
+  geom_point(aes(x = illness, y = doctorco), alpha = 0.5, position = "jitter") +
+  labs(x = "Illness", y = "Doctorco", title = "Doctorco vs Illness")
+```
+**Answer:** For the first plot, we see that the `doctorco` is higher for younger and older people. For the second plot, it is surprising that the `doctorco` is higher for people with number of illnesses less than or equal to 2.
+
 
 ### Q3.2
 (b) Combine the predictors `chcond1` and `chcond2` into a single three-level factor. Make an appropriate plot showing the relationship between this factor and the response. Comment.
 
+```{r}
+dvisits1 <- dvisits |>
+  mutate(chronic = case_when(
+    chcond1 == 1 ~ "Not limited",
+    chcond2 == 1 ~ "Limited",
+    TRUE ~ "No chronic"))
+dvisits1$chronic <- factor(dvisits1$chronic, 
+                           levels = c("No chronic", "Not limited", "Limited"))
+
+ggplot(dvisits1) +
+  geom_point(aes(x = chronic, y = doctorco), alpha = 0.5, position = "jitter") +
+  labs(x = "Chronic condition", y = "Doctorco", 
+       title = "Doctorco vs Chronic condition")
+```
+**Answer:** The plot shows that people with chronic conditions but not limited in activity have higher `doctorco` than the other two conditions, especially when the number of `doctorco` is less than 2.5. People with chronic conditions and limited in activity do not have higher `doctorco`, probably because they are limited in activity.
+
 ### Q3.3
 (c) Build a Poisson regression model with `doctorco` as the response and `sex`, `age`, `agesq`, `income`, `levyplus`, `freepoor`, `freerepa`, `illness`, `actdays`, `hscore` and the three-level condition factor as possible predictor variables. Considering the deviance of this model, does this model fit the data?
 
+```{r}
+library(gtsummary)
+mod1 <- glm(doctorco ~ sex + age + agesq + income + levyplus + freepoor + 
+              freerepa + illness + actdays + hscore + chronic, 
+            family = poisson, data = dvisits1)
+summary(mod1)
+```
+**Answer:** The deviance of the model is 4379.5 with 5177 degrees of freedom. The deviance is less than the degrees of freedom, so the model fits the data well.
+
 ### Q3.4
 (d) Plot the residuals and the fitted values — why are there lines of observations on the plot? Make a QQ plot of the residuals and comment.
+```{r}
+dvisits1 |>
+  mutate(devres  = residuals(mod1, type = "deviance"), 
+         linpred = predict(mod1, type = "link")) %>%
+  ggplot + 
+  geom_point(mapping = aes(x = linpred, y = devres)) + 
+  labs(x = "Linear predictor", y = "Deviance residual")
+```
+**Answer:** The lines of observations are due to the fact that the `doctorco` is a discrete variable (count variable). 
 
+```{r}
+qqnorm(residuals(mod1, type = "response"))
+```
+**Answer:** The QQ plot of the residuals shows that the residuals are not normally distributed.
 ### Q3.5
 (e) Use a stepwise AIC-based model selection method. What sort of person would be predicted to visit the doctor the most under your selected model?
+```{r}
+mod2 <- step(mod1, trace = F)
+summary(mod2)
+```
+**Answer:** According to the coefficients of the AIC selected model, the person who is predicted to visit the doctor the most is a person who is female, older, has a lower income, is covered by private health insurance fund, is poor, has a higher number of illnesses, has a higher number of days of reduced activity in past two weeks due to illness or injury, has higher general health questionnaire score (bad health), and has a chronic condition.
 
 ### Q3.6
 (f) For the last person in the dataset, compute the predicted probability distribution for their visits to the doctor, i.e., give the probability they visit 0, 1, 2, etc. times.
+```{r}
+last_person <- dvisits1[nrow(dvisits1), ]
+dpois(0:5, lambda = predict(mod2, newdata = last_person, type = "response"))
+```
 
 ### Q3.7
-(g) Tabulate the frequencies of the number of doctor visits. Compute the expected frequencies of doctor visits under your most recent model. Compare the ob- served with the expected frequencies and comment on whether it is worth fitting a zero-inflated count model.
+(g) Tabulate the frequencies of the number of doctor visits. Compute the expected frequencies of doctor visits under your most recent model. Compare the observed with the expected frequencies and comment on whether it is worth fitting a zero-inflated count model.
+```{r}
+library(pscl)
+table(dvisits1$doctorco)
+
+tibble(ocount = table(dvisits1$doctorco)[1:10],    
+       pcount = colSums(predprob(mod2)[, 1:10]), 
+       count  = 0:9) %>%
+  ggplot(mapping = aes(x = pcount, y = ocount, label = count)) + 
+  geom_point() + 
+  geom_text(nudge_y = 200) +
+  labs(x = "Predicted", y = "Observed")
+```
+**Answer:** Since there are so many zeroes, it is worth fitting a zero-inflated count model.
 
 ### Q3.8
 (h) Fit a comparable (Gaussian) linear model and graphically compare the fits. Describe how they differ.
+```{r}
+mod3 <- lm(doctorco ~ sex + age + income + levyplus + freepoor + illness + 
+             actdays + hscore + chronic, data = dvisits1)
+pred <- predict(mod2, dvisits1, type = "response")
+pred1 <- predict(mod3, dvisits1, type = "response")
+ggplot() +
+  geom_point(aes(x = pred, y = pred1), alpha = 0.5) +
+  labs(x = "Poisson model", y = "Gaussian model") +
+  geom_abline(intercept = 0, slope = 1)
+```
+**Answer:** When the predicted values of the Poisson model are small, the predicted values of the Gaussian model are larger. When the predicted values of the Poisson model are large, the predicted values of the Gaussian model are smaller. The predicted values of the Gaussian model can be negative, which is not possible for the Poisson model.
 
 ## Q4. Uniform association 
 
@@ -208,3 +300,25 @@ $$
 $$
 
 is a constant, i.e., the estimated effect of the interaction term "i:j" in the uniform association model 
+
+**Answer:**
+$$
+\begin{eqnarray*}
+\log \frac{\mathbb{E}Y_{11k}\mathbb{E}Y_{22k}}{\mathbb{E}Y_{12k}\mathbb{E}Y_{21k}} &=& \log (\mathbb{E}Y_{11k}) + \log (\mathbb{E}Y_{22k}) - \log (\mathbb{E}Y_{12k}) - \log (\mathbb{E}Y_{21k}) \\
+\log (\mathbb{E}Y_{11k}) &=& \log p_{11k} = \log n + \log p_1 + \log p_1 + \log p_k + \log p_{11} + \log p_{1k} + \log p_{1k}\\
+\log (\mathbb{E}Y_{22k}) &=& \log p_{22k} = \log n + \log p_2 + \log p_2 + \log p_k + \log p_{22} + \log p_{2k} + \log p_{2k}\\
+\log (\mathbb{E}Y_{12k}) &=& \log p_{12k} = \log n + \log p_1 + \log p_2 + \log p_k + \log p_{12} + \log p_{1k} + \log p_{2k}\\
+\log (\mathbb{E}Y_{21k}) &=& \log p_{21k} = \log n + \log p_2 + \log p_1 + \log p_k + \log p_{21} + \log p_{2k} + \log p_{1k}\\
+\end{eqnarray*}
+$$
+
+So the odds ratio (or log of odds ratio) across all stratum $k$ is
+$$
+\log \frac{\mathbb{E}Y_{11k}\mathbb{E}Y_{22k}}{\mathbb{E}Y_{12k}\mathbb{E}Y_{21k}} = \log p_{11} + \log p_{22} - \log p_{12} - \log p_{21} \\
+$$
+and it is a constant, i.e., the estimated effect of the interaction term "i:j" in the uniform association model.
+
+
+
+
+
