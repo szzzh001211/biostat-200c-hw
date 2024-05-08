@@ -122,14 +122,14 @@ Taking the derivative with respect to $\boldsymbol{\beta}$, we get
 $$
 \nabla_{\beta} \ell(\boldsymbol{\beta}) = \sum_i \left[y_{i} \mathbf{x}_{i} - e^{\mathbf{x}_{i}^T \boldsymbol{\beta}} \mathbf{x}_{i} \right] = 0
 $$
-Since $\mathbf{x}_{i} = \begin{pmatrix} 1 \\ \mathbf{x}_{i1} \\ \vdots \\ \mathbf{x}_{iq} \end{pmatrix}$, then if we consider the first row of $\mathbf{x}_{i}$, we can get
+Since $\mathbf{x}_{i} = \begin{pmatrix} 1 \\ \mathbf{x}_{i1} \\ \vdots \\ \mathbf{x}_{iq} \end{pmatrix}$, then if we consider the first row of $\mathbf{x}_{i}$ (the first element in $\mathbf{x}_{i}$ is 1), we can get
 $$
-\sum_i y_{i}  = \sum_ie^{\mathbf{x}_{i}^T \boldsymbol{\beta}}
+\sum_i y_{i}  = \sum_ie^{\mathbf{x}_{i}^T \boldsymbol{\hat{\beta}}}
 $$
 Since the fitted values $\widehat{\mu}_i$ are from maximum likelihood estimates, then 
 $$
 \begin{eqnarray*}
-\sum_i y_{i}  = \sum_ie^{\mathbf{x}_{i}^T \boldsymbol{\beta}} &=& \sum_i \widehat{\mu}_i \\
+\sum_i y_{i}  = \sum_ie^{\mathbf{x}_{i}^T \boldsymbol{\hat{\beta}}} &=& \sum_i \widehat{\mu}_i \\
 \sum_i (y_{i} - \widehat{\mu}_i) &=& 0
 \end{eqnarray*}
 $$
@@ -147,27 +147,22 @@ $$
 Show $\mathbb{E}Y = \mu = rp / (1 - p)$ and $\operatorname{Var} Y = r p / (1 - p)^2$.
 
 **Answer:**
-$Y$ is the number of failures until the $r$th success with probability of failure $p$. Let $Y_i$ be iid Geometric random variables with probability of failure $p$. Then $Y = Y_1 + Y_2 + \ldots + Y_r$. So the expectation of $Y$ is $r \mathbb{E}Y_i$ and the variance of $Y$ is $r \operatorname{Var}Y_i$. The $pdf$ of $Y_i$ is
+$y$ is the number of failures until the $r$th success with probability of failure $p$. 
 $$
-\mathbb{P}(Y_i = y) = p^y (1-p), \quad y = 0, 1, \ldots
+\begin{aligned}
+M_Y(t) &= \mathbb{E}e^{tY} = \sum_{y=0}^\infty e^{ty} \binom{y + r - 1}{r - 1} (1 - p)^r p^y \\
+&= \sum_{y=0}^\infty \binom{y + r - 1}{r - 1} \left[1 - pe^t \right]^r \left[pe^t \right]^y \cdot \frac{(1-p)^r}{(1-pe^t)^r}  \\
+&= \left\{\frac{1-p}{1-pe^t}\right\}^r
+\end{aligned}
 $$
-So the moment generating function of $Y_i$ is
-$$
-\begin{eqnarray*}
-M_{Y_i}(t) &=& \mathbb{E}e^{tY_i} = \sum_{y=0}^{\infty} e^{ty} p^y (1-p) \\
-&=& \sum_{y=0}^{\infty} (pe^{t})^y (1-p) \\
-&=& \frac{1-p}{1 - pe^{t} } \quad \text{for } |pe^{t}| < 1.
-\end{eqnarray*}
-$$
-
-Define $\psi_{Y_i}(t) = log M_{Y_i}(t) = \log \frac{1-p}{1 - pe^{t}} = \log(1-p) - \log(1 - pe^{t})$. Then 
+Define $\psi_{Y}(t) = log M_{Y}(t) = \log \left\{\frac{1-p}{1-pe^t}\right\}^r = r\log(1-p) - r\log(1 - pe^{t})$. Then 
 $$
 \begin{eqnarray*}
-EY_i = \psi_{Y_i}'(t)|_{t=0} = \frac{pe^{t}}{1 - pe^{t}}|_{t=0} = \frac{p}{1 - p} \\
-VarY_i = \psi_{Y_i}''(t)|_{t=0} = \frac{p^2e^{2t}+pe^{t}(1-pe^t)}{(1 - pe^{t})^2}|_{t=0} = \frac{p}{(1 - p)^2}
+\mathbb{E}Y &=& \psi_{Y}'(t)|_{t=0} = \frac{rpe^{t}}{1 - pe^{t}}|_{t=0} = \frac{rp}{1 - p} \\
+\operatorname{Var} Y &=& \psi_{Y}''(t)|_{t=0} = \frac{rp^2e^{2t}+rpe^{t}(1-pe^t)}{(1 - pe^{t})^2}|_{t=0} = \frac{rp}{(1 - p)^2}
 \end{eqnarray*}
 $$
-So $\mathbb{E}Y = \mu = r \mathbb{E}Y_i = \frac{rp}{1 - p}$ and $\operatorname{Var} Y = r \operatorname{Var}Y_i = \frac{r p}{(1 - p)^2}$.
+So $\mathbb{E}Y = \mu = \frac{rp}{1 - p}$ and $\operatorname{Var} Y =  \frac{rp}{(1 - p)^2}$.
 
 ## Q3. ELMR Chapter 5 Exercise 5 (page 100)
 The `dvisits` data comes from the Australian Health Survey of 1977–1978 and consist of 5190 single adults where young and old have been oversampled.
@@ -212,7 +207,7 @@ ggplot(dvisits1) +
   labs(x = "Chronic condition", y = "Doctorco", 
        title = "Doctorco vs Chronic condition")
 ```
-**Answer:** The plot shows that people with chronic conditions but not limited in activity have higher `doctorco` than the other two conditions, especially when the number of `doctorco` is less than 2.5. People with chronic conditions and limited in activity do not have higher `doctorco`, probably because they are limited in activity.
+**Answer:** The plot shows that people with chronic conditions but not limited in activity have higher `doctorco` than the other two conditions, especially when the number of `doctorco` is less than 2.5. People with chronic conditions and limited in activity have higher `doctorco` on average.
 
 ### Q3.3
 (c) Build a Poisson regression model with `doctorco` as the response and `sex`, `age`, `agesq`, `income`, `levyplus`, `freepoor`, `freerepa`, `illness`, `actdays`, `hscore` and the three-level condition factor as possible predictor variables. Considering the deviance of this model, does this model fit the data?
@@ -236,12 +231,13 @@ dvisits1 |>
   geom_point(mapping = aes(x = linpred, y = devres)) + 
   labs(x = "Linear predictor", y = "Deviance residual")
 ```
-**Answer:** The lines of observations are due to the fact that the `doctorco` is a discrete variable (count variable). 
+**Answer:** The lines of observations are due to the fact that the `doctorco` is a discrete variable (count variable) and we use a Poisson regression model.
 
 ```{r}
 qqnorm(residuals(mod1, type = "response"))
 ```
-**Answer:** The QQ plot of the residuals shows that the residuals are not normally distributed.
+**Answer:** The QQ plot of the residuals shows that the residuals are not normally distributed. There are several outliers in residuals.
+
 ### Q3.5
 (e) Use a stepwise AIC-based model selection method. What sort of person would be predicted to visit the doctor the most under your selected model?
 ```{r}
