@@ -265,9 +265,10 @@ tibble(ocount = table(dvisits1$doctorco)[1:10],
   ggplot(mapping = aes(x = pcount, y = ocount, label = count)) + 
   geom_point() + 
   geom_text(nudge_y = 200) +
-  labs(x = "Predicted", y = "Observed")
+  labs(x = "Predicted", y = "Observed") +
+  geom_abline(intercept = 0, slope = 1)
 ```
-**Answer:** Since there are so many zeroes, it is worth fitting a zero-inflated count model.
+**Answer:** Since the observed and predicted frequencies of the zeroes are close to each other, it is not worth fitting a zero-inflated count model.
 
 ### Q3.8
 (h) Fit a comparable (Gaussian) linear model and graphically compare the fits. Describe how they differ.
