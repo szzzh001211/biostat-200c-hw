@@ -281,8 +281,11 @@ ggplot() +
   geom_point(aes(x = pred, y = pred1), alpha = 0.5) +
   labs(x = "Poisson model", y = "Gaussian model") +
   geom_abline(intercept = 0, slope = 1)
+
+summary(mod2)
+summary(mod3)
 ```
-**Answer:** When the predicted values of the Poisson model are small, the predicted values of the Gaussian model are larger. When the predicted values of the Poisson model are large, the predicted values of the Gaussian model are smaller. The predicted values of the Gaussian model can be negative, which is not possible for the Poisson model.
+**Answer:** From the plot, when the predicted values of the Poisson model are small, the predicted values of the Gaussian model are larger. When the predicted values of the Poisson model are large, the predicted values of the Gaussian model are smaller. The predicted values of the Gaussian model can be negative, which is not possible for the Poisson model. From the summary of the two models, they are different in fits. If we check from the standard errors and p-values, the Poisson model is better than the Gaussian model.
 
 ## Q4. Uniform association 
 
