@@ -1,0 +1,128 @@
+---
+title: "Biostat 200C Homework 4"
+subtitle: Due May 24  @ 11:59PM
+author: "Ziheng Zhang_606300061"
+date: today
+format:
+  html:
+    theme: cosmo
+    embed-resources: true
+    number-sections: true
+    toc: true
+    toc-depth: 4
+    toc-location: left
+    code-fold: false
+engine: knitr
+knitr:
+  opts_chunk: 
+    fig.align: 'center'
+    # fig.width: 6
+    # fig.height: 4
+    message: FALSE
+    cache: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = FALSE)
+```
+
+## Q1. ELMR Excercise 7.5 (p150)
+The debt data arise from a large postal survey on the psychology of debt. The frequency of credit card use is a three-level factor ranging from never, through occasionally to regularly.
+
+### Q1.1
+(a) Declare the response as an ordered factor and make a plot showing the relationship to prodebt. Comment on the plot. Use a table or plot to display the relationship between the response and the income group.
+
+### Q1.2
+(b) Fit a proportional odds model for credit card use with all the other variables as predictors. What are the two most significant predictors (largest t-values) and what is their qualitative effect on the response? What is the least significant predictor?
+
+### Q1.3
+(c) Fitaproportionaloddsmodelusingonlytheleastsignificantpredictorfromthe previous model. What is the significance of this predictor in this small model? Are the conclusions regarding this predictor contradictory for the two models?
+
+### Q1.4
+(d) Use stepwise AIC to select a smaller model than the full set of predictors. You will need to handle the missing values carefully. Report on the qualitative effect of the predictors in your chosen model. Can we conclude that the predictors that were dropped from the model have no relation to the response?
+
+### Q1.5
+(e) Compute the median values of the predictors in your selected model. At these median values, contrast the predicted outcome probabilities for both smokers and nonsmokers.
+
+### Q1.6
+(f) Fit a proportional hazards model to the same set of predictors and recompute the two sets of probabilities from the previous question. Does it make a differ- ence to use this type of model?
+
+## Q2. Moments of exponential family distributions
+
+Show that the exponential family distributions have moments
+\begin{eqnarray*}
+  \mathbb{E}Y &=& \mu = b'(\theta) \\
+  \operatorname{Var}Y &=& \sigma^2 = b''(\theta) a(\phi).
+\end{eqnarray*}
+
+## Q3. Score and information matrix of GLM
+
+Derive the gradient (score), negative Hessian, and Fisher information matrix (expected negative Hessian) of GLM.
+
+## Q4. ELMR Exercise 8.1 (p171)
+Data is generated from the exponential distribution with density $f(y) = \lambda exp(−\lambda y)$ where $\lambda$, $y > 0$.
+
+### Q4.1
+(a) Identify the specific form of $\theta$, $\phi$, $a()$, $b()$ and $c()$ for the exponential distribution.
+
+### Q4.2
+(b) What is the canonical link and variance function for a GLM with a response following the exponential distribution?
+
+### Q4.3
+(c) Identify a practical difficulty that may arise when using the canonical link in this instance.
+
+### Q4.4
+(d) When comparing nested models in this case, should an F or $\chi^2$ test be used? Explain.
+
+### Q4.5
+(e) Express the deviance in this case in terms of the responses $y_i$ and the fitted values $\hat{\mu}_i$.
+
+## Q5. ELMR Exercise 8.4 (p172)
+Consider the Galápagos data and model analyzed in this chapter. The purpose of this question is to reproduce the details of the GLM fitting of this data.
+
+### Q5.1
+(a) Fit a Poisson model to the species response with the five geographic variables as predictors. Do not use the endemics variable. Report the values of the coef- ficients and the deviance.
+
+### Q5.2
+(b) For a Poisson GLM, derive $\eta$, $\frac{d\eta}{d\mu}$, $V(\mu)$ and the weights to be used in an iteratively fit GLM. What is the form of the adjusted dependent variable here?
+
+### Q5.3
+(c) Using the observed response as initial values, compute the first stage of the iteration, stopping after the first linear model fit. Compare the coefficients of this linear model to those found in the GLM fit. How close are they?
+
+### Q5.4
+(d) Continue the iteration to get the next $\eta$ and $\mu$. Use this to compute the current value of the deviance. How close is this to the deviance from the GLM?
+
+### Q5.5
+(e) Compute one more iteration of the GLM fit, reporting the next calculation of the coefficients and deviance. How close are these to target now?
+
+### Q5.6
+(f) Repeat these iterations a few more times, computing the deviance in each time. Stop when the deviance does not change much. Compare your final estimated coefficients to that produced by the GLM fit.
+
+### Q5.7
+(g) Use your final iterated linear model fit to produce standard errors for the coefficients. How close are these to that produced by the direct GLM fit?
+
+## Q6. ELMR Exercise 8.5 (p172)
+Again using the Galápagos data, fit a Poisson model to the species response with the five geographic variables as predictors. Do not use the endemics variable. The purpose of this question is to compare six different ways of testing the significance of the elevation predictor, i.e., $H_0$: $\beta_{Elev}$ = 0. In each case, report the p-value.
+
+### Q6.1
+(a) Use the z-statistic from the model summary.
+
+### Q6.2
+(b) Fit a model without elevation and use the difference in deviances to make the test.
+
+### Q6.3
+(c) Use the Pearson Chi-squared statistic in place of the deviance in the previous
+test.
+
+### Q6.4
+(d) Fit the Poisson model with a free dispersion parameter as described in Section 5.2. Make the test using the model summary.
+
+### Q6.5
+(e) Use the sandwich estimation method for the standard errors in the original model. Use these to compute z-statistics.
+
+### Q6.6
+(f) Use the robust GLM estimation method and report the test result from the summary.
+
+### Q6.7
+(g) Compare all six results. Pick the best one and justify your choice.
+
