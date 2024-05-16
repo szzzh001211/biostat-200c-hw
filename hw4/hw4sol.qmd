@@ -30,22 +30,97 @@ knitr::opts_chunk$set(echo = TRUE, cache = FALSE)
 The debt data arise from a large postal survey on the psychology of debt. The frequency of credit card use is a three-level factor ranging from never, through occasionally to regularly.
 
 ### Q1.1
-(a) Declare the response as an ordered factor and make a plot showing the relationship to prodebt. Comment on the plot. Use a table or plot to display the relationship between the response and the income group.
+(a) Declare the response as an ordered factor and make a plot showing the relationship to `prodebt`. Comment on the plot. Use a table or plot to display the relationship between the response and the income group.
+
+```{r}
+library(faraway)
+library(tidyverse)
+library(ggplot2)
+
+debt1 <- debt
+debt1$ccarduse <- ordered(debt1$ccarduse, levels = c(1, 2, 3))
+ggplot(debt1, aes(x = ccarduse, y = prodebt)) + 
+  geom_boxplot()
+```
+**Answer:** From the boxplot, we can see that the variability of `prodebt` is almost the same among all different levels of credit card use. The median of `prodebt` is increasing with the level of credit card use. 
+```{r}
+ggplot(debt1, aes(x = ccarduse, y = incomegp)) + 
+  geom_boxplot()
+```
+**Answer:** From the boxplot, we can see that the variability of `incomegp` is almost the same among all different levels of credit card use. But it is obvious that people with high income level are more likely to use credit card regularly.
 
 ### Q1.2
 (b) Fit a proportional odds model for credit card use with all the other variables as predictors. What are the two most significant predictors (largest t-values) and what is their qualitative effect on the response? What is the least significant predictor?
 
+```{r}
+library(MASS)
+fit1 <- polr(ccarduse ~ ., data = debt1)
+summary(fit1)
+```
+**Answer:** The two most significant predictors are `bankacc` (does the respondent have a bank account?) and `incomegp` (income group (1=lowest, 5=highest)). The least significant predictor is `house` (security of housing tenure (1=rent, 2=mortgage, 3=owned outright)). The coefficient of `bankacc` is $2.1027$, which means the odds of moving up in one category of frequency of credit card use is $e^{2.1027} = 8.19$ times higher for people with bank account than those without bank account, controlling for all other predictors. The coefficient of `incomegp` is $0.47131$, which means for every one level increase of income, the odds of moving up in one category of frequency of credit card use is estimated to increase by $e^{0.47131} -1 = 60\%$, controlling for all other predictors.
+
 ### Q1.3
-(c) Fitaproportionaloddsmodelusingonlytheleastsignificantpredictorfromthe previous model. What is the significance of this predictor in this small model? Are the conclusions regarding this predictor contradictory for the two models?
+(c) Fit a proportional odds model using only the least significant predictor from the previous model. What is the significance of this predictor in this small model? Are the conclusions regarding this predictor contradictory for the two models?
+
+```{r}
+fit2 <- polr(ccarduse ~ house, data = debt1)
+summary(fit2)
+pt(3.895, 3, lower.tail = FALSE)
+```
+**Answer:** The p-value of the predictor `house` is $0.015$ in this small model, which is significant. The conclusion regarding this predictor is contradictory for the two models.
 
 ### Q1.4
 (d) Use stepwise AIC to select a smaller model than the full set of predictors. You will need to handle the missing values carefully. Report on the qualitative effect of the predictors in your chosen model. Can we conclude that the predictors that were dropped from the model have no relation to the response?
 
+```{r}
+debt2 <- na.omit(debt1)
+fit3 <- polr(ccarduse ~ ., data = debt2)
+fit3_aic <- step(fit3, trace = F)
+summary(fit3_aic)
+```
+**Answer:** The selected model is `ccarduse ~ bankacc + incomegp + bsocacc + agegp + cigbuy + prodebt` and we drop six predictors.\
+The coefficient of `bankacc` is $2.0816$, which means the odds of moving up in one category of frequency of credit card use is $e^{2.0816} = 8.02$ times higher for people with bank account than those without bank account, controlling for all other predictors.\
+The coefficient of `incomegp` is $0.4589$, which means for every one level increase of income, the odds of moving up in one category of frequency of credit card use is estimated to increase by $e^{0.4589} -1 = 58\%$, controlling for all other predictors.\
+The coefficient of `bsocacc` is $0.5048$, which means the odds of moving up in one category of frequency of credit card use is $e^{0.5048} = 1.66$ times higher for people with a building society account than those without a building society account, controlling for all other predictors.\
+The coefficient of `agegp` is $0.2696$, which means for every one level increase of age group, the odds of moving up in one category of frequency of credit card use is estimated to increase by $e^{0.2696} - 1 = 31\%$, controlling for all other predictors.\
+The coefficient of `cigbuy` is $-0.7677$, which means the odds of moving up in one category of frequency of credit card use is $e^{-0.7677} = 0.464$ times lower for people who buy cigarettes than those who do not buy cigarettes, controlling for all other predictors.\
+The coefficient of `prodebt` is $0.5635$, which means for every one score increase of `prodebt`, the odds of moving up in one category of frequency of credit card use is estimated to increase by $e^{0.5635} -1 = 76\%$, controlling for all other predictors.\
+We cannot conclude that the predictors that were dropped from the model have no relation to the response.
+
 ### Q1.5
 (e) Compute the median values of the predictors in your selected model. At these median values, contrast the predicted outcome probabilities for both smokers and nonsmokers.
 
+```{r}
+debt2 |> dplyr::select(incomegp, agegp, bankacc, bsocacc, cigbuy, prodebt) |>
+  apply(2, median)
+
+predict(fit3_aic, newdata = data.frame(incomegp = 3, agegp = 2, bankacc = 1, 
+                                       bsocacc = 1, cigbuy = 0, prodebt = 3.18),
+        type = "probs")
+predict(fit3_aic, newdata = data.frame(incomegp = 3, agegp = 2, bankacc = 1, 
+                                       bsocacc = 1, cigbuy = 1, prodebt = 3.18),
+        type = "probs")
+```
+**Answer:** The predicted outcome probabilities for both smokers and nonsmokers are as follows:
+
+- For `never` use credit card, the probabilities are $0.426$ for nonsmokers and $0.615$ for smokers.\
+- For `rarely` use credit card, the probabilities are $0.325$ for nonsmokers and $0.251$ for smokers.\
+- For `regularly` use credit card, the probabilities are $0.250$ for nonsmokers and $0.133$ for smokers.
+
 ### Q1.6
-(f) Fit a proportional hazards model to the same set of predictors and recompute the two sets of probabilities from the previous question. Does it make a differ- ence to use this type of model?
+(f) Fit a proportional hazards model to the same set of predictors and recompute the two sets of probabilities from the previous question. Does it make a difference to use this type of model?
+
+```{r}
+fit4 <- polr(ccarduse ~ incomegp + agegp + bankacc + bsocacc + cigbuy + prodebt,
+             data = debt2, method = "cloglog")
+predict(fit4, newdata = data.frame(incomegp = 3, agegp = 2, bankacc = 1, 
+                                       bsocacc = 1, cigbuy = 0, prodebt = 3.18),
+        type = "probs")
+predict(fit4, newdata = data.frame(incomegp = 3, agegp = 2, bankacc = 1, 
+                                       bsocacc = 1, cigbuy = 1, prodebt = 3.18),
+        type = "probs")
+```
+**Answer:** The predicted outcome probabilities for both smokers and nonsmokers only differ slightly from the previous model. It does not make a difference to use this type of model.
 
 ## Q2. Moments of exponential family distributions
 
@@ -148,21 +223,41 @@ Data is generated from the exponential distribution with density $f(y) = \lambda
 
 ### Q4.1
 (a) Identify the specific form of $\theta$, $\phi$, $a()$, $b()$ and $c()$ for the exponential distribution.
+$$
+\begin{eqnarray*}
+f(y \mid \theta, \phi) &=& \exp \left[ \frac{y \theta - b(\theta)}{a(\phi)} + c(y, \phi) \right]\\
+&=& \exp \left[-\lambda y + \log \lambda \right] 
+\end{eqnarray*}
+$$
+So we have $\theta = -\lambda$, $a(\phi) = \phi = 1$, $b(\theta) = -\log (-\theta)$ and $c(y, \phi) = 0$.
 
 ### Q4.2
 (b) What is the canonical link and variance function for a GLM with a response following the exponential distribution?
 
+**Answer:** The canonical link is $g(\mu)$ s.t. $\eta = g(\mu) = \theta$. And we have $\mu = b'(\theta) = -\frac{1}{\theta}$. So the canonical link is $g(\mu) = -\frac{1}{\mu}$. The $b''(\theta) = \frac{1}{\theta^2}$, so the variance function is $\mu^2$.
+
 ### Q4.3
 (c) Identify a practical difficulty that may arise when using the canonical link in this instance.
 
+**Answer:** $\mu$ is always positive and $\eta = g(\mu) = -\frac{1}{\mu}$. So in this case, the linear predictor $\eta$ will always be negative and then it is not practical to use the canonical link in this instance.
 ### Q4.4
 (d) When comparing nested models in this case, should an F or $\chi^2$ test be used? Explain.
 
+**Answer:** Here we have dispersion parameter $\phi = 1$ so it is known. So we should use $\chi^2$ test to compare nested models in this case. And we will use F test when the dispersion parameter is unknown and estimated.
+
 ### Q4.5
 (e) Express the deviance in this case in terms of the responses $y_i$ and the fitted values $\hat{\mu}_i$.
+
+We can use likelihood ratio test. 
+$$
+2 \log \frac{L_{\Omega}}{L_{\omega}},
+$$
+where $\Omega$ is the full/saturated model (same number of parameters as observations) and $\omega$ is the smaller model. So the deviance is 
 $$
 \begin{eqnarray*}
-D &=& 2 \sum(\frac{y_i-\hat{\mu}_i}{\hat{\mu}_i} - \log\frac{y_i}{\hat{\mu}_i})
+D &=& 2 \sum \log \frac{f(y_i \mid y_i)}{f(y_i \mid \hat{\mu}_i)} \\ 
+&=& 2 \sum \left[ -\frac{1}{y_i} y_i + \log \frac{1}{y_i} + \frac{1}{\hat{\mu}_i} y_i - \log \frac{1}{\hat{\mu}_i} \right] \\
+&=& 2 \sum(\frac{y_i-\hat{\mu}_i}{\hat{\mu}_i} - \log\frac{y_i}{\hat{\mu}_i})
 \end{eqnarray*}
 $$
 
