@@ -50,14 +50,98 @@ The debt data arise from a large postal survey on the psychology of debt. The fr
 ## Q2. Moments of exponential family distributions
 
 Show that the exponential family distributions have moments
+$$
 \begin{eqnarray*}
   \mathbb{E}Y &=& \mu = b'(\theta) \\
   \operatorname{Var}Y &=& \sigma^2 = b''(\theta) a(\phi).
 \end{eqnarray*}
+$$
 
+**Answer:**
+In GLM, the distribution of $Y$ is from the exponential familty of distributions of form
+$$
+  f(y \mid \theta, \phi) = \exp \left[ \frac{y \theta - b(\theta)}{a(\phi)} + c(y, \phi) \right].
+$$
+We know that 
+$$
+  \int f(y) dy = \int \exp \left[ \frac{y \theta - b(\theta)}{a(\phi)} + c(y, \phi) \right] dy =1
+$$
+So we have
+$$
+\frac{\partial}{\partial \theta} \int f(y) dy = \int \frac{\partial}{\partial \theta} f(y) dy = 0
+$$
+Since 
+$$
+\frac{\partial}{\partial \theta} f(y) = \frac{y - b'(\theta)}{a(\phi)} f(y)
+$$
+So we have
+$$
+\begin{eqnarray*}
+  0 &=& \int \frac{y - b'(\theta)}{a(\phi)} f(y) dy \\
+  &=& \int \frac{y}{a(\phi)} f(y) dy - \int \frac{b'(\theta)}{a(\phi)} f(y) dy \\
+  &=& \int y f(y) dy - b'(\theta) \int f(y) dy \\
+  &=& \int y f(y) dy - b'(\theta) \\
+  &=& \mathbb{E}Y - b'(\theta) = 0 \\
+\mathbb{E}Y &=& b'(\theta)
+\end{eqnarray*}
+$$
+Similarly, for variance, we have
+$$
+\begin{eqnarray*}
+  \frac{\partial^2}{\partial \theta^2} \int f(y) dy &=& \int \frac{\partial^2}{\partial \theta^2} f(y) dy = 0 \\
+  \frac{\partial^2}{\partial \theta^2} f(y) &=& \left(\frac{y - b'(\theta)}{a(\phi)}\right)^2 f(y)-\frac{b''(\theta)}{a(\phi)} f(y) \\
+  0 &=& \int \left(\frac{y - b'(\theta)}{a(\phi)}\right)^2 f(y) dy - \int \frac{b''(\theta)}{a(\phi)} f(y) dy \\
+ &=& \int (y - b'(\theta))^2 f(y) dy - \int b''(\theta)a(\phi) f(y) dy \\
+ b''(\theta)a(\phi) &=& \int y^2 f(y) dy - 2b'(\theta) \int y f(y) dy + b'(\theta)^2 \int f(y) dy \\
+ &=& \mathbb{E}Y^2 - 2b'(\theta) \mathbb{E}Y + b'(\theta)^2 \\
+ &=& \mathbb{E}Y^2 - 2b'(\theta)^2 + b'(\theta)^2 \\
+ &=& \mathbb{E}Y^2 - b'(\theta)^2 \\
+ &=& \mathbb{E}Y^2-\mathbb{E}^2Y\\
+ \operatorname{Var}Y &=& b''(\theta) a(\phi)
+\end{eqnarray*}
+$$
 ## Q3. Score and information matrix of GLM
 
 Derive the gradient (score), negative Hessian, and Fisher information matrix (expected negative Hessian) of GLM.
+
+**Answer:**
+The log-likelihood function of GLM is
+$$
+\begin{eqnarray*}
+  \ell(\boldsymbol{\beta}) &=& \sum_{i=1}^n \left[ \frac{y_i \theta_i - b(\theta_i)}{a(\phi)} + c(y_i, \phi) \right] \\
+\end{eqnarray*}
+$$
+Since we have $\mu_i = b'(\theta_i)$, $\eta = g(\mu)$ and $\eta = \mathbf{x}^T \boldsymbol{\beta}$, then we have 
+$$
+\begin{eqnarray*}
+\frac{\partial \theta_i}{\partial \mu_i} &=& \frac{1}{b''(\theta_i)}\\
+\frac{\partial \mu_i}{\partial \eta_i} &=& \mu_i'(\eta_i)\\
+\frac{\partial \eta_i}{\partial \boldsymbol{\beta}} &=& \mathbf{x}_i
+\end{eqnarray*}
+$$
+So the gradient (score) is
+$$
+\begin{eqnarray*}
+  \nabla \ell(\boldsymbol{\beta}) &=& \frac{\partial \ell(\boldsymbol{\beta})}{\partial \boldsymbol{\beta}}
+  = \sum_{i=1}^n  \frac{\partial \ell(\boldsymbol{\beta})}{\partial \theta_i} \frac{\partial \theta_i}{\partial \mu_i} \frac{\partial \mu_i}{\partial \eta_i} \frac{\partial \eta_i}{\partial \boldsymbol{\beta}} \\
+  &=& \sum_{i=1}^n \left[ \frac{y_i - b'(\theta_i)}{a(\phi)} \frac{\mu_i'(\eta_i)}{b''(\theta_i)} \mathbf{x}_i \right] \\
+  &=& \sum_{i=1}^n \left[ \frac{(y_i - \mu_i)\mu_i'(\eta_i)}{\sigma_i^2} \mathbf{x}_i \right], \quad \text{since } \sigma_i^2 = a(\phi) b''(\theta_i)
+\end{eqnarray*}
+$$
+So the negative Hessian is
+$$
+\begin{eqnarray*}
+-\nabla^2 \ell(\boldsymbol{\beta}) &=& -\sum_{i=1}^n \frac{\mu_i'(\eta_i)}{\sigma_i^2} \mathbf{x}_i \frac{\partial (y_i - \mu_i)}{\partial \eta_i} \frac{\partial \eta_i}{\partial \boldsymbol{\beta}} -\sum_{i=1}^n  \frac{(y_i - \mu_i)}{\sigma_i^2} \frac{\partial \mu_i'(\eta_i)}{\partial \eta_i} \frac{\partial \eta_i}{\partial \boldsymbol{\beta}}\mathbf{x}_i \\
+&& -\sum_{i=1}^n (y_i - \mu_i)\mu_i'(\eta_i) \mathbf{x}_i \frac{\partial}{\partial \mu_i}(\frac{1}{\sigma_i^2}) \frac{\partial \mu_i}{\partial \eta_i} \frac{\partial \eta_i}{\partial \boldsymbol{\beta}} \\
+&=& \sum_{i=1}^n \frac{[\mu_i'(\eta_i)]^2}{\sigma_i^2} \mathbf{x}_i \mathbf{x}_i^T - \sum_{i=1}^n \frac{(y_i - \mu_i) \mu_i''(\eta_i)}{\sigma_i^2} \mathbf{x}_i \mathbf{x}_i^T \\
+  & & + \sum_{i=1}^n \frac{(y_i - \mu_i) [\mu_i'(\eta_i)]^2 (d \sigma_i^{2} / d\mu_i)}{\sigma_i^4} \mathbf{x}_i \mathbf{x}_i^T
+\end{eqnarray*}
+$$
+So the Fisher information matrix is
+$$
+ \mathbb{E} [- \nabla^2 \ell(\boldsymbol{\beta})] = \sum_{i=1}^n \frac{[\mu_i'(\eta_i)]^2}{\sigma_i^2} \mathbf{x}_i \mathbf{x}_i^T , \\
+ \text{since } \sum_{i=1}^n \mathbb{E} (y_i - \mu_i) = 0 \text{ and others are constant for the second and third terms.}
+$$
 
 ## Q4. ELMR Exercise 8.1 (p171)
 Data is generated from the exponential distribution with density $f(y) = \lambda exp(−\lambda y)$ where $\lambda$, $y > 0$.
@@ -76,6 +160,11 @@ Data is generated from the exponential distribution with density $f(y) = \lambda
 
 ### Q4.5
 (e) Express the deviance in this case in terms of the responses $y_i$ and the fitted values $\hat{\mu}_i$.
+$$
+\begin{eqnarray*}
+D &=& 2 \sum(\frac{y_i-\hat{\mu}_i}{\hat{\mu}_i} - \log\frac{y_i}{\hat{\mu}_i})
+\end{eqnarray*}
+$$
 
 ## Q5. ELMR Exercise 8.4 (p172)
 Consider the Galápagos data and model analyzed in this chapter. The purpose of this question is to reproduce the details of the GLM fitting of this data.
