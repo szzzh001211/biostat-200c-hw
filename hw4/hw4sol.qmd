@@ -265,11 +265,30 @@ $$
 Consider the Galápagos data and model analyzed in this chapter. The purpose of this question is to reproduce the details of the GLM fitting of this data.
 
 ### Q5.1
-(a) Fit a Poisson model to the species response with the five geographic variables as predictors. Do not use the endemics variable. Report the values of the coef- ficients and the deviance.
+(a) Fit a Poisson model to the species response with the five geographic variables as predictors. Do not use the endemics variable. Report the values of the coefficients and the deviance.
+```{r}
+model1 <- glm(Species ~ Area + Elevation + Nearest + Scruz + Adjacent, 
+              data = gala, family = poisson)
+summary(model1)
+```
+**Answer:** The coefficient of `Area` is $ -0.0005799$, `Elevation` is $0.003541$, `Nearest` is $0.008826$, `Scruz` is $-0.005709$ and `Adjacent` is $-0.000663$. The residual deviance is $ 716.85$.
 
 ### Q5.2
 (b) For a Poisson GLM, derive $\eta$, $\frac{d\eta}{d\mu}$, $V(\mu)$ and the weights to be used in an iteratively fit GLM. What is the form of the adjusted dependent variable here?
+$$
+\begin{eqnarray*}
+\eta &=& \log(\mu) = \beta_0 + \beta_1 x_1 + \cdots + \beta_p x_p, \\
+\frac{d\eta}{d\mu} &=& \frac{1}{\mu}, \\
+V(\mu) &=& \mu, \\
+\frac{1}{w} &=& (\frac{d\eta}{d\mu})^2 V(\hat{\mu}^{(0)}) \\
+&=& (\frac{1}{\mu})^2 \cdot \mu = \frac{1}{\mu} \\
+w &=& \mu
+\end{eqnarray*}
+$$
 
+```{r}
+
+```
 ### Q5.3
 (c) Using the observed response as initial values, compute the first stage of the iteration, stopping after the first linear model fit. Compare the coefficients of this linear model to those found in the GLM fit. How close are they?
 
