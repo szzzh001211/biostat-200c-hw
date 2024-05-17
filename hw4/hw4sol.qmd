@@ -175,6 +175,7 @@ $$
  \operatorname{Var}Y &=& b''(\theta) a(\phi)
 \end{eqnarray*}
 $$
+
 ## Q3. Score and information matrix of GLM
 
 Derive the gradient (score), negative Hessian, and Fisher information matrix (expected negative Hessian) of GLM.
@@ -240,6 +241,7 @@ So we have $\theta = -\lambda$, $a(\phi) = \phi = 1$, $b(\theta) = -\log (-\thet
 (c) Identify a practical difficulty that may arise when using the canonical link in this instance.
 
 **Answer:** $\mu$ is always positive and $\eta = g(\mu) = -\frac{1}{\mu}$. So in this case, the linear predictor $\eta$ will always be negative and then it is not practical to use the canonical link in this instance.
+
 ### Q4.4
 (d) When comparing nested models in this case, should an F or $\chi^2$ test be used? Explain.
 
@@ -286,46 +288,136 @@ w &=& \mu
 \end{eqnarray*}
 $$
 
-```{r}
 
-```
 ### Q5.3
 (c) Using the observed response as initial values, compute the first stage of the iteration, stopping after the first linear model fit. Compare the coefficients of this linear model to those found in the GLM fit. How close are they?
+```{r}
+y <- gala$Species
+mu <- gala$Species
+eta <- log(mu)
+z <- eta + (y-mu)/mu
+w <- mu
+model2 <- lm(z ~ . - Endemics - Species, weights = w, gala)
+coef(model2)
+```
+**Answer:** The intercept of this linear model and the coefficients of `Area`, `Elevation` and `Adjacent` in this linear model are close to those found in the GLM fit.
 
 ### Q5.4
 (d) Continue the iteration to get the next $\eta$ and $\mu$. Use this to compute the current value of the deviance. How close is this to the deviance from the GLM?
+```{r}
+eta <- model2$fitted.values
+mu <- exp(eta)
+z <- eta + (y-mu)/mu
+w <- mu
+model2 <- lm(z ~ . - Endemics - Species, weights = w, gala)
+deviance(model2)
+```
+**Answer:** The deviance from this linear model is 570.9648, which is not close to the deviance from the GLM.
 
 ### Q5.5
 (e) Compute one more iteration of the GLM fit, reporting the next calculation of the coefficients and deviance. How close are these to target now?
+```{r}
+eta <- model2$fitted.values
+mu <- exp(eta)
+z <- eta + (y-mu)/mu
+w <- mu
+model2 <- lm(z ~ . - Endemics - Species, weights = w, gala)
+coef(model2)
+deviance(model2)
+```
+**Answer:** The coefficients of this linear model are all close to those found in the GLM fit. The deviance from this linear model is 725.5103, which is close to the deviance from the GLM.
 
 ### Q5.6
 (f) Repeat these iterations a few more times, computing the deviance in each time. Stop when the deviance does not change much. Compare your final estimated coefficients to that produced by the GLM fit.
+```{r}
+for (i in 1:5) {
+  eta <- model2$fitted.values
+  mu <- exp(eta)
+  z <- eta + (y-mu)/mu
+  w <- mu
+  model2 <- lm(z ~ . - Endemics - Species, weights = w, gala)
+  deviance(model2)
+  cat(i, deviance(model2), "\n")
+}
+coef(model2)
+```
+**Answer:** After five more iterations, the deviance does not change and it is 761.9792, which is close to the deviance from the GLM. The final estimated coefficients are almost the same as that produced by the GLM fit.
 
 ### Q5.7
 (g) Use your final iterated linear model fit to produce standard errors for the coefficients. How close are these to that produced by the direct GLM fit?
+```{r}
+xm <- model.matrix(model2)
+wm <- diag(w)
+sqrt(diag(solve(t(xm) %*% wm %*% xm)))
+```
+**Answer:** The standard errors for the coefficients produced by the iterated linear model fit are almost the same as that produced by the direct GLM fit.
 
 ## Q6. ELMR Exercise 8.5 (p172)
 Again using the Galápagos data, fit a Poisson model to the species response with the five geographic variables as predictors. Do not use the endemics variable. The purpose of this question is to compare six different ways of testing the significance of the elevation predictor, i.e., $H_0$: $\beta_{Elev}$ = 0. In each case, report the p-value.
 
 ### Q6.1
 (a) Use the z-statistic from the model summary.
+```{r}
+summary(model1)
+```
+**Answer:** The p-value of the z-statistic for `Elevation` is $< 2e-16$, which means that the `Elevation` predictor is significant and can contribute to explaining variation in the `Species` response.
 
 ### Q6.2
 (b) Fit a model without elevation and use the difference in deviances to make the test.
+```{r}
+model3 <- glm(Species ~ Area + Nearest + Scruz + Adjacent, 
+              data = gala, family = poisson)
+summary(model3)
+anova(model3, model1, test = "Chisq")
+```
+**Answer:** The p-value of the difference in deviances is $< 2.2e-16$, which means that the `Elevation` predictor is significant and can contribute to explaining variation in the `Species` response.
 
 ### Q6.3
-(c) Use the Pearson Chi-squared statistic in place of the deviance in the previous
-test.
+(c) Use the Pearson Chi-squared statistic in place of the deviance in the previous test.
+```{r}
+px2 <- sum(residuals(model1, type = "pearson")^2)
+pchisq(px2, model1$df.residual, lower.tail = FALSE)
+
+px2_1 <- sum(residuals(model3, type = "pearson")^2)
+pchisq(px2_1, model3$df.residual, lower.tail = FALSE)
+```
+**Answer:** The p-value of the Pearson Chi-squared statistic in the model with `Elevation` is almost $0$ and the p-value of the Pearson Chi-squared statistic in the model without `Elevation` is $0$. Both models do not fit the data well but the model without `Elevation` fits the data worse. So we should include `Elevation` in the model.
 
 ### Q6.4
 (d) Fit the Poisson model with a free dispersion parameter as described in Section 5.2. Make the test using the model summary.
+```{r}
+dp1 <- sum(residuals(model1, type = "pearson")^2) / model1$df.residual
+summary(model1, dispersion = dp1)
+```
+**Answer:** The p-value of the z-statistic for `Elevation` is $< 6.53e-13$, which means that the `Elevation` predictor is significant and can contribute to explaining variation in the `Species` response.
 
 ### Q6.5
 (e) Use the sandwich estimation method for the standard errors in the original model. Use these to compute z-statistics.
+```{r}
+library(sandwich)
+se_san <- model1 |> 
+  vcovHC() |>
+  diag() |>
+  sqrt()
+z <- coef(model1) / se_san
+p <- (1 - pnorm(abs(z), 0, 1))*2
+p
+```
+**Answer:** The p-value of the z-statistic for `Elevation` is $0.003 < 0.05$, which means that the `Elevation` predictor is significant and can contribute to explaining variation in the `Species` response.
 
 ### Q6.6
 (f) Use the robust GLM estimation method and report the test result from the summary.
+```{r}
+library(robust)
+glmRob(Species ~ Area + Nearest + Scruz + Adjacent + Elevation, 
+       data = gala, family = poisson) |>
+  summary()
+```
+**Answer:** The p-value of the z-statistic for all the predictors except for `Adjacent` is $0$, which means that the `Elevation` predictor is significant and can contribute to explaining variation in the `Species` response.
 
 ### Q6.7
 (g) Compare all six results. Pick the best one and justify your choice.
+
+**Answer:** It seems that fitting the Poisson model with a free dispersion parameter is the best method. It can make the variance be equal to the mean and the coefficients from this method is same as the coefficients from the original model. 
+
 
