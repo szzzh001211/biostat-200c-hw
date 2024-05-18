@@ -282,12 +282,18 @@ $$
 \eta &=& \log(\mu) = \beta_0 + \beta_1 x_1 + \cdots + \beta_p x_p, \\
 \frac{d\eta}{d\mu} &=& \frac{1}{\mu}, \\
 V(\mu) &=& \mu, \\
-\frac{1}{w} &=& (\frac{d\eta}{d\mu})^2 V(\hat{\mu}^{(0)}) \\
-&=& (\frac{1}{\mu})^2 \cdot \mu = \frac{1}{\mu} \\
-w &=& \mu
+\text{Next, we need to find the weights:} \\
+\mathbb{P}(Y_i = y_i) &=& e^{-\mu_i} \frac{\mu_i^{y_i}}{y_i!} \\
+\ell(\boldsymbol{\beta}) &=& \sum_{i=1}^n y_i \log \mu_i - \mu_i - \log y_i! \\
+&=& \sum_{i=1}^n \left[ y_i \mathbf{x}_i^T \boldsymbol{\beta} - e^{\mathbf{x}_i^T \boldsymbol{\beta}} - \log y_i! \right] \\
+\nabla_{\beta} \ell(\boldsymbol{\beta}) &=& \sum_{i=1}^n \left[y_{i} \mathbf{x}_{i} - e^{\mathbf{x}_{i}^T \boldsymbol{\beta}} \mathbf{x}_{i} \right] \\
+-H_{\beta} &=& -\nabla^{2}_{\beta} \ell(\boldsymbol{\beta}) \\
+&=& \sum_{i=1}^n \left[e^{\mathbf{x}_{i}^{T} \boldsymbol{\beta}} \mathbf{x}_{i} \mathbf{x}_{i}^{T} \right] =  \mathbf{X}^T \mathbf{W} \mathbf{X} \\
+\text{So the weight is:}\\
+w &=& e^{\mathbf{x}^T \boldsymbol{\beta}} = e^{\eta} = \mu
 \end{eqnarray*}
 $$
-
+The adjusted dependent variable is $z^{(t)} = \eta^{(t)} + \frac{y-\hat{\mu}^{(t)}}{\hat{\mu}^{(t)}}$.
 
 ### Q5.3
 (c) Using the observed response as initial values, compute the first stage of the iteration, stopping after the first linear model fit. Compare the coefficients of this linear model to those found in the GLM fit. How close are they?

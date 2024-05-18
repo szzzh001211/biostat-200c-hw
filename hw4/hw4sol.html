@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Ziheng Zhang_606300061">
-<meta name="dcterms.date" content="2024-05-16">
+<meta name="dcterms.date" content="2024-05-18">
 
 <title>Biostat 200C Homework 4</title>
 <style>
@@ -3203,7 +3203,7 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">May 16, 2024</p>
+      <p class="date">May 18, 2024</p>
     </div>
   </div>
   
@@ -3605,11 +3605,17 @@ Number of Fisher Scoring iterations: 5</code></pre>
 \eta &amp;=&amp; \log(\mu) = \beta_0 + \beta_1 x_1 + \cdots + \beta_p x_p, \\
 \frac{d\eta}{d\mu} &amp;=&amp; \frac{1}{\mu}, \\
 V(\mu) &amp;=&amp; \mu, \\
-\frac{1}{w} &amp;=&amp; (\frac{d\eta}{d\mu})^2 V(\hat{\mu}^{(0)}) \\
-&amp;=&amp; (\frac{1}{\mu})^2 \cdot \mu = \frac{1}{\mu} \\
-w &amp;=&amp; \mu
+\text{Next, we need to find the weights:} \\
+\mathbb{P}(Y_i = y_i) &amp;=&amp; e^{-\mu_i} \frac{\mu_i^{y_i}}{y_i!} \\
+\ell(\boldsymbol{\beta}) &amp;=&amp; \sum_{i=1}^n y_i \log \mu_i - \mu_i - \log y_i! \\
+&amp;=&amp; \sum_{i=1}^n \left[ y_i \mathbf{x}_i^T \boldsymbol{\beta} - e^{\mathbf{x}_i^T \boldsymbol{\beta}} - \log y_i! \right] \\
+\nabla_{\beta} \ell(\boldsymbol{\beta}) &amp;=&amp; \sum_{i=1}^n \left[y_{i} \mathbf{x}_{i} - e^{\mathbf{x}_{i}^T \boldsymbol{\beta}} \mathbf{x}_{i} \right] \\
+-H_{\beta} &amp;=&amp; -\nabla^{2}_{\beta} \ell(\boldsymbol{\beta}) \\
+&amp;=&amp; \sum_{i=1}^n \left[e^{\mathbf{x}_{i}^{T} \boldsymbol{\beta}} \mathbf{x}_{i} \mathbf{x}_{i}^{T} \right] =  \mathbf{X}^T \mathbf{W} \mathbf{X} \\
+\text{So the weight is:}\\
+w &amp;=&amp; e^{\mathbf{x}^T \boldsymbol{\beta}} = e^{\eta} = \mu
 \end{eqnarray*}
-\]</span></li>
+\]</span> The adjusted dependent variable is <span class="math inline">\(z^{(t)} = \eta^{(t)} + \frac{y-\hat{\mu}^{(t)}}{\hat{\mu}^{(t)}}\)</span>.</li>
 </ol>
 </section>
 <section id="q5.3" class="level3" data-number="5.3">
@@ -3912,16 +3918,16 @@ Call: glmRob(formula = Species ~ Area + Nearest + Scruz + Adjacent +
     Elevation, family = poisson, data = gala)
 Deviance Residuals:
    Min     1Q Median     3Q    Max 
- 14.73  57.76  71.93 104.12 191.13 
+ 11.96  64.13  79.98 127.09 191.13 
 
 Coefficients:
             Estimate Std. Error z value Pr(&gt;|z|)
-(Intercept) -1512108          0    -Inf        0
-Area        -4422415          0    -Inf        0
-Nearest       786157          0     Inf        0
-Scruz         -26446          0    -Inf        0
-Adjacent       19188          0     Inf        0
-Elevation      14211          0     Inf        0
+(Intercept)   -62142          0    -Inf        0
+Area         -360619          0    -Inf        0
+Nearest        34415          0     Inf        0
+Scruz          -1787          0    -Inf        0
+Adjacent        -484          0    -Inf        0
+Elevation       3096          0     Inf        0
 
 (Dispersion Parameter for poisson family taken to be 1 )
 
