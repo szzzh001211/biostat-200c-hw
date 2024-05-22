@@ -46,6 +46,41 @@ which can be solved to obtain ANOVA estimate
 \widehat{\sigma}_{\alpha}^2 &=& \frac{\text{SSA}/(a-1) - \widehat{\sigma}_{\epsilon}^2}{n}.
 \end{eqnarray*}
 
+**Answer:**
+
+a. $\mathbb{E}(\bar y_{\cdot \cdot})$
+$$
+\begin{eqnarray*}
+\mathbb{E}(\bar y_{\cdot \cdot}) &=& \mathbb{E} \left( \frac{\sum_{ij} y_{ij}}{na} \right) = \mathbb{E}\left( \frac{\sum_{ij} \mu + \alpha_i + \epsilon_{ij}}{na}\right) \\
+&=& \frac{\mathbb{E}(\sum_{ij}\mu)}{na} + 0 + 0 \\
+&=& \mu + 0 + 0 = \mu,
+\end{eqnarray*}
+$$
+since $\alpha_i$ are iid from $N(0, \sigma_{\alpha}^2)$, $\epsilon_{ij}$ are iid $N(0,\sigma_{\epsilon}^2)$, then $\mathbb{E}(\alpha_i) = 0$, $\mathbb{E}(\epsilon_{ij}) = 0$.
+
+b. $\mathbb{E} (\text{SSE})$
+$$
+\begin{eqnarray*}
+\mathbb{E} \left[ \sum_{i=1}^a \sum_{j=1}^n (y_{ij} - \bar{y}_{i \cdot})^2 \right] &=& \sum_{i=1}^a \mathbb{E}\left[ \sum_{j=1}^n (y_{ij} - \bar{y}_{i \cdot})^2 \right] \\
+y_{ij} &=& \mu + \alpha_i+\epsilon_{ij} \\
+\bar{y}_{i \cdot} &=& \frac{1}{n} \sum_{j=1}^n(\mu + \alpha_i + \epsilon_{ij}) = \mu + \alpha_i + \bar{\epsilon}_{i \cdot} \\
+y_{ij} - \bar{y}_{i \cdot} &=& \epsilon_{ij} - \bar{\epsilon}_{i \cdot} \\
+\mathbb{E}\left[\sum_{j=1}^n (y_{ij} - \bar{y}_{i \cdot})^2 \right]&=&\mathbb{E}\left[\sum_{j=1}^n(\epsilon_{ij} - \bar{\epsilon}_{i \cdot})^2\right] = \mathbb{E} \left[(n-1)S^2_{\epsilon}\right]=(n-1)\sigma_\epsilon^2,\\ && \text{where } S^2_{\epsilon} \text{ is the sample variance of } \epsilon_{ij} \\
+
+\mathbb{E} (\text{SSE})&=&\mathbb{E} \left[ \sum_{i=1}^a \sum_{j=1}^n (y_{ij} - \bar{y}_{i \cdot})^2 \right] = a(n-1) \sigma_{\epsilon}^2
+\end{eqnarray*}
+$$
+c. $\mathbb{E} (\text{SSA})$
+$$
+\begin{eqnarray*}
+\mathbb{E} (\text{SSA}) &=&\mathbb{E} \left[ \sum_{i=1}^a \sum_{j=1}^n (\bar{y}_{i \cdot} - \bar{y}_{\cdot \cdot})^2 \right]\\
+&=&\mathbb{E} \left[ \sum_{i=1}^a \sum_{j=1}^n (\mu + \alpha_i + \bar{\epsilon}_{i \cdot} - \mu + \bar{\alpha} + \bar{\epsilon_{\cdot \cdot}})^2 \right]\\
+&=&\mathbb{E} \left[ \sum_{i=1}^a \sum_{j=1}^n (\alpha_i - \bar{\alpha})^2 \right] + \mathbb{E} \left[ \sum_{i=1}^a \sum_{j=1}^n (\bar{\epsilon}_{i \cdot} - \bar{\epsilon_{\cdot \cdot}})^2 \right] \\
+&=& n\mathbb{E}\left[\sum^a(\alpha_i - \bar{\alpha})^2\right] + \mathbb{E}\left[\sum^a \sum^n (\epsilon_{ij} - \bar{\epsilon_{\cdot \cdot}})^2 \right] \\
+&=& n(a-1) \sigma_{\alpha}^2 + (na-1)\sigma_{\epsilon}^2
+\end{eqnarray*}
+$$
+
 2. Derive the MLE estimate for $\mu$, $\sigma_\alpha^2$, and $\sigma_{\epsilon}^2$. Hint: write down the log-likelihood and find the maximizer.
 
 3. (**Optional**) Derive the REML estimate for $\mu$, $\sigma_\alpha^2$, and $\sigma_{\epsilon}^2$. 
