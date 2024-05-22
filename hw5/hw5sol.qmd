@@ -159,7 +159,10 @@ $$
 f(\boldsymbol{\gamma} \mid \mathbf{y}) &=& \frac{f(\mathbf{y} \mid \boldsymbol{\gamma}) \times f(\boldsymbol{\gamma})}{f(\mathbf{y})}\\
 &\propto& \exp\left(-\frac{1}{2\sigma^2}(\mathbf{y} - \mathbf{X} \boldsymbol{\beta} - \mathbf{Z} \boldsymbol{\gamma})^T (\mathbf{y} - \mathbf{X} \boldsymbol{\beta} - \mathbf{Z} \boldsymbol{\gamma})\right) \times \exp\left(-\frac{1}{2} \boldsymbol{\gamma}^T \boldsymbol{\Sigma}^{-1} \boldsymbol{\gamma}\right)\\
 &=& \exp\left(-\frac{1}{2\sigma^2}(\mathbf{y} - \mathbf{X} \boldsymbol{\beta} - \mathbf{Z} \boldsymbol{\gamma})^T (\mathbf{y} - \mathbf{X} \boldsymbol{\beta} - \mathbf{Z} \boldsymbol{\gamma}) - \frac{1}{2} \boldsymbol{\gamma}^T \boldsymbol{\Sigma}^{-1} \boldsymbol{\gamma}\right)\\
-
+&\propto& \exp\left(-\frac{1}{2}\left[\boldsymbol{\gamma}^T\left(\frac{\mathbf{Z}^T\mathbf{Z}}{\sigma^2}+\boldsymbol{\Sigma}^{-1}\right)\boldsymbol{\gamma}-\frac{2}{\sigma^2}(\boldsymbol{\gamma}^T\mathbf{Z}^T(\mathbf{y} - \mathbf{X} \boldsymbol{\beta})) \right]\right), \text{since }\boldsymbol{\gamma}^T\mathbf{Z}^T(\mathbf{y} - \mathbf{X} \boldsymbol{\beta}) \text{ is a scalar}\\
+&=& \exp\left(-\frac{1}{2}(\boldsymbol{\gamma} - A^{-1}b)^TA(\boldsymbol{\gamma} - A^{-1}b) -b^TA^{-1}b\right), \text{where } A = \left(\frac{\mathbf{Z}^T\mathbf{Z}}{\sigma^2}+\boldsymbol{\Sigma}^{-1}\right)^{-1} \text{ and } b = \frac{1}{\sigma^2}\mathbf{Z}^T(\mathbf{y} - \mathbf{X} \boldsymbol{\beta})\\
+&\propto& \exp\left(-\frac{1}{2}(\boldsymbol{\gamma} - A^{-1}b)^TA(\boldsymbol{\gamma} - A^{-1}b)\right)\\
+\mathbb{E} (\boldsymbol{\gamma} \mid \mathbf{y}) &=& A^{-1}b = \left(\frac{\mathbf{Z}^T\mathbf{Z}}{\sigma^2}+\boldsymbol{\Sigma}^{-1}\right)^{-1}\frac{1}{\sigma^2}\mathbf{Z}^T(\mathbf{y} - \mathbf{X} \boldsymbol{\beta}) = \boldsymbol{\Sigma} \mathbf{Z}^T (\mathbf{Z} \boldsymbol{\Sigma} \mathbf{Z}^T + \sigma^2 \mathbf{I})^{-1} (\mathbf{y} - \mathbf{X} \boldsymbol{\beta})
 \end{eqnarray*}
 $$
 2. For the balanced one-way ANOVA random effects model, show that the posterior mean of random effects is always a constant (less than 1) multiplying the corresponding fixed effects estimate.
@@ -172,6 +175,41 @@ The ratdrink data consist of five weekly measurements of body weight for 27 rats
 ### Q3.1
 (a) Plot the data showing how weight increases with age on a single panel, taking care to distinguish the three treatment groups. Now create a three-panel plot, one for each group. Discuss what can be seen.
 
+**Answer:**
+```{r}
+library(ggplot2)
+library(gridExtra)
+library(tidyverse)
+ggplot(data = ratdrink) +
+  stat_summary(mapping = aes(x = weeks, y = wt, group = treat, 
+                             color = as.factor(treat)), geom = "line", 
+               fun.y = mean) +
+  labs(x = "Week", y = "Weight",
+       title = "Rat Weight Over Time",
+       col = "Treatment")
+
+control <- ratdrink |>
+  filter(treat == "control") |>
+  ggplot(aes(x = weeks, y = wt)) + 
+  geom_point() +
+  labs(title = "Control Rat Weight Over Time")
+
+thyroxine <- ratdrink |>
+  filter(treat == "thyroxine") |>
+  ggplot(aes(x = weeks, y = wt)) + 
+  geom_point() +
+  labs(title = "Thyroxine Rat Weight Over Time")
+
+thiouracil <- ratdrink |>
+  filter(treat == "thiouracil") |>
+  ggplot(aes(x = weeks, y = wt)) + 
+  geom_point() +
+  labs(title = "Thiouracil Rat Weight Over Time")
+
+grid.arrange(control, thyroxine, thiouracil, ncol = 2)
+```
+Control rats and thyroxine treated rats have similar weight gain over time, while thiouracil treated rats have a lower weight gain over time. From the one-panel plot, the mean value of weight gain for thiouracil also shows a lower weight gain compared to the other two groups.
+
 ### Q3.2
 (b) Fit a linear longitudinal model that allows for a random slope and intercept for each rat. Each group should have a different mean line. Give interpretation for the following estimates:
 
@@ -179,15 +217,52 @@ i. The fixed effect intercept term.\
 ii. The interaction between thiouracil and week.\
 iii. The intercept random effect SD.
 
+**Answer:**
+```{r}
+library(lme4)
+m1 <- lmer(wt ~ weeks * treat + (weeks | subject), data = ratdrink)
+summary(m1)
+```
++ The fixed effect intercept term: The estimated weight of the control group at week 0 is 52.88.
+
++ The interaction between thiouracil and week: For every one week increase, the estimated weight gain for the thiouracil group is -9.37 weights lower than that for the control group.
+
++ The intercept random effect SD: The standard deviation between subjects within the same treatment group is 5.7.
+
 ### Q3.3
 (c) Check whether there is a significant treatment effect.
+
+**Answer:**
+```{r}
+library(pbkrtest)
+m2 <- lmer(wt ~ weeks + (weeks | subject), data = ratdrink)
+KRmodcomp(m1, m2)
+```
+The p-value is 0.0001215, which is less than 0.05. Therefore, there is a significant treatment effect.
 
 ### Q3.4
 (d) Construct diagnostic plots showing the residuals against the fitted values and a QQ plot of the residuals. Interpret.
 
+**Answer:**
+```{r}
+plot(resid(m1) ~ fitted(m1), xlab = "Fitted", ylab = "Residuals")
+abline(h=0)
+```
+The residuals are randomly scattered around the 0 line and there is no special pattern, indicating that the linearity and constant variance assumptions are met.
+
+```{r}
+qqnorm(resid(m1), main = "")
+```
+The residuals are close to a straight line, indicating that the normality assumption is met.
+
 ### Q3.5
 (e) Construct confidence intervals for the parameters of the model. Which random effect terms may not be significant? Is the thyroxine group significantly different from the control group?
 
+**Answer:**
+```{r}
+confint(m1, method = "boot")
+```
+`sig01` is the variance of the random intercepts, `sig02` is the covariance between the random intercepts and slopes, and `sig03` is the variance of the random slopes. Both random intercepts and slopes are significant because their intervals do not include 0. The thyroxine group is not significantly different from the control group because the confidence interval includes 0.
 
 ## Q4. ELMR Exercise 13.1 (p295)
 The ohio data concern 536 children from Steubenville, Ohio and were taken as part of a study on the effects of air pollution. Children were in the study for 4 years from ages 7 to 10. The response was whether they wheezed or not. The variables are:
