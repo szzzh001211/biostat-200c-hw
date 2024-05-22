@@ -76,16 +76,63 @@ $$
 \mathbb{E} (\text{SSA}) &=&\mathbb{E} \left[ \sum_{i=1}^a \sum_{j=1}^n (\bar{y}_{i \cdot} - \bar{y}_{\cdot \cdot})^2 \right]\\
 &=&\mathbb{E} \left[ \sum_{i=1}^a \sum_{j=1}^n (\mu + \alpha_i + \bar{\epsilon}_{i \cdot} - \mu + \bar{\alpha} + \bar{\epsilon_{\cdot \cdot}})^2 \right]\\
 &=&\mathbb{E} \left[ \sum_{i=1}^a \sum_{j=1}^n (\alpha_i - \bar{\alpha})^2 \right] + \mathbb{E} \left[ \sum_{i=1}^a \sum_{j=1}^n (\bar{\epsilon}_{i \cdot} - \bar{\epsilon_{\cdot \cdot}})^2 \right] \\
-&=& n\mathbb{E}\left[\sum^a(\alpha_i - \bar{\alpha})^2\right] + \mathbb{E}\left[\sum^a \sum^n (\epsilon_{ij} - \bar{\epsilon_{\cdot \cdot}})^2 \right] \\
-&=& n(a-1) \sigma_{\alpha}^2 + (na-1)\sigma_{\epsilon}^2
+&=& n\mathbb{E}\left[\sum_{i=1}^a(\alpha_i - \bar{\alpha})^2\right] + n\mathbb{E}\left[\sum_{i=1}^a(\bar{\epsilon}_{i \cdot} - \bar{\epsilon_{\cdot \cdot}})^2\right] \\
+&=& n\mathbb{E}\left[(a-1)S^2_{\alpha}\right] + n\mathbb{E}\left[(a-1)S^2_\bar{\epsilon}\right] \\
+&=& n(a-1) \sigma_{\alpha}^2 + n(a-1)\frac{\sigma_{\epsilon}^2}{n}\\
+&=& n(a-1) \sigma_{\alpha}^2 + (a-1)\sigma_{\epsilon}^2\\
+&=& (a-1)(n\sigma_{\alpha}^2 + \sigma_{\epsilon}^2)
 \end{eqnarray*}
 $$
 
 2. Derive the MLE estimate for $\mu$, $\sigma_\alpha^2$, and $\sigma_{\epsilon}^2$. Hint: write down the log-likelihood and find the maximizer.
 
+**Answer:**
+
+$$
+y_{ij} = \mu + \alpha_i + \epsilon_{ij}, \quad i=1,\ldots,a, \quad j=1,\ldots,n.
+$$
+where $\alpha_i$ are iid from $N(0,\sigma_\alpha^2)$, $\epsilon_{ij}$ are iid from $N(0, \sigma_\epsilon^2)$.
+
+So $y_{ij}$ are iid from $N(\mu, \sigma_\alpha^2 + \sigma_\epsilon^2)$. So the log-likelihood function is
+$$
+\begin{eqnarray*}
+L(\mu, \sigma_{\alpha}^2, \sigma_{\epsilon}^2) &=& \prod_{i=1}^a \prod_{j=1}^n \frac{1}{\sqrt{2\pi(\sigma_{\alpha}^2 + \sigma_{\epsilon}^2)}}\exp\left(-\frac{(y_{ij} - \mu)^2}{2(\sigma_{\alpha}^2 + \sigma_{\epsilon}^2)}\right) \\
+\ell(\mu, \sigma_{\alpha}^2, \sigma_{\epsilon}^2) &=& -\frac{na}{2}\log(2\pi) - \frac{na}{2}\log(\sigma_{\epsilon}^2+\sigma_{\alpha}^2)  - \frac{1}{2(\sigma_{\epsilon}^2+\sigma_{\alpha}^2)}\sum_{i=1}^a\sum_{j=1}^n(y_{ij}-\mu)^2\\
+\frac{\partial \ell}{\partial \mu} &=& \frac{1}{\sigma^2_\alpha + \sigma^2_\epsilon} \sum_{i=1}^a \sum_{j=1}^n (y_{ij} - \mu) = 0\\
+\hat{\mu} &=& \frac{1}{na}\sum_{i=1}^a \sum_{j=1}^n y_{ij} = \bar{y}_{\cdot \cdot} \tag{1}\\
+\frac{\partial \ell}{\partial \sigma^2_\alpha} &=& -\frac{na}{2(\sigma_{\epsilon}^2+\sigma_{\alpha}^2)} + \frac{1}{2(\sigma_{\epsilon}^2+\sigma_{\alpha}^2)^2}\sum_{i=1}^a\sum_{j=1}^n(y_{ij}-\mu)^2 = 0\\
+\frac{\partial \ell}{\partial \sigma^2_\epsilon} &=& -\frac{na}{2(\sigma_{\epsilon}^2+\sigma_{\alpha}^2)} + \frac{1}{2(\sigma_{\epsilon}^2+\sigma_{\alpha}^2)^2}\sum_{i=1}^a\sum_{j=1}^n(y_{ij}-\mu)^2 = 0\\
+\hat{\sigma}^2_\alpha + \hat{\sigma}^2_\epsilon &=& \frac{1}{na}\sum_{i=1}^a\sum_{j=1}^n(y_{ij}-\mu)^2 = \frac{1}{na}\sum_{i=1}^a\sum_{j=1}^n(y_{ij}-\bar{y}_{\cdot \cdot})^2 \tag{2}
+\end{eqnarray*}
+$$
+
 3. (**Optional**) Derive the REML estimate for $\mu$, $\sigma_\alpha^2$, and $\sigma_{\epsilon}^2$. 
 
 4. For all three estimates, check that your results match those we obtained using R for the `pulp` example in class.
+
+**Answer:**
+
+For MLE, we have $\hat{\mu} = \bar{y}_{\cdot \cdot}$ and $\hat{\sigma}^2_\alpha + \hat{\sigma}^2_\epsilon = \frac{1}{na}\sum_{i=1}^a\sum_{j=1}^n(y_{ij}-\bar{y}_{\cdot \cdot})^2$. We can use the following R code to check the results.
+```{r}
+library(lme4)
+library(faraway)
+smod <- lmer(bright ~ 1 + (1 | operator), data = pulp, REML = FALSE)
+summary(smod)
+```
+In the R code, the estimate of $\mu$ is the intercept, $60.4$, and the estimate of $\sigma^2_\alpha + \sigma^2_\epsilon$ is the sum of variance components, $0.04575 + 0.10625 = 0.152$.
+
+```{r}
+mean(pulp$bright)
+```
+So the MLE estimate of $\mu$ matches the result we obtained in R. 
+
+```{r}
+sum((pulp$bright - mean(pulp$bright))^2)/(5*4)
+```
+So the MLE estimate of $\sigma^2_\alpha + \sigma^2_\epsilon$ matches the result we obtained in R.
+
+For REML, we have . We can use the following R code to check the results.
+
 
 ## Q2. Estimation of random effects
 
@@ -104,7 +151,17 @@ where $f$ denotes corresponding density. Show that the posterior distribution is
 $$
 \mathbb{E} (\boldsymbol{\gamma} \mid \mathbf{y}) = \boldsymbol{\Sigma} \mathbf{Z}^T (\mathbf{Z} \boldsymbol{\Sigma} \mathbf{Z}^T + \sigma^2 \mathbf{I})^{-1} (\mathbf{y} - \mathbf{X} \boldsymbol{\beta}).
 $$
+**Answer:**
 
+By Bayes theorem, we have
+$$
+\begin{eqnarray*}
+f(\boldsymbol{\gamma} \mid \mathbf{y}) &=& \frac{f(\mathbf{y} \mid \boldsymbol{\gamma}) \times f(\boldsymbol{\gamma})}{f(\mathbf{y})}\\
+&\propto& \exp\left(-\frac{1}{2\sigma^2}(\mathbf{y} - \mathbf{X} \boldsymbol{\beta} - \mathbf{Z} \boldsymbol{\gamma})^T (\mathbf{y} - \mathbf{X} \boldsymbol{\beta} - \mathbf{Z} \boldsymbol{\gamma})\right) \times \exp\left(-\frac{1}{2} \boldsymbol{\gamma}^T \boldsymbol{\Sigma}^{-1} \boldsymbol{\gamma}\right)\\
+&=& \exp\left(-\frac{1}{2\sigma^2}(\mathbf{y} - \mathbf{X} \boldsymbol{\beta} - \mathbf{Z} \boldsymbol{\gamma})^T (\mathbf{y} - \mathbf{X} \boldsymbol{\beta} - \mathbf{Z} \boldsymbol{\gamma}) - \frac{1}{2} \boldsymbol{\gamma}^T \boldsymbol{\Sigma}^{-1} \boldsymbol{\gamma}\right)\\
+
+\end{eqnarray*}
+$$
 2. For the balanced one-way ANOVA random effects model, show that the posterior mean of random effects is always a constant (less than 1) multiplying the corresponding fixed effects estimate.
 
 
