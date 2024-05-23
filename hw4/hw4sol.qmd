@@ -39,15 +39,21 @@ library(ggplot2)
 
 debt1 <- debt
 debt1$ccarduse <- ordered(debt1$ccarduse, levels = c(1, 2, 3))
-ggplot(debt1, aes(x = ccarduse, y = prodebt)) + 
+ggplot(drop_na(debt1, c(ccarduse, prodebt)), aes(x = ccarduse, y = prodebt)) + 
   geom_boxplot()
 ```
 **Answer:** From the boxplot, we can see that the variability of `prodebt` is almost the same among all different levels of credit card use. The median of `prodebt` is increasing with the level of credit card use. 
 ```{r}
-ggplot(debt1, aes(x = ccarduse, y = incomegp)) + 
-  geom_boxplot()
+debt1 |>
+  drop_na(c(ccarduse, incomegp)) |>
+  count(ccarduse, incomegp) |>
+  group_by(incomegp) |>
+  mutate(prop = prop.table(n)) |>
+  ggplot() +
+  geom_line(mapping = aes(x = incomegp, y = prop, group = ccarduse, color = ccarduse)) + 
+  labs(x = "Income Level", y = "Proportion")
 ```
-**Answer:** From the boxplot, we can see that the variability of `incomegp` is almost the same among all different levels of credit card use. But it is obvious that people with high income level are more likely to use credit card regularly.
+**Answer:** As the use of credit card increases, the proportion of people in the lowest income group decreases, while the proportion of people in the highest income group increases. The proportion of people in the middle income group is relatively stable.
 
 ### Q1.2
 (b) Fit a proportional odds model for credit card use with all the other variables as predictors. What are the two most significant predictors (largest t-values) and what is their qualitative effect on the response? What is the least significant predictor?
@@ -65,9 +71,8 @@ summary(fit1)
 ```{r}
 fit2 <- polr(ccarduse ~ house, data = debt1)
 summary(fit2)
-pt(3.895, 3, lower.tail = FALSE)
 ```
-**Answer:** The p-value of the predictor `house` is $0.015$ in this small model, which is significant. The conclusion regarding this predictor is contradictory for the two models.
+**Answer:** The t value of the predictor `house` is $3.895$ in this small model, which is significant in this small model. The two models have different conclusions for this predictors. The conclusion regarding this predictor is contradictory for the two models.
 
 ### Q1.4
 (d) Use stepwise AIC to select a smaller model than the full set of predictors. You will need to handle the missing values carefully. Report on the qualitative effect of the predictors in your chosen model. Can we conclude that the predictors that were dropped from the model have no relation to the response?
@@ -85,7 +90,7 @@ The coefficient of `bsocacc` is $0.5048$, which means the odds of moving up in o
 The coefficient of `agegp` is $0.2696$, which means for every one level increase of age group, the odds of moving up in one category of frequency of credit card use is estimated to increase by $e^{0.2696} - 1 = 31\%$, controlling for all other predictors.\
 The coefficient of `cigbuy` is $-0.7677$, which means the odds of moving up in one category of frequency of credit card use is $e^{-0.7677} = 0.464$ times lower for people who buy cigarettes than those who do not buy cigarettes, controlling for all other predictors.\
 The coefficient of `prodebt` is $0.5635$, which means for every one score increase of `prodebt`, the odds of moving up in one category of frequency of credit card use is estimated to increase by $e^{0.5635} -1 = 76\%$, controlling for all other predictors.\
-We cannot conclude that the predictors that were dropped from the model have no relation to the response.
+We cannot conclude that the predictors that were dropped from the model have no relation to the response because AIC method drops some predictors based on AIC values, we may drop some predictors whose adjusted effects are not significant but marginal effects may be significant.
 
 ### Q1.5
 (e) Compute the median values of the predictors in your selected model. At these median values, contrast the predicted outcome probabilities for both smokers and nonsmokers.
@@ -216,7 +221,7 @@ $$
 So the Fisher information matrix is
 $$
  \mathbb{E} [- \nabla^2 \ell(\boldsymbol{\beta})] = \sum_{i=1}^n \frac{[\mu_i'(\eta_i)]^2}{\sigma_i^2} \mathbf{x}_i \mathbf{x}_i^T , \\
- \text{since } \sum_{i=1}^n \mathbb{E} (y_i - \mu_i) = 0 \text{ and others are constant for the second and third terms.}
+ \text{since } \mathbb{E} (y_i - \mu_i) = 0 \text{ and the second and third terms become zero.}
 $$
 
 ## Q4. ELMR Exercise 8.1 (p171)
