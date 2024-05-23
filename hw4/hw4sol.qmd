@@ -53,7 +53,7 @@ debt1 |>
   geom_line(mapping = aes(x = incomegp, y = prop, group = ccarduse, color = ccarduse)) + 
   labs(x = "Income Level", y = "Proportion")
 ```
-**Answer:** As the use of credit card increases, the proportion of people in the lowest income group decreases, while the proportion of people in the highest income group increases. The proportion of people in the middle income group is relatively stable.
+**Answer:** As the income level increases, the proportion of people who use credit card occasionally or regularly increases. The proportion of people who never use credit card decreases
 
 ### Q1.2
 (b) Fit a proportional odds model for credit card use with all the other variables as predictors. What are the two most significant predictors (largest t-values) and what is their qualitative effect on the response? What is the least significant predictor?
@@ -278,7 +278,7 @@ model1 <- glm(Species ~ Area + Elevation + Nearest + Scruz + Adjacent,
               data = gala, family = poisson)
 summary(model1)
 ```
-**Answer:** The coefficient of `Area` is $ -0.0005799$, `Elevation` is $0.003541$, `Nearest` is $0.008826$, `Scruz` is $-0.005709$ and `Adjacent` is $-0.000663$. The residual deviance is $ 716.85$.
+**Answer:** The coefficient of `Area` is $-0.0005799$, `Elevation` is $0.003541$, `Nearest` is $0.008826$, `Scruz` is $-0.005709$ and `Adjacent` is $-0.000663$. The deviance is $716.85$.
 
 ### Q5.2
 (b) For a Poisson GLM, derive $\eta$, $\frac{d\eta}{d\mu}$, $V(\mu)$ and the weights to be used in an iteratively fit GLM. What is the form of the adjusted dependent variable here?
@@ -298,7 +298,16 @@ V(\mu) &=& \mu, \\
 w &=& e^{\mathbf{x}^T \boldsymbol{\beta}} = e^{\eta} = \mu
 \end{eqnarray*}
 $$
-The adjusted dependent variable is $z^{(t)} = \eta^{(t)} + \frac{y-\hat{\mu}^{(t)}}{\hat{\mu}^{(t)}}$.
+The adjusted dependent variable is 
+$$
+\begin{eqnarray*}
+  \boldsymbol{\beta}^{(t+1)} &=& \boldsymbol{\beta}^{(t)} + s(\mathbf{X}^T \mathbf{W}^{(t)} \mathbf{X})^{-1} \mathbf{X}^T (\mathbf{y} - \widehat{\boldsymbol{\mu}}^{(t)}) \\
+  &=& (\mathbf{X}^T \mathbf{W}^{(t)} \mathbf{X})^{-1} \mathbf{X}^T \mathbf{W}^{(t)} [\mathbf{X} \boldsymbol{\beta}^{(t)} + s (\mathbf{W}^{(t)})^{-1} (\mathbf{y} - \widehat{\boldsymbol{\mu}}^{(t)})] \\
+  &=& (\mathbf{X}^T \mathbf{W}^{(t)} \mathbf{X})^{-1} \mathbf{X}^T \mathbf{W}^{(t)} \mathbf{z}^{(t)}\\
+\mathbf{z}^{(t)} &=& \mathbf{X} \boldsymbol{\beta}^{(t)} + s (\mathbf{W}^{(t)})^{-1} (\mathbf{y} - \widehat{\boldsymbol{\mu}}^{(t)})\\
+z_i &=& \log(\hat{\mu_i}) + s\frac{y-\hat{\mu_i}}{\hat{\mu_i}}
+\end{eqnarray*} 
+$$
 
 ### Q5.3
 (c) Using the observed response as initial values, compute the first stage of the iteration, stopping after the first linear model fit. Compare the coefficients of this linear model to those found in the GLM fit. How close are they?
@@ -321,9 +330,10 @@ mu <- exp(eta)
 z <- eta + (y-mu)/mu
 w <- mu
 model2 <- lm(z ~ . - Endemics - Species, weights = w, gala)
-deviance(model2)
+deviance <- 2*sum(y*log(y/mu) - y + mu)
+deviance
 ```
-**Answer:** The deviance from this linear model is 570.9648, which is not close to the deviance from the GLM.
+**Answer:** The deviance from this linear model is 828.0096, which is not close to the deviance from the GLM.
 
 ### Q5.5
 (e) Compute one more iteration of the GLM fit, reporting the next calculation of the coefficients and deviance. How close are these to target now?
@@ -334,9 +344,10 @@ z <- eta + (y-mu)/mu
 w <- mu
 model2 <- lm(z ~ . - Endemics - Species, weights = w, gala)
 coef(model2)
-deviance(model2)
+deviance2 <- 2*sum(y*log(y/mu) - y + mu)
+deviance2
 ```
-**Answer:** The coefficients of this linear model are all close to those found in the GLM fit. The deviance from this linear model is 725.5103, which is close to the deviance from the GLM.
+**Answer:** The coefficients of this linear model are all close to those found in the GLM fit. The deviance from this linear model is 719.4158, which is close to the deviance from the GLM.
 
 ### Q5.6
 (f) Repeat these iterations a few more times, computing the deviance in each time. Stop when the deviance does not change much. Compare your final estimated coefficients to that produced by the GLM fit.
@@ -347,12 +358,12 @@ for (i in 1:5) {
   z <- eta + (y-mu)/mu
   w <- mu
   model2 <- lm(z ~ . - Endemics - Species, weights = w, gala)
-  deviance(model2)
-  cat(i, deviance(model2), "\n")
+  deviance3 <- 2*sum(y*log(y/mu) - y + mu)
+  cat(i, deviance3, "\n")
 }
 coef(model2)
 ```
-**Answer:** After five more iterations, the deviance does not change and it is 761.9792, which is close to the deviance from the GLM. The final estimated coefficients are almost the same as that produced by the GLM fit.
+**Answer:** After five more iterations, the deviance does not change and it is 716.8458, which is close to the deviance from the GLM. The final estimated coefficients are almost the same as that produced by the GLM fit.
 
 ### Q5.7
 (g) Use your final iterated linear model fit to produce standard errors for the coefficients. How close are these to that produced by the direct GLM fit?
@@ -379,20 +390,20 @@ summary(model1)
 model3 <- glm(Species ~ Area + Nearest + Scruz + Adjacent, 
               data = gala, family = poisson)
 summary(model3)
-anova(model3, model1, test = "Chisq")
+pchisq(model3$deviance - model1$deviance, 1, lower.tail = FALSE)
 ```
-**Answer:** The p-value of the difference in deviances is $< 2.2e-16$, which means that the `Elevation` predictor is significant and can contribute to explaining variation in the `Species` response.
+**Answer:** The p-value of the difference in deviances is $0$, which means that the `Elevation` predictor is significant and can contribute to explaining variation in the `Species` response.
 
 ### Q6.3
 (c) Use the Pearson Chi-squared statistic in place of the deviance in the previous test.
 ```{r}
 px2 <- sum(residuals(model1, type = "pearson")^2)
-pchisq(px2, model1$df.residual, lower.tail = FALSE)
 
 px2_1 <- sum(residuals(model3, type = "pearson")^2)
-pchisq(px2_1, model3$df.residual, lower.tail = FALSE)
+
+pchisq(px2_1 - px2, 1, lower.tail = FALSE)
 ```
-**Answer:** The p-value of the Pearson Chi-squared statistic in the model with `Elevation` is almost $0$ and the p-value of the Pearson Chi-squared statistic in the model without `Elevation` is $0$. Both models do not fit the data well but the model without `Elevation` fits the data worse. So we should include `Elevation` in the model.
+**Answer:** The p-value of the Pearson Chi-squared statistic is $0$, which means that the `Elevation` predictor is significant and can contribute to explaining variation in the `Species` response.
 
 ### Q6.4
 (d) Fit the Poisson model with a free dispersion parameter as described in Section 5.2. Make the test using the model summary.
@@ -420,15 +431,15 @@ p
 (f) Use the robust GLM estimation method and report the test result from the summary.
 ```{r}
 library(robust)
-glmRob(Species ~ Area + Nearest + Scruz + Adjacent + Elevation, 
-       data = gala, family = poisson) |>
-  summary()
+modelRob <- glmRob(Species ~ Area + Nearest + Scruz + Adjacent + Elevation, 
+                   data = gala, family = poisson)
+summary(modelRob)
 ```
 **Answer:** The p-value of the z-statistic for all the predictors except for `Adjacent` is $0$, which means that the `Elevation` predictor is significant and can contribute to explaining variation in the `Species` response.
 
 ### Q6.7
 (g) Compare all six results. Pick the best one and justify your choice.
 
-**Answer:** It seems that fitting the Poisson model with a free dispersion parameter is the best method. It can make the variance be equal to the mean and the coefficients from this method is same as the coefficients from the original model. 
+**Answer:** It seems that fitting the Poisson model with a free dispersion parameter is the best method. There exists over-dispersion and Q6.4 method can make the variance be equal to the mean and the coefficients from this method is same as the coefficients from the original model. 
 
 

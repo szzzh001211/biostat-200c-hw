@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Ziheng Zhang_606300061">
-<meta name="dcterms.date" content="2024-05-22">
+<meta name="dcterms.date" content="2024-05-23">
 
 <title>Biostat 200C Homework 4</title>
 <style>
@@ -3203,7 +3203,7 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">May 22, 2024</p>
+      <p class="date">May 23, 2024</p>
     </div>
   </div>
   
@@ -3256,7 +3256,7 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 </div>
 </div>
 </div>
-<p><strong>Answer:</strong> As the use of credit card increases, the proportion of people in the lowest income group decreases, while the proportion of people in the highest income group increases. The proportion of people in the middle income group is relatively stable.</p>
+<p><strong>Answer:</strong> As the income level increases, the proportion of people who use credit card occasionally or regularly increases. The proportion of people who never use credit card decreases</p>
 </section>
 <section id="q1.2" class="level3" data-number="1.2">
 <h3 data-number="1.2" class="anchored" data-anchor-id="q1.2"><span class="header-section-number">1.2</span> Q1.2</h3>
@@ -3591,7 +3591,7 @@ AIC: 889.68
 Number of Fisher Scoring iterations: 5</code></pre>
 </div>
 </div>
-<p><strong>Answer:</strong> The coefficient of <code>Area</code> is $ -0.0005799$, <code>Elevation</code> is <span class="math inline">\(0.003541\)</span>, <code>Nearest</code> is <span class="math inline">\(0.008826\)</span>, <code>Scruz</code> is <span class="math inline">\(-0.005709\)</span> and <code>Adjacent</code> is <span class="math inline">\(-0.000663\)</span>. The residual deviance is $ 716.85$.</p>
+<p><strong>Answer:</strong> The coefficient of <code>Area</code> is <span class="math inline">\(-0.0005799\)</span>, <code>Elevation</code> is <span class="math inline">\(0.003541\)</span>, <code>Nearest</code> is <span class="math inline">\(0.008826\)</span>, <code>Scruz</code> is <span class="math inline">\(-0.005709\)</span> and <code>Adjacent</code> is <span class="math inline">\(-0.000663\)</span>. The deviance is <span class="math inline">\(716.85\)</span>.</p>
 </section>
 <section id="q5.2" class="level3" data-number="5.2">
 <h3 data-number="5.2" class="anchored" data-anchor-id="q5.2"><span class="header-section-number">5.2</span> Q5.2</h3>
@@ -3611,7 +3611,15 @@ V(\mu) &amp;=&amp; \mu, \\
 \text{So the weight is:}\\
 w &amp;=&amp; e^{\mathbf{x}^T \boldsymbol{\beta}} = e^{\eta} = \mu
 \end{eqnarray*}
-\]</span> The adjusted dependent variable is <span class="math inline">\(z^{(t)} = \eta^{(t)} + \frac{y-\hat{\mu}^{(t)}}{\hat{\mu}^{(t)}}\)</span>.</li>
+\]</span> The adjusted dependent variable is <span class="math display">\[
+\begin{eqnarray*}
+  \boldsymbol{\beta}^{(t+1)} &amp;=&amp; \boldsymbol{\beta}^{(t)} + s(\mathbf{X}^T \mathbf{W}^{(t)} \mathbf{X})^{-1} \mathbf{X}^T (\mathbf{y} - \widehat{\boldsymbol{\mu}}^{(t)}) \\
+  &amp;=&amp; (\mathbf{X}^T \mathbf{W}^{(t)} \mathbf{X})^{-1} \mathbf{X}^T \mathbf{W}^{(t)} [\mathbf{X} \boldsymbol{\beta}^{(t)} + s (\mathbf{W}^{(t)})^{-1} (\mathbf{y} - \widehat{\boldsymbol{\mu}}^{(t)})] \\
+  &amp;=&amp; (\mathbf{X}^T \mathbf{W}^{(t)} \mathbf{X})^{-1} \mathbf{X}^T \mathbf{W}^{(t)} \mathbf{z}^{(t)}\\
+\mathbf{z}^{(t)} &amp;=&amp; \mathbf{X} \boldsymbol{\beta}^{(t)} + s (\mathbf{W}^{(t)})^{-1} (\mathbf{y} - \widehat{\boldsymbol{\mu}}^{(t)})\\
+z_i &amp;=&amp; \log(\hat{\mu_i}) + s\frac{y-\hat{\mu_i}}{\hat{\mu_i}}
+\end{eqnarray*}
+\]</span></li>
 </ol>
 </section>
 <section id="q5.3" class="level3" data-number="5.3">
@@ -3647,12 +3655,13 @@ w &amp;=&amp; e^{\mathbf{x}^T \boldsymbol{\beta}} = e^{\eta} = \mu
 <span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>z <span class="ot">&lt;-</span> eta <span class="sc">+</span> (y<span class="sc">-</span>mu)<span class="sc">/</span>mu</span>
 <span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>w <span class="ot">&lt;-</span> mu</span>
 <span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>model2 <span class="ot">&lt;-</span> <span class="fu">lm</span>(z <span class="sc">~</span> . <span class="sc">-</span> Endemics <span class="sc">-</span> Species, <span class="at">weights =</span> w, gala)</span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="fu">deviance</span>(model2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>deviance <span class="ot">&lt;-</span> <span class="dv">2</span><span class="sc">*</span><span class="fu">sum</span>(y<span class="sc">*</span><span class="fu">log</span>(y<span class="sc">/</span>mu) <span class="sc">-</span> y <span class="sc">+</span> mu)</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>deviance</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 570.9648</code></pre>
+<pre><code>[1] 828.0096</code></pre>
 </div>
 </div>
-<p><strong>Answer:</strong> The deviance from this linear model is 570.9648, which is not close to the deviance from the GLM.</p>
+<p><strong>Answer:</strong> The deviance from this linear model is 828.0096, which is not close to the deviance from the GLM.</p>
 </section>
 <section id="q5.5" class="level3" data-number="5.5">
 <h3 data-number="5.5" class="anchored" data-anchor-id="q5.5"><span class="header-section-number">5.5</span> Q5.5</h3>
@@ -3672,12 +3681,13 @@ w &amp;=&amp; e^{\mathbf{x}^T \boldsymbol{\beta}} = e^{\eta} = \mu
      Adjacent 
 -0.0006630167 </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">deviance</span>(model2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>deviance2 <span class="ot">&lt;-</span> <span class="dv">2</span><span class="sc">*</span><span class="fu">sum</span>(y<span class="sc">*</span><span class="fu">log</span>(y<span class="sc">/</span>mu) <span class="sc">-</span> y <span class="sc">+</span> mu)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>deviance2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 725.5103</code></pre>
+<pre><code>[1] 719.4158</code></pre>
 </div>
 </div>
-<p><strong>Answer:</strong> The coefficients of this linear model are all close to those found in the GLM fit. The deviance from this linear model is 725.5103, which is close to the deviance from the GLM.</p>
+<p><strong>Answer:</strong> The coefficients of this linear model are all close to those found in the GLM fit. The deviance from this linear model is 719.4158, which is close to the deviance from the GLM.</p>
 </section>
 <section id="q5.6" class="level3" data-number="5.6">
 <h3 data-number="5.6" class="anchored" data-anchor-id="q5.6"><span class="header-section-number">5.6</span> Q5.6</h3>
@@ -3691,15 +3701,15 @@ w &amp;=&amp; e^{\mathbf{x}^T \boldsymbol{\beta}} = e^{\eta} = \mu
 <span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  z <span class="ot">&lt;-</span> eta <span class="sc">+</span> (y<span class="sc">-</span>mu)<span class="sc">/</span>mu</span>
 <span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>  w <span class="ot">&lt;-</span> mu</span>
 <span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>  model2 <span class="ot">&lt;-</span> <span class="fu">lm</span>(z <span class="sc">~</span> . <span class="sc">-</span> Endemics <span class="sc">-</span> Species, <span class="at">weights =</span> w, gala)</span>
-<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">deviance</span>(model2)</span>
-<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(i, <span class="fu">deviance</span>(model2), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>  deviance3 <span class="ot">&lt;-</span> <span class="dv">2</span><span class="sc">*</span><span class="fu">sum</span>(y<span class="sc">*</span><span class="fu">log</span>(y<span class="sc">/</span>mu) <span class="sc">-</span> y <span class="sc">+</span> mu)</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(i, deviance3, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
 <span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>1 760.6998 
-2 761.9774 
-3 761.9792 
-4 761.9792 
-5 761.9792 </code></pre>
+<pre><code>1 716.8488 
+2 716.8458 
+3 716.8458 
+4 716.8458 
+5 716.8458 </code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(model2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -3709,7 +3719,7 @@ w &amp;=&amp; e^{\mathbf{x}^T \boldsymbol{\beta}} = e^{\eta} = \mu
 -0.0006630311 </code></pre>
 </div>
 </div>
-<p><strong>Answer:</strong> After five more iterations, the deviance does not change and it is 761.9792, which is close to the deviance from the GLM. The final estimated coefficients are almost the same as that produced by the GLM fit.</p>
+<p><strong>Answer:</strong> After five more iterations, the deviance does not change and it is 716.8458, which is close to the deviance from the GLM. The final estimated coefficients are almost the same as that produced by the GLM fit.</p>
 </section>
 <section id="q5.7" class="level3" data-number="5.7">
 <h3 data-number="5.7" class="anchored" data-anchor-id="q5.7"><span class="header-section-number">5.7</span> Q5.7</h3>
@@ -3799,20 +3809,12 @@ AIC: 2560.4
 
 Number of Fisher Scoring iterations: 6</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(model3, model1, <span class="at">test =</span> <span class="st">&quot;Chisq&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pchisq</span>(model3<span class="sc">$</span>deviance <span class="sc">-</span> model1<span class="sc">$</span>deviance, <span class="dv">1</span>, <span class="at">lower.tail =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Analysis of Deviance Table
-
-Model 1: Species ~ Area + Nearest + Scruz + Adjacent
-Model 2: Species ~ Area + Elevation + Nearest + Scruz + Adjacent
-  Resid. Df Resid. Dev Df Deviance  Pr(&gt;Chi)    
-1        25    2389.57                          
-2        24     716.85  1   1672.7 &lt; 2.2e-16 ***
----
-Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre><code>[1] 0</code></pre>
 </div>
 </div>
-<p><strong>Answer:</strong> The p-value of the difference in deviances is <span class="math inline">\(&lt; 2.2e-16\)</span>, which means that the <code>Elevation</code> predictor is significant and can contribute to explaining variation in the <code>Species</code> response.</p>
+<p><strong>Answer:</strong> The p-value of the difference in deviances is <span class="math inline">\(0\)</span>, which means that the <code>Elevation</code> predictor is significant and can contribute to explaining variation in the <code>Species</code> response.</p>
 </section>
 <section id="q6.3" class="level3" data-number="6.3">
 <h3 data-number="6.3" class="anchored" data-anchor-id="q6.3"><span class="header-section-number">6.3</span> Q6.3</h3>
@@ -3821,17 +3823,15 @@ Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&
 </ol>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>px2 <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">residuals</span>(model1, <span class="at">type =</span> <span class="st">&quot;pearson&quot;</span>)<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="fu">pchisq</span>(px2, model1<span class="sc">$</span>df.residual, <span class="at">lower.tail =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 2.18719e-145</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>px2_1 <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">residuals</span>(model3, <span class="at">type =</span> <span class="st">&quot;pearson&quot;</span>)<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="fu">pchisq</span>(px2_1, model3<span class="sc">$</span>df.residual, <span class="at">lower.tail =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>px2_1 <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">residuals</span>(model3, <span class="at">type =</span> <span class="st">&quot;pearson&quot;</span>)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a><span class="fu">pchisq</span>(px2_1 <span class="sc">-</span> px2, <span class="dv">1</span>, <span class="at">lower.tail =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0</code></pre>
 </div>
 </div>
-<p><strong>Answer:</strong> The p-value of the Pearson Chi-squared statistic in the model with <code>Elevation</code> is almost <span class="math inline">\(0\)</span> and the p-value of the Pearson Chi-squared statistic in the model without <code>Elevation</code> is <span class="math inline">\(0\)</span>. Both models do not fit the data well but the model without <code>Elevation</code> fits the data worse. So we should include <code>Elevation</code> in the model.</p>
+<p><strong>Answer:</strong> The p-value of the Pearson Chi-squared statistic is <span class="math inline">\(0\)</span>, which means that the <code>Elevation</code> predictor is significant and can contribute to explaining variation in the <code>Species</code> response.</p>
 </section>
 <section id="q6.4" class="level3" data-number="6.4">
 <h3 data-number="6.4" class="anchored" data-anchor-id="q6.4"><span class="header-section-number">6.4</span> Q6.4</h3>
@@ -3839,8 +3839,8 @@ Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&
 <li>Fit the Poisson model with a free dispersion parameter as described in Section 5.2. Make the test using the model summary.</li>
 </ol>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>dp1 <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">residuals</span>(model1, <span class="at">type =</span> <span class="st">&quot;pearson&quot;</span>)<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> model1<span class="sc">$</span>df.residual</span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model1, <span class="at">dispersion =</span> dp1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>dp1 <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">residuals</span>(model1, <span class="at">type =</span> <span class="st">&quot;pearson&quot;</span>)<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> model1<span class="sc">$</span>df.residual</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model1, <span class="at">dispersion =</span> dp1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
@@ -3875,14 +3875,14 @@ Number of Fisher Scoring iterations: 5</code></pre>
 <li>Use the sandwich estimation method for the standard errors in the original model. Use these to compute z-statistics.</li>
 </ol>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sandwich)</span>
-<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>se_san <span class="ot">&lt;-</span> model1 <span class="sc">|&gt;</span> </span>
-<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">vcovHC</span>() <span class="sc">|&gt;</span></span>
-<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">diag</span>() <span class="sc">|&gt;</span></span>
-<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sqrt</span>()</span>
-<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>z <span class="ot">&lt;-</span> <span class="fu">coef</span>(model1) <span class="sc">/</span> se_san</span>
-<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">pnorm</span>(<span class="fu">abs</span>(z), <span class="dv">0</span>, <span class="dv">1</span>))<span class="sc">*</span><span class="dv">2</span></span>
-<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>p</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sandwich)</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>se_san <span class="ot">&lt;-</span> model1 <span class="sc">|&gt;</span> </span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">vcovHC</span>() <span class="sc">|&gt;</span></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">diag</span>() <span class="sc">|&gt;</span></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sqrt</span>()</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>z <span class="ot">&lt;-</span> <span class="fu">coef</span>(model1) <span class="sc">/</span> se_san</span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">pnorm</span>(<span class="fu">abs</span>(z), <span class="dv">0</span>, <span class="dv">1</span>))<span class="sc">*</span><span class="dv">2</span></span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>p</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>(Intercept)        Area   Elevation     Nearest       Scruz    Adjacent 
 0.000000000 0.633870232 0.003023114 0.698719635 0.382533355 0.285869676 </code></pre>
@@ -3896,34 +3896,26 @@ Number of Fisher Scoring iterations: 5</code></pre>
 <li>Use the robust GLM estimation method and report the test result from the summary.</li>
 </ol>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(robust)</span>
-<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="fu">glmRob</span>(Species <span class="sc">~</span> Area <span class="sc">+</span> Nearest <span class="sc">+</span> Scruz <span class="sc">+</span> Adjacent <span class="sc">+</span> Elevation, </span>
-<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">data =</span> gala, <span class="at">family =</span> poisson) <span class="sc">|&gt;</span></span>
-<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] &quot;Variance number 1 smaller than 1.e-10 (set to 1.e-10)&quot;
-[1] &quot;Variance number 2 smaller than 1.e-10 (set to 1.e-10)&quot;
-[1] &quot;Variance number 3 smaller than 1.e-10 (set to 1.e-10)&quot;
-[1] &quot;Variance number 4 smaller than 1.e-10 (set to 1.e-10)&quot;
-[1] &quot;Variance number 5 smaller than 1.e-10 (set to 1.e-10)&quot;
-[1] &quot;Variance number 6 smaller than 1.e-10 (set to 1.e-10)&quot;</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(robust)</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>modelRob <span class="ot">&lt;-</span> <span class="fu">glmRob</span>(Species <span class="sc">~</span> Area <span class="sc">+</span> Nearest <span class="sc">+</span> Scruz <span class="sc">+</span> Adjacent <span class="sc">+</span> Elevation, </span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">data =</span> gala, <span class="at">family =</span> poisson)</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(modelRob)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call: glmRob(formula = Species ~ Area + Nearest + Scruz + Adjacent + 
     Elevation, family = poisson, data = gala)
 Deviance Residuals:
    Min     1Q Median     3Q    Max 
- 11.96  67.35  87.67 144.75 191.13 
+  0.34  65.20  85.80 144.75 191.13 
 
 Coefficients:
-             Estimate Std. Error z value Pr(&gt;|z|)
-(Intercept) -54493.77          0    -Inf        0
-Area        -58833.21          0    -Inf        0
-Nearest       3347.64          0     Inf        0
-Scruz         -267.68          0    -Inf        0
-Adjacent       -33.83          0    -Inf        0
-Elevation     1637.97          0     Inf        0
+            Estimate Std. Error    z value Pr(&gt;|z|)
+(Intercept) -25754.6  4.235e-01 -6.082e+04   0.0000
+Area        -38024.4  5.866e-02 -6.483e+05   0.0000
+Nearest       1697.6  9.553e-05  1.777e+07   0.0000
+Scruz         -387.4  4.938e+00 -7.845e+01   0.0000
+Adjacent      -102.7  1.298e+02 -7.917e-01   0.4285
+Elevation     1532.9  1.138e+01  1.347e+02   0.0000
 
 (Dispersion Parameter for poisson family taken to be 1 )
 
@@ -3934,12 +3926,12 @@ Residual Deviance: NaN on 24 degrees of freedom
 Number of Iterations: 50 
 
 Correlation of Coefficients:
-          (Intercept) Area Nearest Scruz Adjacent
-Area      NaN                                    
-Nearest   NaN         NaN                        
-Scruz     NaN         NaN  NaN                   
-Adjacent  NaN         NaN  NaN     NaN           
-Elevation NaN         NaN  NaN     NaN   NaN     </code></pre>
+          (Intercept) Area       Nearest    Scruz      Adjacent  
+Area       2.574e-01                                             
+Nearest    1.065e+04  -2.149e+04                                 
+Scruz      1.517e+00  -1.307e+01  4.127e-04                      
+Adjacent   3.391e-01   1.224e-01  2.856e+03  5.533e-02           
+Elevation  3.894e-01   1.233e-01  3.651e+03  2.894e-01  9.718e-01</code></pre>
 </div>
 </div>
 <p><strong>Answer:</strong> The p-value of the z-statistic for all the predictors except for <code>Adjacent</code> is <span class="math inline">\(0\)</span>, which means that the <code>Elevation</code> predictor is significant and can contribute to explaining variation in the <code>Species</code> response.</p>
@@ -3949,7 +3941,7 @@ Elevation NaN         NaN  NaN     NaN   NaN     </code></pre>
 <ol start="7" type="a">
 <li>Compare all six results. Pick the best one and justify your choice.</li>
 </ol>
-<p><strong>Answer:</strong> It seems that fitting the Poisson model with a free dispersion parameter is the best method. It can make the variance be equal to the mean and the coefficients from this method is same as the coefficients from the original model.</p>
+<p><strong>Answer:</strong> It seems that fitting the Poisson model with a free dispersion parameter is the best method. There exists over-dispersion and Q6.4 method can make the variance be equal to the mean and the coefficients from this method is same as the coefficients from the original model.</p>
 </section>
 </section>
 
