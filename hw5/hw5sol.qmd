@@ -66,7 +66,6 @@ y_{ij} &=& \mu + \alpha_i+\epsilon_{ij} \\
 \bar{y}_{i \cdot} &=& \frac{1}{n} \sum_{j=1}^n(\mu + \alpha_i + \epsilon_{ij}) = \mu + \alpha_i + \bar{\epsilon}_{i \cdot} \\
 y_{ij} - \bar{y}_{i \cdot} &=& \epsilon_{ij} - \bar{\epsilon}_{i \cdot} \\
 \mathbb{E}\left[\sum_{j=1}^n (y_{ij} - \bar{y}_{i \cdot})^2 \right]&=&\mathbb{E}\left[\sum_{j=1}^n(\epsilon_{ij} - \bar{\epsilon}_{i \cdot})^2\right] = \mathbb{E} \left[(n-1)S^2_{\epsilon}\right]=(n-1)\sigma_\epsilon^2,\\ && \text{where } S^2_{\epsilon} \text{ is the sample variance of } \epsilon_{ij} \\
-
 \mathbb{E} (\text{SSE})&=&\mathbb{E} \left[ \sum_{i=1}^a \sum_{j=1}^n (y_{ij} - \bar{y}_{i \cdot})^2 \right] = a(n-1) \sigma_{\epsilon}^2
 \end{eqnarray*}
 $$
@@ -103,6 +102,74 @@ L(\mu, \sigma_{\alpha}^2, \sigma_{\epsilon}^2) &=& \prod_{i=1}^a \prod_{j=1}^n \
 \frac{\partial \ell}{\partial \sigma^2_\alpha} &=& -\frac{na}{2(\sigma_{\epsilon}^2+\sigma_{\alpha}^2)} + \frac{1}{2(\sigma_{\epsilon}^2+\sigma_{\alpha}^2)^2}\sum_{i=1}^a\sum_{j=1}^n(y_{ij}-\mu)^2 = 0\\
 \frac{\partial \ell}{\partial \sigma^2_\epsilon} &=& -\frac{na}{2(\sigma_{\epsilon}^2+\sigma_{\alpha}^2)} + \frac{1}{2(\sigma_{\epsilon}^2+\sigma_{\alpha}^2)^2}\sum_{i=1}^a\sum_{j=1}^n(y_{ij}-\mu)^2 = 0\\
 \hat{\sigma}^2_\alpha + \hat{\sigma}^2_\epsilon &=& \frac{1}{na}\sum_{i=1}^a\sum_{j=1}^n(y_{ij}-\mu)^2 = \frac{1}{na}\sum_{i=1}^a\sum_{j=1}^n(y_{ij}-\bar{y}_{\cdot \cdot})^2 \tag{2}
+\end{eqnarray*}
+$$
+$$
+\begin{eqnarray*}
+\ell(\mu, \sigma_{\alpha}^2, \sigma_{\epsilon}^2) &=& - \frac n2 \log(2\pi) - \frac 12 \log \det (\sigma_{\alpha}^2 \mathbf{Z} \mathbf{Z}^T + \sigma_{\epsilon}^2 \mathbf{I}) - \frac 12 (\mathbf{y} - \mathbf{1}_{na} \mu)^T (\sigma_{\alpha}^2 \mathbf{Z} \mathbf{Z}^T + \sigma_{\epsilon}^2 \mathbf{I})^{-1} (\mathbf{y} - \mathbf{1}_{na} \mu) \\
+&=& \sum_i - \frac 12 \log \det (\sigma_{\alpha}^2 \mathbf{1}_n \mathbf{1}_n^T + \sigma_{\epsilon}^2 \mathbf{I}_n) - \frac 12 (\mathbf{y}_i - \mathbf{1}_{n} \mu)^T (\sigma_{\alpha}^2 \mathbf{1}_n \mathbf{1}_n^T + \sigma_{\epsilon}^2 \mathbf{I}_n)^{-1} (\mathbf{y}_i - \mathbf{1}_{n} \mu).
+\end{eqnarray*}
+$$
+By Woodbury formula
+$$
+\begin{eqnarray*}
+(\sigma_{\alpha}^2 \mathbf{1}_n \mathbf{1}_n^T + \sigma_{\epsilon}^2 \mathbf{I}_n)^{-1} &=& \sigma_{\epsilon}^{-2} \mathbf{I}_{n} - \frac{\sigma_{\epsilon}^{-2} \sigma_{\alpha}^2}{\sigma_{\epsilon}^2 + n\sigma_{\alpha}^2} \mathbf{1}_n \mathbf{1}_n^T \\
+\det (\sigma_{\alpha}^2 \mathbf{1}_n \mathbf{1}_n^T + \sigma_{\epsilon}^2 \mathbf{I}_n) &=& \sigma_{\epsilon}^{2n} (1 + n \sigma_{\alpha}^2 / \sigma_{\epsilon}^2).
+\end{eqnarray*}
+$$
+
+$$
+\begin{eqnarray*}
+\ell(\mu, \sigma_{\alpha}^2, \sigma_{\epsilon}^2) &=& - \frac{na}{2} \log \sigma_{\epsilon}^2 - \frac{a}{2} \log (1 + n\lambda) - \frac{\sigma_{\epsilon}^{-2}}{2} \text{SST}(\mu) + \frac{\sigma_{\epsilon}^{-2}}{2} \frac{n\lambda}{1 + n \lambda} \text{SSA}(\mu) \\
+&=& - \frac{na}{2} \log \sigma_{\epsilon}^2 - \frac{a}{2} \log (1 + n\lambda) - \frac{\sigma_{\epsilon}^{-2}}{2} \frac{\text{SST}(\mu) + n\lambda \text{SSA}}{1 + n \lambda}.
+\end{eqnarray*}
+$$
+$$
+\hat \sigma_{\alpha}^2 = \frac{\text{SSA}}{an} - \frac{\text{SSE}}{an(n-1)}
+$$
+
+$$
+\begin{eqnarray*}
+L(\mu, \sigma^2_\alpha, \sigma^2_\epsilon) &=& \prod_{i=1}^{a} \left[ \frac{1}{(2\pi)^{n/2}|\Omega|^{1/2}} \exp \left\{ -\frac{1}{2} (\mathbf{y}_i - \mu \mathbf{1}_n)^T \Omega^{-1} (\mathbf{y}_i - \mu \mathbf{1}_n) \right\} \right] \\
+\\
+\text{where } \Omega &=& 
+\begin{bmatrix}
+\sigma^2_\epsilon + \sigma^2_\alpha & \sigma^2_\alpha & \cdots & \sigma^2_\alpha \\
+\sigma^2_\alpha & \sigma^2_\epsilon + \sigma^2_\alpha & \cdots & \sigma^2_\alpha \\
+\vdots & \vdots & \ddots & \vdots \\
+\sigma^2_\alpha & \sigma^2_\alpha & \cdots & \sigma^2_\epsilon + \sigma^2_\alpha
+\end{bmatrix}_{n \times n}
+\\
+\\
+\ell(\mu, \sigma^2_\alpha, \sigma^2_\epsilon) &=& \sum_{i=1}^{a} \left[ -\frac{n}{2}\log(2\pi) - \frac{1}{2} \log|\Omega| - \frac{1}{2} (\mathbf{y}_i - \mu \mathbf{1}_n)^T \Omega^{-1} (\mathbf{y}_i - \mu \mathbf{1}_n) \right] \\
+\\
+\frac{\partial \ell}{\partial \mu} &=& \sum_{i=1}^{a} \Omega^{-1} (\mathbf{y}_i - \mu \mathbf{1}_n)^T \mathbf{1}_n = 0 \\
+\Rightarrow \hat{\mu} &=& \frac{\sum_{ij} y_{ij}}{na}\\
+\\
+\\
+\frac{\partial \ell}{\partial \sigma^2_\alpha} &=& \sum_{i=1}^{a} \left[ -\frac{1}{2} \text{tr}(\Omega^{-1} \frac{\partial \Omega}{\partial \sigma^2_\alpha}) + \frac{1}{2} (\mathbf{y}_i - \mu \mathbf{1}_n)^T \Omega^{-1} \frac{\partial \Omega}{\partial \sigma^2_\alpha} \Omega^{-1} (\mathbf{y}_i - \mu \mathbf{1}_n) \right] = 0 \\
+\text{where } \frac{\partial \Omega}{\partial \sigma^2_\alpha} &=& 
+\begin{bmatrix}
+1 & 1 & \cdots & 1 \\
+1 & 1 & \cdots & 1 \\
+\vdots & \vdots & \ddots & \vdots \\
+1 & 1 & \cdots & 1
+\end{bmatrix}_{n \times n} = \mathbf{1}_n \mathbf{1}_n^T \\
+\frac{\partial \ell}{\partial \sigma^2_\alpha} &=&  \sum_{i=1}^{a} \left[ -\frac{1}{2} \mathbf{1}_n^T \Omega^{-1} \mathbf{1}_n + \frac{1}{2} (\mathbf{y}_i - \mu \mathbf{1}_n)^T \Omega^{-1} \mathbf{1}_n \mathbf{1}_n^T \Omega^{-1} (\mathbf{y}_i - \mu \mathbf{1}_n) \right] = 0\\
+\Omega^{-1} &=& \frac{1}{\sigma^2_\epsilon} \left( I_n - \frac{\sigma^2_\alpha}{\sigma^2_\epsilon + n \sigma^2_\alpha} J_n \right) \\
+\Omega^{-1}\mathbf{1}_n &=& \frac{1}{\sigma^2_\epsilon + n \sigma^2_\alpha} \mathbf{1}_n \\
+\Rightarrow \frac{\partial \ell}{\partial \sigma^2_\alpha} &=& \sum_{i=1}^{a} \left[ -\frac{1}{2} \frac{n}{\sigma^2_\epsilon + n \sigma^2_\alpha} + \frac{1}{2} \frac{\left( \sum_{j=1}^{n} (y_{ij} - \mu) \right)^2}{(\sigma^2_\epsilon + n \sigma^2_\alpha)^2} \right]=0
+\\
+\\
+\frac{\partial \ell}{\partial \sigma^2_\epsilon} &=& \sum_{i=1}^{a} \left[ -\frac{1}{2} \text{tr}(\Omega^{-1} \frac{\partial \Omega}{\partial \sigma^2_\epsilon}) + \frac{1}{2} (\mathbf{y}_i - \mu \mathbf{1}_n)^T \Omega^{-1} \frac{\partial \Omega}{\partial \sigma^2_\epsilon} \Omega^{-1} (\mathbf{y}_i - \mu \mathbf{1}_n) \right] = 0 \\
+\text{where } \frac{\partial \Omega}{\partial \sigma^2_\epsilon} &=& 
+\begin{bmatrix}
+1 & 0 & \cdots & 0 \\
+0 & 1 & \cdots & 0 \\
+\vdots & \vdots & \ddots & \vdots \\
+0 & 0 & \cdots & 1
+\end{bmatrix}_{n \times n} = I_n
+
 \end{eqnarray*}
 $$
 
@@ -278,31 +345,125 @@ The ohio data concern 536 children from Steubenville, Ohio and were taken as par
 ### Q4.1
 (a) Do any of the mothers in the study change their smoking status during the period of observation?
 
+**Answer:**
+```{r}
+ohio |>
+  group_by(id) |>
+  summarise(smoke_change = n_distinct(smoke))
+sum(ohio$smoke_change > 1)
+```
+There are 0 mothers who changed their smoking status during the period of observation because the number of distinct smoking statuses is equal to 1 for all mothers, which means they did not change their smoking status.
+
 ### Q4.2
 (b) Construct a table that shows proportion of children who wheeze for 0, 1, 2, 3 or 4 years broken down by maternal smoking status.
+
+**Answer:**
+```{r}
+table_data <- ohio |>
+  group_by(id, smoke) |>
+  summarise(years = sum(resp), .groups = "drop")
+
+prop.table(table(table_data$years, table_data$smoke), 2)
+```
 
 ### Q4.3
 (c) Make plot which shows how the proportion of children wheezing changes by age with a separate line for smoking and nonsmoking mothers.
 
+**Answer:**
+```{r}
+library(ggplot2)
+ohio |>
+  filter(resp == 1) |>
+  count(age, smoke) |>
+  group_by(age) |>
+  mutate(prop = prop.table(n)) |>
+  ggplot() +
+  geom_line(mapping = aes(x = age, y = prop, group = smoke, color = factor(smoke))) +
+  labs(x = "Age", y = "Proportion")
+```
+
 ### Q4.4
 (d) Group the data by child to count the total (out of four) years of wheezing. Fit a binomial GLM to this response to check for a maternal smoking effect. Does this prove there is a smoking effect or could there be another plausible explanation?
+
+**Answer:**
+```{r}
+ohio1 <- ohio |>
+  group_by(id) |>
+  summarise(whez_years = sum(resp)) |>
+  mutate(non_whez_years = 4 - whez_years) |>
+  mutate(smoke = ohio$smoke[match(id, ohio$id)], .after = non_whez_years)
+glm(cbind(whez_years, non_whez_years) ~ smoke, data = ohio1, 
+    family = binomial) |>
+  summary()
+```
+The p-value of `smoke` is $0.0277 <0.05$, which indicates that there is a maternal smoking effect. However, there could be another plausible explanation because there could be something confounding the results.
 
 ### Q4.5
 (e) Fit a model for each individual response using a GLMM fit using penalized quasi-likelihood. Describe the effects of age and maternal smoking. How do the odds of wheezing change numerically over time?
 
+**Answer:**
+```{r}
+library(MASS)
+pqlmod <- glmmPQL(resp ~ age + smoke, random = ~ 1 | id, family = binomial, data = ohio)
+summary(pqlmod)
+```
+The odds of wheezing decreases by $1- e^{-0.182} = 16.6\%$ over time. The odds of wheezing for children of smoking mothers are $e^{0.325} = 1.384$ times higher than that for children of nonsmoking mothers.
+
 ### Q4.6
 (f) Now fit the same model but using adaptive Gaussian-Hermit quadrature. Compare to the previous model fit.
+
+**Answer:**
+```{r}
+library(lme4)
+ghmod <- glmer(resp ~ age + smoke + (1 | id), nAGQ = 25, family = binomial, 
+               data = ohio)
+summary(ghmod)
+```
+The coefficients of `age` and `smoke` are similar to the previous model fit. The odds of wheezing decreases by $1- e^{-0.176} = 16.1\%$ over time. The odds of wheezing for children of smoking mothers are $e^{0.399} = 1.49$ times higher than that for children of nonsmoking mothers.
 
 ### Q4.7
 (g) Use INLA to fit the same model. What does this model say about the effect of age and maternal smoking?
 
+**Answer:**
+```{r}
+library(INLA)
+formula <- resp ~ age + smoke + f(id, model = "iid")
+inlamod <- inla(formula, family = "binomial", data = ohio)
+summary(inlamod)
+```
+The odds of wheezing decreases by $1- e^{-0.173} = 15.9\%$ over time. The odds of wheezing for children of smoking mothers are $e^{0.385} = 1.47$ times higher than that for children of nonsmoking mothers.
+
 ### Q4.8
 (h) Use STAN to fit the same model. Check the MCMC diagnostics and again discuss the age and maternal smoking effects.
+
+**Answer:**
+```{r, eval=FALSE}
+library(rstan)
+stanmod <- stan(file = "stan_model.stan", data = list(n = nrow(ohio), 
+                                                      id = ohio$id, 
+                                                      age = ohio$age, 
+                                                      smoke = ohio$smoke, 
+                                                      resp = ohio$resp), 
+                chains = 4, iter = 2000, warmup = 1000)
+print(stanmod)
+```
 
 ### Q4.9
 (i) Fit the model using GEE. Use an autoregressive rather than exchangeable error structure. Compare the results to the previous model fits. In your model, what indicates that a child who already wheezes is likely to continue to wheeze?
 
+**Answer:**
+```{r}
+library(geepack)
+geemod <- geeglm(resp ~ age + smoke, id = id, corstr = "ar1", 
+                 scale.fix = TRUE, data = ohio, 
+                 family =binomial(link = "logit"))
+summary(geemod)
+```
+The odds of wheezing decreases by $1- e^{-0.115} = 10.86\%$ over time. The odds of wheezing for children of smoking mothers are $e^{0.233} = 1.262$ times higher than that for children of nonsmoking mothers. The correlation coefficient of the autoregressive error structure is $0.5$, which indicates that a child who already wheezes is likely to continue to wheeze.
+
 ### Q4.10
 (j) What is your overall conclusion regarding the effect of age and maternal smoking? Can we trust the GLM result or are the GLMM models preferable?
 
+**Answer:**
+The `age` has a significant effect on the odds of wheezing while `smoke` does not have a significant effect on the odds of wheezing. The GLMM models are preferable because they consider the dependency between the repeated measurements of the same child.
 
