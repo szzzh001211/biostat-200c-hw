@@ -168,7 +168,8 @@ L(\mu, \sigma^2_\alpha, \sigma^2_\epsilon) &=& \prod_{i=1}^{a} \left[ \frac{1}{(
 0 & 1 & \cdots & 0 \\
 \vdots & \vdots & \ddots & \vdots \\
 0 & 0 & \cdots & 1
-\end{bmatrix}_{n \times n} = I_n
+\end{bmatrix}_{n \times n} = I_n\\
+\frac{\partial \ell}{\partial \sigma^2_\epsilon} &=& \sum_{i=1}^{a} \left[ -\frac{1}{2} \text{tr}(\Omega^{-1}) + \frac{1}{2} (\mathbf{y}_i - \mu \mathbf{1}_n)^T \Omega^{-1}\Omega^{-1} (\mathbf{y}_i - \mu \mathbf{1}_n) \right] = 0
 
 \end{eqnarray*}
 $$
