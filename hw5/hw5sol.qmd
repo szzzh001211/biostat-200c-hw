@@ -139,7 +139,7 @@ library(faraway)
 smod <- lmer(bright ~ 1 + (1 | operator), data = pulp, REML = FALSE)
 summary(smod)
 ```
-In the R code, the estimate of $\mu$ is the intercept, $60.4$, and the estimate of $\sigma^2_\alpha + \sigma^2_\epsilon$ is the sum of variance components, $0.04575 + 0.10625 = 0.152$.
+In the R code, the estimate of $\mu$ is the intercept, $60.4$, the estimate of $\sigma^2_\alpha = 0.04575$ and $\sigma^2_\epsilon = 0.10625$.
 
 ```{r}
 mean(pulp$bright)
@@ -147,12 +147,14 @@ mean(pulp$bright)
 So the MLE estimate of $\mu$ matches the result we obtained in R. 
 
 ```{r}
-sum((pulp$bright - mean(pulp$bright))^2)/(5*4)
+ranef_smod <- ranef(smod)$operator
+SSA <- sum((ranef_smod)^2)
+residuals_smod <- resid(smod)
+SSE <- sum(residuals_smod^2)
+SSA/20-SSE/(20*4)
+SSE/((5-1)*4)
 ```
-So the MLE estimate of $\sigma^2_\alpha + \sigma^2_\epsilon$ matches the result we obtained in R.
-
-For REML, we have . We can use the following R code to check the results.
-
+So the MLE estimate of $\sigma^2_\alpha$ and $\sigma^2_\epsilon$ matches the result we obtained in R.
 
 ## Q2. Estimation of random effects
 
@@ -389,17 +391,6 @@ The odds of wheezing decreases by $1- e^{-0.173} = 15.9\%$ over time. The odds o
 ### Q4.8
 (h) Use STAN to fit the same model. Check the MCMC diagnostics and again discuss the age and maternal smoking effects.
 
-**Answer:**
-```{r, eval=FALSE}
-library(rstan)
-stanmod <- stan(file = "stan_model.stan", data = list(n = nrow(ohio), 
-                                                      id = ohio$id, 
-                                                      age = ohio$age, 
-                                                      smoke = ohio$smoke, 
-                                                      resp = ohio$resp), 
-                chains = 4, iter = 2000, warmup = 1000)
-print(stanmod)
-```
 
 ### Q4.9
 (i) Fit the model using GEE. Use an autoregressive rather than exchangeable error structure. Compare the results to the previous model fits. In your model, what indicates that a child who already wheezes is likely to continue to wheeze?
