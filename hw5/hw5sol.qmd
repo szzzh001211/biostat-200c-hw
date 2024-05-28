@@ -92,42 +92,7 @@ y_{ij} = \mu + \alpha_i + \epsilon_{ij}, \quad i=1,\ldots,a, \quad j=1,\ldots,n.
 $$
 where $\alpha_i$ are iid from $N(0,\sigma_\alpha^2)$, $\epsilon_{ij}$ are iid from $N(0, \sigma_\epsilon^2)$.
 
-So $y_{ij}$ are iid from $N(\mu, \sigma_\alpha^2 + \sigma_\epsilon^2)$. So the log-likelihood function is
-$$
-\begin{eqnarray*}
-L(\mu, \sigma_{\alpha}^2, \sigma_{\epsilon}^2) &=& \prod_{i=1}^a \prod_{j=1}^n \frac{1}{\sqrt{2\pi(\sigma_{\alpha}^2 + \sigma_{\epsilon}^2)}}\exp\left(-\frac{(y_{ij} - \mu)^2}{2(\sigma_{\alpha}^2 + \sigma_{\epsilon}^2)}\right) \\
-\ell(\mu, \sigma_{\alpha}^2, \sigma_{\epsilon}^2) &=& -\frac{na}{2}\log(2\pi) - \frac{na}{2}\log(\sigma_{\epsilon}^2+\sigma_{\alpha}^2)  - \frac{1}{2(\sigma_{\epsilon}^2+\sigma_{\alpha}^2)}\sum_{i=1}^a\sum_{j=1}^n(y_{ij}-\mu)^2\\
-\frac{\partial \ell}{\partial \mu} &=& \frac{1}{\sigma^2_\alpha + \sigma^2_\epsilon} \sum_{i=1}^a \sum_{j=1}^n (y_{ij} - \mu) = 0\\
-\hat{\mu} &=& \frac{1}{na}\sum_{i=1}^a \sum_{j=1}^n y_{ij} = \bar{y}_{\cdot \cdot} \tag{1}\\
-\frac{\partial \ell}{\partial \sigma^2_\alpha} &=& -\frac{na}{2(\sigma_{\epsilon}^2+\sigma_{\alpha}^2)} + \frac{1}{2(\sigma_{\epsilon}^2+\sigma_{\alpha}^2)^2}\sum_{i=1}^a\sum_{j=1}^n(y_{ij}-\mu)^2 = 0\\
-\frac{\partial \ell}{\partial \sigma^2_\epsilon} &=& -\frac{na}{2(\sigma_{\epsilon}^2+\sigma_{\alpha}^2)} + \frac{1}{2(\sigma_{\epsilon}^2+\sigma_{\alpha}^2)^2}\sum_{i=1}^a\sum_{j=1}^n(y_{ij}-\mu)^2 = 0\\
-\hat{\sigma}^2_\alpha + \hat{\sigma}^2_\epsilon &=& \frac{1}{na}\sum_{i=1}^a\sum_{j=1}^n(y_{ij}-\mu)^2 = \frac{1}{na}\sum_{i=1}^a\sum_{j=1}^n(y_{ij}-\bar{y}_{\cdot \cdot})^2 \tag{2}
-\end{eqnarray*}
-$$
-$$
-\begin{eqnarray*}
-\ell(\mu, \sigma_{\alpha}^2, \sigma_{\epsilon}^2) &=& - \frac n2 \log(2\pi) - \frac 12 \log \det (\sigma_{\alpha}^2 \mathbf{Z} \mathbf{Z}^T + \sigma_{\epsilon}^2 \mathbf{I}) - \frac 12 (\mathbf{y} - \mathbf{1}_{na} \mu)^T (\sigma_{\alpha}^2 \mathbf{Z} \mathbf{Z}^T + \sigma_{\epsilon}^2 \mathbf{I})^{-1} (\mathbf{y} - \mathbf{1}_{na} \mu) \\
-&=& \sum_i - \frac 12 \log \det (\sigma_{\alpha}^2 \mathbf{1}_n \mathbf{1}_n^T + \sigma_{\epsilon}^2 \mathbf{I}_n) - \frac 12 (\mathbf{y}_i - \mathbf{1}_{n} \mu)^T (\sigma_{\alpha}^2 \mathbf{1}_n \mathbf{1}_n^T + \sigma_{\epsilon}^2 \mathbf{I}_n)^{-1} (\mathbf{y}_i - \mathbf{1}_{n} \mu).
-\end{eqnarray*}
-$$
-By Woodbury formula
-$$
-\begin{eqnarray*}
-(\sigma_{\alpha}^2 \mathbf{1}_n \mathbf{1}_n^T + \sigma_{\epsilon}^2 \mathbf{I}_n)^{-1} &=& \sigma_{\epsilon}^{-2} \mathbf{I}_{n} - \frac{\sigma_{\epsilon}^{-2} \sigma_{\alpha}^2}{\sigma_{\epsilon}^2 + n\sigma_{\alpha}^2} \mathbf{1}_n \mathbf{1}_n^T \\
-\det (\sigma_{\alpha}^2 \mathbf{1}_n \mathbf{1}_n^T + \sigma_{\epsilon}^2 \mathbf{I}_n) &=& \sigma_{\epsilon}^{2n} (1 + n \sigma_{\alpha}^2 / \sigma_{\epsilon}^2).
-\end{eqnarray*}
-$$
-
-$$
-\begin{eqnarray*}
-\ell(\mu, \sigma_{\alpha}^2, \sigma_{\epsilon}^2) &=& - \frac{na}{2} \log \sigma_{\epsilon}^2 - \frac{a}{2} \log (1 + n\lambda) - \frac{\sigma_{\epsilon}^{-2}}{2} \text{SST}(\mu) + \frac{\sigma_{\epsilon}^{-2}}{2} \frac{n\lambda}{1 + n \lambda} \text{SSA}(\mu) \\
-&=& - \frac{na}{2} \log \sigma_{\epsilon}^2 - \frac{a}{2} \log (1 + n\lambda) - \frac{\sigma_{\epsilon}^{-2}}{2} \frac{\text{SST}(\mu) + n\lambda \text{SSA}}{1 + n \lambda}.
-\end{eqnarray*}
-$$
-$$
-\hat \sigma_{\alpha}^2 = \frac{\text{SSA}}{an} - \frac{\text{SSE}}{an(n-1)}
-$$
-
+**Answer:**
 $$
 \begin{eqnarray*}
 L(\mu, \sigma^2_\alpha, \sigma^2_\epsilon) &=& \prod_{i=1}^{a} \left[ \frac{1}{(2\pi)^{n/2}|\Omega|^{1/2}} \exp \left\{ -\frac{1}{2} (\mathbf{y}_i - \mu \mathbf{1}_n)^T \Omega^{-1} (\mathbf{y}_i - \mu \mathbf{1}_n) \right\} \right] \\
@@ -142,34 +107,21 @@ L(\mu, \sigma^2_\alpha, \sigma^2_\epsilon) &=& \prod_{i=1}^{a} \left[ \frac{1}{(
 \\
 \\
 \ell(\mu, \sigma^2_\alpha, \sigma^2_\epsilon) &=& \sum_{i=1}^{a} \left[ -\frac{n}{2}\log(2\pi) - \frac{1}{2} \log|\Omega| - \frac{1}{2} (\mathbf{y}_i - \mu \mathbf{1}_n)^T \Omega^{-1} (\mathbf{y}_i - \mu \mathbf{1}_n) \right] \\
+&=&\sum_{i=1}^{a} \left[ -\frac{n}{2}\log(2\pi) - \frac{1}{2} \log|\sigma_{\alpha}^2 \mathbf{1}_n \mathbf{1}_n^T + \sigma_{\epsilon}^2 \mathbf{I}_n| - \frac{1}{2} (\mathbf{y}_i - \mu \mathbf{1}_n)^T (\sigma_{\alpha}^2 \mathbf{1}_n \mathbf{1}_n^T + \sigma_{\epsilon}^2 \mathbf{I}_n)^{-1} (\mathbf{y}_i - \mu \mathbf{1}_n) \right]
 \\
 \frac{\partial \ell}{\partial \mu} &=& \sum_{i=1}^{a} \Omega^{-1} (\mathbf{y}_i - \mu \mathbf{1}_n)^T \mathbf{1}_n = 0 \\
-\Rightarrow \hat{\mu} &=& \frac{\sum_{ij} y_{ij}}{na}\\
+\Rightarrow \hat{\mu} &=& \frac{\sum_{ij} y_{ij}}{na} = \bar{y}_{\cdot \cdot}\\
 \\
 \\
-\frac{\partial \ell}{\partial \sigma^2_\alpha} &=& \sum_{i=1}^{a} \left[ -\frac{1}{2} \text{tr}(\Omega^{-1} \frac{\partial \Omega}{\partial \sigma^2_\alpha}) + \frac{1}{2} (\mathbf{y}_i - \mu \mathbf{1}_n)^T \Omega^{-1} \frac{\partial \Omega}{\partial \sigma^2_\alpha} \Omega^{-1} (\mathbf{y}_i - \mu \mathbf{1}_n) \right] = 0 \\
-\text{where } \frac{\partial \Omega}{\partial \sigma^2_\alpha} &=& 
-\begin{bmatrix}
-1 & 1 & \cdots & 1 \\
-1 & 1 & \cdots & 1 \\
-\vdots & \vdots & \ddots & \vdots \\
-1 & 1 & \cdots & 1
-\end{bmatrix}_{n \times n} = \mathbf{1}_n \mathbf{1}_n^T \\
-\frac{\partial \ell}{\partial \sigma^2_\alpha} &=&  \sum_{i=1}^{a} \left[ -\frac{1}{2} \mathbf{1}_n^T \Omega^{-1} \mathbf{1}_n + \frac{1}{2} (\mathbf{y}_i - \mu \mathbf{1}_n)^T \Omega^{-1} \mathbf{1}_n \mathbf{1}_n^T \Omega^{-1} (\mathbf{y}_i - \mu \mathbf{1}_n) \right] = 0\\
-\Omega^{-1} &=& \frac{1}{\sigma^2_\epsilon} \left( I_n - \frac{\sigma^2_\alpha}{\sigma^2_\epsilon + n \sigma^2_\alpha} J_n \right) \\
-\Omega^{-1}\mathbf{1}_n &=& \frac{1}{\sigma^2_\epsilon + n \sigma^2_\alpha} \mathbf{1}_n \\
-\Rightarrow \frac{\partial \ell}{\partial \sigma^2_\alpha} &=& \sum_{i=1}^{a} \left[ -\frac{1}{2} \frac{n}{\sigma^2_\epsilon + n \sigma^2_\alpha} + \frac{1}{2} \frac{\left( \sum_{j=1}^{n} (y_{ij} - \mu) \right)^2}{(\sigma^2_\epsilon + n \sigma^2_\alpha)^2} \right]=0
+\text{By Woodbury formula, }\\
+(\sigma_{\alpha}^2 \mathbf{1}_n \mathbf{1}_n^T + \sigma_{\epsilon}^2 \mathbf{I}_n)^{-1} &=& \sigma_{\epsilon}^{-2} \mathbf{I}_{n} - \frac{\sigma_{\epsilon}^{-2} \sigma_{\alpha}^2}{\sigma_{\epsilon}^2 + n\sigma_{\alpha}^2} \mathbf{1}_n \mathbf{1}_n^T \\
+\det (\sigma_{\alpha}^2 \mathbf{1}_n \mathbf{1}_n^T + \sigma_{\epsilon}^2 \mathbf{I}_n) &=& \sigma_{\epsilon}^{2n} (1 + n \frac{\sigma_{\alpha}^2}{\sigma_{\epsilon}^2})\\
 \\
+\ell(\mu, \sigma^2_\alpha, \sigma^2_\epsilon)&=& \sum_{i=1}^{a} \left[ -\frac{n}{2}\log(2\pi) - \frac{1}{2} \log(\sigma_{\epsilon}^{2n} (1 + n \frac{\sigma_{\alpha}^2}{\sigma_{\epsilon}^2})) - \frac{1}{2} (\mathbf{y}_i - \mu \mathbf{1}_n)^T (\sigma_{\epsilon}^{-2} \mathbf{I}_{n} - \frac{\sigma_{\epsilon}^{-2} \sigma_{\alpha}^2}{\sigma_{\epsilon}^2 + n\sigma_{\alpha}^2} \mathbf{1}_n \mathbf{1}_n^T) (\mathbf{y}_i - \mu \mathbf{1}_n) \right]\\
+&=&  -\frac{na}{2}\log(2\pi) -\frac{na}{2} \log \sigma_{\epsilon}^2 - \frac{a}{2} \log (1 + n\frac{\sigma_{\alpha}^2}{\sigma_{\epsilon}^2}) - \frac{1}{2\sigma_{\epsilon}^{2}} \frac{\text{SST}(\mu) + n\frac{\sigma_{\alpha}^2}{\sigma_{\epsilon}^2} \text{SSA}}{1 + n \lambda}\\
 \\
-\frac{\partial \ell}{\partial \sigma^2_\epsilon} &=& \sum_{i=1}^{a} \left[ -\frac{1}{2} \text{tr}(\Omega^{-1} \frac{\partial \Omega}{\partial \sigma^2_\epsilon}) + \frac{1}{2} (\mathbf{y}_i - \mu \mathbf{1}_n)^T \Omega^{-1} \frac{\partial \Omega}{\partial \sigma^2_\epsilon} \Omega^{-1} (\mathbf{y}_i - \mu \mathbf{1}_n) \right] = 0 \\
-\text{where } \frac{\partial \Omega}{\partial \sigma^2_\epsilon} &=& 
-\begin{bmatrix}
-1 & 0 & \cdots & 0 \\
-0 & 1 & \cdots & 0 \\
-\vdots & \vdots & \ddots & \vdots \\
-0 & 0 & \cdots & 1
-\end{bmatrix}_{n \times n} = I_n\\
-\frac{\partial \ell}{\partial \sigma^2_\epsilon} &=& \sum_{i=1}^{a} \left[ -\frac{1}{2} \text{tr}(\Omega^{-1}) + \frac{1}{2} (\mathbf{y}_i - \mu \mathbf{1}_n)^T \Omega^{-1}\Omega^{-1} (\mathbf{y}_i - \mu \mathbf{1}_n) \right] = 0
+\hat{\sigma}^2_\alpha &=&\frac{\text{SSA}}{an} - \frac{\text{SSE}}{an(n-1)}\\
+\hat{\sigma}^2_\epsilon &=& \frac{\text{SSE}}{(n-1)a}\\
 
 \end{eqnarray*}
 $$
