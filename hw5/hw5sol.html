@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Ziheng Zhang_606300061">
-<meta name="dcterms.date" content="2024-05-28">
+<meta name="dcterms.date" content="2024-05-30">
 
 <title>Biostat 200C Homework 5</title>
 <style>
@@ -3187,7 +3187,7 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">May 28, 2024</p>
+      <p class="date">May 30, 2024</p>
     </div>
   </div>
   
@@ -3252,7 +3252,8 @@ y_{ij} - \bar{y}_{i \cdot} &amp;=&amp; \epsilon_{ij} - \bar{\epsilon}_{i \cdot} 
 <p><span class="math display">\[
 y_{ij} = \mu + \alpha_i + \epsilon_{ij}, \quad i=1,\ldots,a, \quad j=1,\ldots,n.
 \]</span> where <span class="math inline">\(\alpha_i\)</span> are iid from <span class="math inline">\(N(0,\sigma_\alpha^2)\)</span>, <span class="math inline">\(\epsilon_{ij}\)</span> are iid from <span class="math inline">\(N(0, \sigma_\epsilon^2)\)</span>.</p>
-<p><strong>Answer:</strong> $$ <span class="math display">\[\begin{eqnarray*}
+<p><strong>Answer:</strong> <span class="math display">\[
+\begin{eqnarray*}
 L(\mu, \sigma^2_\alpha, \sigma^2_\epsilon) &amp;=&amp; \prod_{i=1}^{a} \left[ \frac{1}{(2\pi)^{n/2}|\Omega|^{1/2}} \exp \left\{ -\frac{1}{2} (\mathbf{y}_i - \mu \mathbf{1}_n)^T \Omega^{-1} (\mathbf{y}_i - \mu \mathbf{1}_n) \right\} \right] \\
 \\
 \text{where } \Omega &amp;=&amp;
@@ -3280,8 +3281,8 @@ L(\mu, \sigma^2_\alpha, \sigma^2_\epsilon) &amp;=&amp; \prod_{i=1}^{a} \left[ \f
 \\
 \hat{\sigma}^2_\alpha &amp;=&amp;\frac{\text{SSA}}{an} - \frac{\text{SSE}}{an(n-1)}\\
 \hat{\sigma}^2_\epsilon &amp;=&amp; \frac{\text{SSE}}{(n-1)a}\\
-
-\end{eqnarray*}\]</span> $$</p>
+\end{eqnarray*}
+\]</span></p>
 <ol start="3" type="1">
 <li><p>(<strong>Optional</strong>) Derive the REML estimate for <span class="math inline">\(\mu\)</span>, <span class="math inline">\(\sigma_\alpha^2\)</span>, and <span class="math inline">\(\sigma_{\epsilon}^2\)</span>.</p></li>
 <li><p>For all three estimates, check that your results match those we obtained using R for the <code>pulp</code> example in class.</p></li>
@@ -3358,11 +3359,59 @@ f(\boldsymbol{\gamma} \mid \mathbf{y}) &amp;=&amp; \frac{f(\mathbf{y} \mid \bold
 &amp;\propto&amp; \exp\left(-\frac{1}{2\sigma^2}(\mathbf{y} - \mathbf{X} \boldsymbol{\beta} - \mathbf{Z} \boldsymbol{\gamma})^T (\mathbf{y} - \mathbf{X} \boldsymbol{\beta} - \mathbf{Z} \boldsymbol{\gamma})\right) \times \exp\left(-\frac{1}{2} \boldsymbol{\gamma}^T \boldsymbol{\Sigma}^{-1} \boldsymbol{\gamma}\right)\\
 &amp;=&amp; \exp\left(-\frac{1}{2\sigma^2}(\mathbf{y} - \mathbf{X} \boldsymbol{\beta} - \mathbf{Z} \boldsymbol{\gamma})^T (\mathbf{y} - \mathbf{X} \boldsymbol{\beta} - \mathbf{Z} \boldsymbol{\gamma}) - \frac{1}{2} \boldsymbol{\gamma}^T \boldsymbol{\Sigma}^{-1} \boldsymbol{\gamma}\right)\\
 &amp;\propto&amp; \exp\left(-\frac{1}{2}\left[\boldsymbol{\gamma}^T\left(\frac{\mathbf{Z}^T\mathbf{Z}}{\sigma^2}+\boldsymbol{\Sigma}^{-1}\right)\boldsymbol{\gamma}-\frac{2}{\sigma^2}(\boldsymbol{\gamma}^T\mathbf{Z}^T(\mathbf{y} - \mathbf{X} \boldsymbol{\beta})) \right]\right), \text{since }\boldsymbol{\gamma}^T\mathbf{Z}^T(\mathbf{y} - \mathbf{X} \boldsymbol{\beta}) \text{ is a scalar}\\
-&amp;=&amp; \exp\left(-\frac{1}{2}(\boldsymbol{\gamma} - A^{-1}b)^TA(\boldsymbol{\gamma} - A^{-1}b) -b^TA^{-1}b\right), \text{where } A = \left(\frac{\mathbf{Z}^T\mathbf{Z}}{\sigma^2}+\boldsymbol{\Sigma}^{-1}\right)^{-1} \text{ and } b = \frac{1}{\sigma^2}\mathbf{Z}^T(\mathbf{y} - \mathbf{X} \boldsymbol{\beta})\\
-&amp;\propto&amp; \exp\left(-\frac{1}{2}(\boldsymbol{\gamma} - A^{-1}b)^TA(\boldsymbol{\gamma} - A^{-1}b)\right)\\
-\mathbb{E} (\boldsymbol{\gamma} \mid \mathbf{y}) &amp;=&amp; A^{-1}b = \left(\frac{\mathbf{Z}^T\mathbf{Z}}{\sigma^2}+\boldsymbol{\Sigma}^{-1}\right)^{-1}\frac{1}{\sigma^2}\mathbf{Z}^T(\mathbf{y} - \mathbf{X} \boldsymbol{\beta}) = \boldsymbol{\Sigma} \mathbf{Z}^T (\mathbf{Z} \boldsymbol{\Sigma} \mathbf{Z}^T + \sigma^2 \mathbf{I})^{-1} (\mathbf{y} - \mathbf{X} \boldsymbol{\beta})
+&amp;=&amp;\exp\left(-\frac{1}{2}\left[\boldsymbol{\gamma}^T\left(\sigma^{-2}\mathbf{Z}^T\mathbf{Z}+\boldsymbol{\Sigma}^{-1}\right)\boldsymbol{\gamma}-\frac{2}{\sigma^2}(\boldsymbol{\gamma}^T(\sigma^{-2} \mathbf{Z}^T \mathbf{Z} + \boldsymbol{\Sigma}^{-1}) (\sigma^{-2} \mathbf{Z}^T \mathbf{Z} + \boldsymbol{\Sigma}^{-1})^{-1 }\mathbf{Z}^T(\mathbf{y} - \mathbf{X} \boldsymbol{\beta})) \right]\right)
 \end{eqnarray*}
-\]</span> 2. For the balanced one-way ANOVA random effects model, show that the posterior mean of random effects is always a constant (less than 1) multiplying the corresponding fixed effects estimate.</p>
+\]</span> It’s clear the covariance of posterior normal distribution is <span class="math display">\[
+(\sigma^{-2} Z^T Z + \Sigma^{-1})^{-1} = \Sigma - \Sigma Z^T (\sigma^2 I_n + Z Z^T)^{-1} Z \Sigma.
+\]</span> Now by binomial inversion <span class="math display">\[
+\begin{eqnarray*}
+  &amp; &amp; \sigma^{-2} (\sigma^{-2} Z^T Z + \Sigma^{-1})^{-1 } Z^T (y - X \beta) \\
+  &amp;=&amp; \sigma^{-2} [\Sigma Z^T - \Sigma Z^T (Z \Sigma Z^T + \sigma^2 I)^{-1} Z \Sigma Z^T] (y - X \beta) \\
+  &amp;=&amp; \sigma^{-2} \Sigma Z^T [I - (Z \Sigma Z^T + \sigma^2 I)^{-1} Z \Sigma Z^T] (y - X \beta) \\
+  &amp;=&amp; \sigma^{-2} \Sigma Z^T [(Z \Sigma Z^T + \sigma^2 I)^{-1} (Z \Sigma Z^T + \sigma^2 I) - (Z \Sigma Z^T + \sigma^2 I)^{-1} Z \Sigma Z^T] (y - X \beta) \\
+  &amp;=&amp; \Sigma Z^T (Z \Sigma Z^T + \sigma^2 I)^{-1} (y - X \beta).
+\end{eqnarray*}
+\]</span> So <span class="math display">\[
+\begin{eqnarray*}
+f(\boldsymbol{\gamma} \mid \mathbf{y}) &amp;\propto&amp; \exp\left(-\frac{1}{2}\left[\boldsymbol{\gamma}^T\left(\sigma^{-2}\mathbf{Z}^T\mathbf{Z}+\boldsymbol{\Sigma}^{-1}\right)\boldsymbol{\gamma}-2(\boldsymbol{\gamma}^T(\sigma^{-2} \mathbf{Z}^T \mathbf{Z} + \boldsymbol{\Sigma}^{-1}) (\boldsymbol{\Sigma} \mathbf{Z}^T (\mathbf{Z} \boldsymbol{\Sigma} \mathbf{Z}^T + \sigma^2 I)^{-1} (\mathbf{y} - \mathbf{X} \boldsymbol{\beta})) \right]\right)\\
+&amp;=&amp; \exp\left(-\frac{1}{2}\left(\sigma^{-2}\mathbf{Z}^T\mathbf{Z}+\boldsymbol{\Sigma}^{-1}\right)\left[\boldsymbol{\gamma}^T\boldsymbol{\gamma}-2(\boldsymbol{\gamma}^T (\boldsymbol{\Sigma} \mathbf{Z}^T (\mathbf{Z} \boldsymbol{\Sigma} \mathbf{Z}^T + \sigma^2 I)^{-1} (\mathbf{y} - \mathbf{X} \boldsymbol{\beta})) \right]\right)
+\end{eqnarray*}
+\]</span> So <span class="math display">\[
+\mathbb{E} (\boldsymbol{\gamma} \mid \mathbf{y}) = \boldsymbol{\Sigma} \mathbf{Z}^T (\mathbf{Z} \boldsymbol{\Sigma} \mathbf{Z}^T + \sigma^2 \mathbf{I})^{-1} (\mathbf{y} - \mathbf{X} \boldsymbol{\beta})
+\]</span></p>
+<ol start="2" type="1">
+<li>For the balanced one-way ANOVA random effects model, show that the posterior mean of random effects is always a constant (less than 1) multiplying the corresponding fixed effects estimate.</li>
+</ol>
+<p><strong>Answer:</strong> For the balanced one-way ANOVA random effects model, we know <span class="math display">\[
+\begin{eqnarray*}
+\mathbf{y} = \mathbf{1}_{na} \mu + \begin{pmatrix}
+\mathbf{1}_{n} &amp; &amp; \\
+&amp; \vdots &amp; \\
+&amp; &amp; \mathbf{1}_{n}
+\end{pmatrix} \boldsymbol{\gamma} + \boldsymbol{\epsilon}\\
+\text{So Z here is } \begin{pmatrix}
+\mathbf{1}_{n} &amp; &amp; \\
+&amp; \vdots &amp; \\
+&amp; &amp; \mathbf{1}_{n}
+\end{pmatrix}
+\end{eqnarray*}
+\]</span> So the posterior mean of random effects is <span class="math display">\[
+\begin{eqnarray*}
+\mathbb{E} (\boldsymbol{\gamma} \mid \mathbf{y}) &amp;=&amp; \boldsymbol{\Sigma} \mathbf{Z}^T (\mathbf{Z} \boldsymbol{\Sigma} \mathbf{Z}^T + \sigma^2 \mathbf{I})^{-1} (\mathbf{y} - \mathbf{X} \boldsymbol{\beta})\\
+&amp;=&amp; \sigma_{\epsilon}^{-2} (\sigma_{\epsilon}^{-2} \mathbf{Z}^T \mathbf{Z} + \Sigma_{\epsilon}^{-1})^{-1 } \mathbf{Z}^T (\mathbf{y} - \mathbf{X} \boldsymbol{\beta}) \\
+\mathbf{Z}^T \mathbf{Z} &amp;=&amp; n \mathbf{I}_a, \quad \Sigma_{\epsilon} = \sigma_{\alpha}^2 \mathbf{I}_a\\
+\mathbb{E} (\boldsymbol{\gamma} \mid \mathbf{y})&amp;=&amp; \frac{n}{n + (\sigma_{\epsilon}/\sigma_{\alpha})^2} \begin{pmatrix}
+\bar{y}_{1\cdot} - \hat \mu \\
+\vdots \\
+\bar{y}_{a\cdot} - \hat \mu
+\end{pmatrix} \\
+&amp;=&amp; \frac{1}{1 + n^{-1}(\sigma_{\epsilon}/\sigma_{\alpha})^2} \begin{pmatrix}
+\hat \alpha_1 \\
+\vdots \\
+\hat \alpha_a
+\end{pmatrix}.
+\end{eqnarray*}
+\]</span> Since <span class="math inline">\(n^{-1}(\sigma_{\epsilon}/\sigma_{\alpha})^2&gt;0\)</span>, the posterior mean of random effects is always a constant (less than 1) multiplying the corresponding fixed effects estimate.</p>
 </section>
 <section id="q3.-elmr-exercise-11.1-p251" class="level2" data-number="3">
 <h2 data-number="3" class="anchored" data-anchor-id="q3.-elmr-exercise-11.1-p251"><span class="header-section-number">3</span> Q3. ELMR Exercise 11.1 (p251)</h2>
@@ -3544,16 +3593,16 @@ Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">confint</span>(m1, <span class="at">method =</span> <span class="st">&quot;boot&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                            2.5 %     97.5 %
-.sig01                  3.3039551  7.8660766
-.sig02                 -0.5426536  0.4830559
-.sig03                  2.5929953  4.9583493
-.sigma                  3.6792198  5.0700269
-(Intercept)            48.8378156 57.1710418
-weeks                  23.7767521 28.9436413
-treatthiouracil        -1.1725384 10.4275531
-treatthyroxine         -7.3032931  5.4326044
-weeks:treatthiouracil -12.8878579 -5.9515634
-weeks:treatthyroxine   -2.7705415  4.2950295</code></pre>
+.sig01                  3.4775949  7.7674111
+.sig02                 -0.5682222  0.4870026
+.sig03                  2.5789732  4.9053953
+.sigma                  3.6198302  5.0057553
+(Intercept)            49.0938300 56.9657826
+weeks                  24.1487519 28.8326183
+treatthiouracil        -0.9385021 10.2823312
+treatthyroxine         -7.0718303  5.0055885
+weeks:treatthiouracil -12.9539639 -5.7985074
+weeks:treatthyroxine   -3.3115474  4.1158787</code></pre>
 </div>
 </div>
 <p><code>sig01</code> is the variance of the random intercepts, <code>sig02</code> is the covariance between the random intercepts and slopes, and <code>sig03</code> is the variance of the random slopes. Both random intercepts and slopes are significant because their intervals do not include 0. The thyroxine group is not significantly different from the control group because the confidence interval includes 0.</p>
@@ -3789,7 +3838,7 @@ smoke -0.493 -0.008</code></pre>
 <span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(inlamod)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Time used:
-    Pre = 1.41, Running = 2.05, Post = 0.046, Total = 3.51 
+    Pre = 1.72, Running = 2.13, Post = 0.0497, Total = 3.9 
 Fixed effects:
               mean    sd 0.025quant 0.5quant 0.975quant   mode kld
 (Intercept) -2.945 0.201     -3.362   -2.937     -2.573 -2.907   0
@@ -3815,7 +3864,7 @@ Posterior summaries for the linear predictor and the fitted values are computed
 <section id="q4.8" class="level3" data-number="4.8">
 <h3 data-number="4.8" class="anchored" data-anchor-id="q4.8"><span class="header-section-number">4.8</span> Q4.8</h3>
 <ol start="8" type="a">
-<li>Use STAN to fit the same model. Check the MCMC diagnostics and again discuss the age and maternal smoking effects.</li>
+<li>Use STAN to fit the same model. Check the MCMC diagnostics and again discuss the age and maternal smoking effects (optional).</li>
 </ol>
 </section>
 <section id="q4.9" class="level3" data-number="4.9">
