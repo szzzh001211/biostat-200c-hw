@@ -146,12 +146,12 @@ mean(pulp$bright)
 So the MLE estimate of $\mu$ matches the result we obtained in R. 
 
 ```{r}
-ranef_smod <- ranef(smod)$operator
-SSA <- sum((ranef_smod)^2)
-residuals_smod <- resid(smod)
-SSE <- sum(residuals_smod^2)
-SSA/20-SSE/(20*4)
-SSE/((5-1)*4)
+aov(bright ~ operator, data = pulp) |>
+  summary()
+```
+```{r}
+1.34/(4*5)-1.7/(4*5*4)
+1.70/((5-1)*4)
 ```
 So the MLE estimate of $\sigma^2_\alpha$ and $\sigma^2_\epsilon$ matches the result we obtained in R.
 
