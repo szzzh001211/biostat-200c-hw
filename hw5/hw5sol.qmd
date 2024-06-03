@@ -58,29 +58,43 @@ $$
 $$
 since $\alpha_i$ are iid from $N(0, \sigma_{\alpha}^2)$, $\epsilon_{ij}$ are iid $N(0,\sigma_{\epsilon}^2)$, then $\mathbb{E}(\alpha_i) = 0$, $\mathbb{E}(\epsilon_{ij}) = 0$.
 
-b. $\mathbb{E} (\text{SSE})$
+b. $\mathbb{E} (\text{SSE})$ and  $\mathbb{E} (\text{SSA})$
+$$
+\text{SSE} = \sum_i \sum_j (y_{ij} - \bar y_{i\cdot})^2 = \mathbf{y}^T \mathbf{A}_1 \mathbf{y}
+$$
+where 
+$$
+\mathbf{A}_1 = \begin{pmatrix}
+\mathbf{I}_n - n^{-1} \mathbf{1}_n \mathbf{1}_n^T & & \\
+& \ddots & \\
+& & \mathbf{I}_n - n^{-1} \mathbf{1}_n \mathbf{1}_n^T
+\end{pmatrix}.
+$$
+So
 $$
 \begin{eqnarray*}
-\mathbb{E} \left[ \sum_{i=1}^a \sum_{j=1}^n (y_{ij} - \bar{y}_{i \cdot})^2 \right] &=& \sum_{i=1}^a \mathbb{E}\left[ \sum_{j=1}^n (y_{ij} - \bar{y}_{i \cdot})^2 \right] \\
-y_{ij} &=& \mu + \alpha_i+\epsilon_{ij} \\
-\bar{y}_{i \cdot} &=& \frac{1}{n} \sum_{j=1}^n(\mu + \alpha_i + \epsilon_{ij}) = \mu + \alpha_i + \bar{\epsilon}_{i \cdot} \\
-y_{ij} - \bar{y}_{i \cdot} &=& \epsilon_{ij} - \bar{\epsilon}_{i \cdot} \\
-\mathbb{E}\left[\sum_{j=1}^n (y_{ij} - \bar{y}_{i \cdot})^2 \right]&=&\mathbb{E}\left[\sum_{j=1}^n(\epsilon_{ij} - \bar{\epsilon}_{i \cdot})^2\right] = \mathbb{E} \left[(n-1)S^2_{\epsilon}\right]=(n-1)\sigma_\epsilon^2,\\ && \text{where } S^2_{\epsilon} \text{ is the sample variance of } \epsilon_{ij} \\
-\mathbb{E} (\text{SSE})&=&\mathbb{E} \left[ \sum_{i=1}^a \sum_{j=1}^n (y_{ij} - \bar{y}_{i \cdot})^2 \right] = a(n-1) \sigma_{\epsilon}^2
+\mathbb{E} (\text{SSE}) &=& \mathbb{E} \mathbf{y}^T \mathbf{A}_1 \mathbf{y} \\
+&=& \mathbb{E} \operatorname{tr} \mathbf{A}_1 \mathbf{y} \mathbf{y}^T \\
+&=& \operatorname{tr} \mathbf{A}_1 (\sigma_\alpha^2 \mathbf{Z} \mathbf{Z}^T + \sigma_\epsilon^2 \mathbf{I}_{na}) +  \mu^2 \operatorname{tr} \mathbf{A}_1 \mathbf{1}_{na} \mathbf{1}_{na}^T \\
+&=& 0 + a (n - 1) \sigma_{\epsilon}^2 + 0 \\
+&=& a (n - 1) \sigma_{\epsilon}^2.
 \end{eqnarray*}
 $$
-c. $\mathbb{E} (\text{SSA})$
+Now 
+$$
+\text{SST} = \mathbf{y}^T \mathbf{A}_0 \mathbf{y},
+$$
+where $\mathbf{A}_0 = \mathbf{I}_{na} - (na)^{-1} \mathbf{1}_{na} \mathbf{1}_{na}^T$. So
 $$
 \begin{eqnarray*}
-\mathbb{E} (\text{SSA}) &=&\mathbb{E} \left[ \sum_{i=1}^a \sum_{j=1}^n (\bar{y}_{i \cdot} - \bar{y}_{\cdot \cdot})^2 \right]\\
-&=&\mathbb{E} \left[ \sum_{i=1}^a \sum_{j=1}^n (\mu + \alpha_i + \bar{\epsilon}_{i \cdot} - \mu + \bar{\alpha} + \bar{\epsilon_{\cdot \cdot}})^2 \right]\\
-&=&\mathbb{E} \left[ \sum_{i=1}^a \sum_{j=1}^n (\alpha_i - \bar{\alpha})^2 \right] + \mathbb{E} \left[ \sum_{i=1}^a \sum_{j=1}^n (\bar{\epsilon}_{i \cdot} - \bar{\epsilon_{\cdot \cdot}})^2 \right] \\
-&=& n\mathbb{E}\left[\sum_{i=1}^a(\alpha_i - \bar{\alpha})^2\right] + n\mathbb{E}\left[\sum_{i=1}^a(\bar{\epsilon}_{i \cdot} - \bar{\epsilon_{\cdot \cdot}})^2\right] \\
-&=& n\mathbb{E}\left[(a-1)S^2_{\alpha}\right] + n\mathbb{E}\left[(a-1)S^2_\bar{\epsilon}\right] \\
-&=& n(a-1) \sigma_{\alpha}^2 + n(a-1)\frac{\sigma_{\epsilon}^2}{n}\\
-&=& n(a-1) \sigma_{\alpha}^2 + (a-1)\sigma_{\epsilon}^2\\
-&=& (a-1)(n\sigma_{\alpha}^2 + \sigma_{\epsilon}^2)
+\mathbb{E}(\text{SST}) &=& \operatorname{tr} \mathbf{A}_0 (\sigma_\alpha^2 \mathbf{Z} \mathbf{Z}^T + \sigma_\epsilon^2 \mathbf{I}_{na}) + \mu^2 \operatorname{tr} \mathbf{A}_0 \mathbf{1}_{na} \mathbf{1}_{na}^T \\
+&=& n (a - 1) \sigma_\alpha^2 + (na - 1) \sigma_{\epsilon}^2 + 0 \\
+&=& n (a - 1) \sigma_\alpha^2 + (na - 1) \sigma_{\epsilon}^2.
 \end{eqnarray*}
+$$
+Therefore
+$$
+\mathbb{E}(\text{SSA}) = \mathbb{E}(\text{SST}) - \mathbb{E}(\text{SSE}) = (a - 1)(n \sigma_{\alpha}^2 + \sigma_{\epsilon}^2).
 $$
 
 2. Derive the MLE estimate for $\mu$, $\sigma_\alpha^2$, and $\sigma_{\epsilon}^2$. Hint: write down the log-likelihood and find the maximizer.
@@ -119,27 +133,121 @@ L(\mu, \sigma^2_\alpha, \sigma^2_\epsilon) &=& \prod_{i=1}^{a} \left[ \frac{1}{(
 \\
 \ell(\mu, \sigma^2_\alpha, \sigma^2_\epsilon)&=& \sum_{i=1}^{a} \left[ -\frac{n}{2}\log(2\pi) - \frac{1}{2} \log(\sigma_{\epsilon}^{2n} (1 + n \frac{\sigma_{\alpha}^2}{\sigma_{\epsilon}^2})) - \frac{1}{2} (\mathbf{y}_i - \mu \mathbf{1}_n)^T (\sigma_{\epsilon}^{-2} \mathbf{I}_{n} - \frac{\sigma_{\epsilon}^{-2} \sigma_{\alpha}^2}{\sigma_{\epsilon}^2 + n\sigma_{\alpha}^2} \mathbf{1}_n \mathbf{1}_n^T) (\mathbf{y}_i - \mu \mathbf{1}_n) \right]\\
 &=&  -\frac{na}{2}\log(2\pi) -\frac{na}{2} \log \sigma_{\epsilon}^2 - \frac{a}{2} \log (1 + n\frac{\sigma_{\alpha}^2}{\sigma_{\epsilon}^2}) - \frac{1}{2\sigma_{\epsilon}^{2}} \frac{\text{SST}(\mu) + n\frac{\sigma_{\alpha}^2}{\sigma_{\epsilon}^2} \text{SSA}}{1 + n \lambda}\\
-\\
-\hat{\sigma}^2_\alpha &=&\frac{\text{SSA}}{an} - \frac{\text{SSE}}{an(n-1)}\\
-\hat{\sigma}^2_\epsilon &=& \frac{\text{SSE}}{(n-1)a}\\
 \end{eqnarray*}
+$$
+Setting derivative with respect to $\sigma_{\epsilon}^2$ to 0 yields equation
+$$
+\sigma_{\epsilon}^2 = \frac{\text{SST} - \frac{n\lambda}{1 + n\lambda} \text{SSA}}{na} = \frac{\text{SST} + n \lambda \text{SSE}}{na(1 + n\lambda)}.
+$$
+Substitution of the above expression into the log-likelihood shows we need to maximize
+$$
+\begin{eqnarray*}
+& & - \frac{na}{2} \log \left( \text{SST} - \frac{n\lambda}{1 + n\lambda} \text{SSA} \right) - \frac{a}{2} \log (1 + n\lambda) \\
+&=& - \frac{na}{2} \log \left( \text{SST} + n \lambda \text{SSE} \right) + \frac{(n-1)a}{2} \log (1 + n \lambda).
+\end{eqnarray*}
+$$
+Setting derivative to 0 gives the maximizer
+$$
+\hat \lambda = \frac{n-1}{n} \frac{\text{SST}}{\text{SSE}} - 1.
+$$
+Thus
+$$
+\hat \sigma_{\epsilon}^2 = \frac{\text{SST} - \frac{n \hat \lambda}{1 + n \hat \lambda} \text{SSA}}{na} = \frac{\text{SSE}}{(n-1)a}
+$$
+(same as ANOVA estimate) and
+$$
+\hat \sigma_{\alpha}^2 = \frac{\text{SSA}}{an} - \frac{\text{SSE}}{an(n-1)}.
 $$
 
 3. (**Optional**) Derive the REML estimate for $\mu$, $\sigma_\alpha^2$, and $\sigma_{\epsilon}^2$. 
+
+Let $K \in \mathbb{R}^{n \times (n-1)}$ (as fixed effects only contain intercept) be a basis of ${\cal N}(X^T)$. Then 
+$$
+K^T Y \sim N(0, K^T \Omega K).
+$$
+and the log-likelihood is
+$$
+\, - \frac 12 \log \det K^T \Omega K - \frac 12 y^T K(K^T \Omega K)^{-1} K^T y.
+$$
+Setting the derivative with respect to $\sigma_\alpha^2$ and $\sigma_\epsilon^2$ to 0 yields the estimation equations
+\begin{eqnarray*}
+  \frac{\partial}{\partial \sigma_{\epsilon}^2} \ell &=& - \frac 12 \operatorname{tr} [K(K^T \Omega K)^{-1} K^T] - \frac 12 y^t K(K^T \Omega K)^{-1} K^T K(K^T \Omega K)^{-1} K^T y = 0, \\
+  \frac{\partial}{\partial \sigma_{\alpha}^2} \ell &=& - \frac 12 \operatorname{tr} [K(K^T \Omega K)^{-1} K^T Z Z^T] - \frac 12 y^t K(K^T \Omega K)^{-1} K^T Z Z^T K(K^T \Omega K)^{-1} K^T y = 0.
+\end{eqnarray*}
+
+We need to show:
+$$
+K(K^T \Omega K)^{-1} K^T = \Omega^{-1} - \Omega^{-1} X (X^T \Omega^{-1} X)^{-1} X^T \Omega^{-1}.
+$$
+This is because (1) the two sides
+$$
+\Omega^{1/2} K(K^T \Omega K)^{-1} K^T \Omega^{1/2} = I - \Omega^{-1/2} X (X^T \Omega^{-1} X)^{-1} X^T \Omega^{-1/2}
+$$
+are the (unique) orthogonal projection to the space ${\cal C}(X)^\perp = {\cal N}(X^T)$. Or we can prove the relationship as the follows:
+
+Both $KK^{+} := K(K^T K)^{-1}K^T$ and $XX^{+}:=X(X^TX)^{-1}X^T$ are symmetric and idempotent, and $K^TX=0$. Therefore $KK^{+} X = 0$ and $XX^{+} K = 0$. Hence $T = I-KK^{+}-XX^{+}$ is symmetric and idempotent. We have
+\begin{eqnarray*}
+&\mbox{tr}(TT^T) &= \mbox{tr}(T^2) = \mbox{tr}(T)  \\
+& &=N-r_x-r_k = N-r_x-(N-r_x)=0.
+\end{eqnarray*}
+But $T$ is real, so that $\mbox{tr}(TT^T)=0$ implies that $T=0$. Therefore $KK^{+}=I-XX^{+}$. Because $\Omega=(\Omega^{1/2})^2$. Then, since $(\Omega^{1/2}K)^T\Omega^{-1/2}X=0$, because $K^TX=0$, we can replace $K$ and $X$ by $\Omega^{1/2}K$ and $\Omega^{-1/2}X$ respectively. 
+
+Rewrite $KK^{+}=I-XX^{+}$ as
+$$
+I-X(X^TX)^{-1}X^T = K(K^TK)^{-1}K^T.
+$$
+and replace relevant terms by $\Omega^{1/2}K$ and $\Omega^{-1/2}X$, we get
+$$
+ I-\Omega^{-1/2}X(X^T\Omega^{-1}X)^{-1}X^T\Omega^{-1/2} = \Omega^{1/2}K(K^T\Omega K)^{-1}K^T\Omega^{1/2}.
+$$
+i.e.,
+$$
+\Omega^{-1} - \Omega^{-1} X (X^T \Omega^{-1} X)^{-1} X^T \Omega^{-1} = K(K^T \Omega K)^{-1} K^T.
+$$
+Let's simplify
+\begin{eqnarray*}
+\mathbf{A} &:=& \Omega^{-1} - \Omega^{-1} X (X^T \Omega^{-1} X)^{-1} X^T \Omega^{-1} \\
+&=& \Omega^{-1} - \frac{(1 + n \lambda) \sigma_{\epsilon}^2}{na} \Omega^{-1} X X^T \Omega^{-1} \\
+&=& \Omega^{-1} - \frac{(1 + n \lambda) \sigma_{\epsilon}^2}{na} \left( \frac{\sigma_{\epsilon}^{-2}}{1 + n \lambda} \right)^2 \mathbf{1}_{na} \mathbf{1}_{na}^T \\
+&=& \Omega^{-1} - \frac{\sigma_{\epsilon}^{-2}}{na(1 + n \lambda)} \mathbf{1}_{na} \mathbf{1}_{na}^T \\
+&=& \sigma_\epsilon^{-2} \mathbf{I}_{na} - \frac{\sigma_\epsilon^{-2} \lambda}{1 + n\lambda} \mathbf{Z} \mathbf{Z}^T - \frac{\sigma_{\epsilon}^{-2}}{na(1 + n \lambda)} \mathbf{1}_{na} \mathbf{1}_{na}^T, \\
+\mathbf{A}^2 &=& \sigma_{\epsilon}^{-4} \left( \mathbf{I}_{na} - \frac{\lambda}{1 + n\lambda} \mathbf{Z} \mathbf{Z}^T - \frac{1}{na(1 + n \lambda)} \mathbf{1}_{na} \mathbf{1}_{na}^T \right) \left( \mathbf{I}_{na} - \frac{\lambda}{1 + n\lambda} \mathbf{Z} \mathbf{Z}^T - \frac{1}{na(1 + n \lambda)} \mathbf{1}_{na} \mathbf{1}_{na}^T \right) \\
+&=& \sigma_{\epsilon}^{-4} \left( \mathbf{I}_{na} + \frac{n\lambda^2}{(1 + n \lambda)^2} \mathbf{Z} \mathbf{Z}^T + \frac{1}{na(1 + n\lambda)^2} \mathbf{1}_{na} \mathbf{1}_{na}^T - \frac{2\lambda}{1 + n\lambda} \mathbf{Z} \mathbf{Z}^T - \frac{2}{na(1+n\lambda)} \mathbf{1}_{na} \mathbf{1}_{na}^T + \frac{2\lambda}{a(1+n\lambda)^2} \mathbf{1}_{na} \mathbf{1}_{na}^T \right) \\
+&=& \sigma_{\epsilon}^{-4} \left( \mathbf{I}_{na} - \frac{2\lambda + n\lambda^2}{(1 + n\lambda)^2} \mathbf{Z} \mathbf{Z}^T - \frac{1}{na(1 + n\lambda)^2} \mathbf{1}_{na} \mathbf{1}_{na}^T \right), \\
+\mathbf{A} \mathbf{Z} \mathbf{Z}^T \mathbf{A} &=& 
+\end{eqnarray*}
+The first estimation equations becomes
+\begin{eqnarray*}
+  \frac{\partial}{\partial \sigma_{\epsilon}^2} \ell &=& - \frac 12 \operatorname{tr} \mathbf{A} - \frac 12 \mathbf{y}^T \mathbf{A} \mathbf{A} \mathbf{y} \\
+  &=& - \frac{na}{2} \sigma_{\epsilon}^{-2} + \frac{na\lambda}{2(1 + n \lambda)} \sigma_{\epsilon}^{-2} + \frac{1}{2(1 + n\lambda)} \sigma_{\epsilon}^{-2} \\
+  &=& 0.
+\end{eqnarray*}
 
 4. For all three estimates, check that your results match those we obtained using R for the `pulp` example in class.
 
 **Answer:**
 
-For MLE, we have $\hat{\mu} = \bar{y}_{\cdot \cdot}$ and $\hat{\sigma}^2_\alpha + \hat{\sigma}^2_\epsilon = \frac{1}{na}\sum_{i=1}^a\sum_{j=1}^n(y_{ij}-\bar{y}_{\cdot \cdot})^2$. We can use the following R code to check the results.
+In class, we have
+```{r}
+library(faraway)
+aovmod <- aov(bright ~ operator, data = pulp) |>
+  summary()
+```
+
+```{r}
+(aovmod[1][[1]][[3]][1] - aovmod[1][[1]][[3]][2]) / 5
+aovmod[1][[1]][[3]][2]
+```
+
+We can use the following R code to check the results.
 ```{r}
 library(lme4)
-library(faraway)
 smod <- lmer(bright ~ 1 + (1 | operator), data = pulp, REML = FALSE)
 summary(smod)
 ```
 In the R code, the estimate of $\mu$ is the intercept, $60.4$, the estimate of $\sigma^2_\alpha = 0.04575$ and $\sigma^2_\epsilon = 0.10625$.
 
+For MLE, we have $\hat{\mu} = \bar{y}_{\cdot \cdot}$, $\hat \sigma_{\epsilon}^2=\frac{\text{SSE}}{(n-1)a}$ and $\hat \sigma_{\alpha}^2 = \frac{\text{SSA}}{an} - \frac{\text{SSE}}{an(n-1)}$. 
 ```{r}
 mean(pulp$bright)
 ```
@@ -149,8 +257,9 @@ So the MLE estimate of $\mu$ matches the result we obtained in R.
 aov(bright ~ operator, data = pulp) |>
   summary()
 ```
+
 ```{r}
-1.34/(4*5)-1.7/(4*5*4)
+1.34/(4*5)-1.70/(4*5*4)
 1.70/((5-1)*4)
 ```
 So the MLE estimate of $\sigma^2_\alpha$ and $\sigma^2_\epsilon$ matches the result we obtained in R.
@@ -186,16 +295,16 @@ f(\boldsymbol{\gamma} \mid \mathbf{y}) &=& \frac{f(\mathbf{y} \mid \boldsymbol{\
 $$
 It's clear the covariance of posterior normal distribution is 
 $$
-(\sigma^{-2} Z^T Z + \Sigma^{-1})^{-1} = \Sigma - \Sigma Z^T (\sigma^2 I_n + Z Z^T)^{-1} Z \Sigma.
+(\sigma^{-2} \mathbf{Z}^T \mathbf{Z} + \boldsymbol{\Sigma}^{-1})^{-1} = \boldsymbol{\Sigma} - \boldsymbol{\Sigma} \mathbf{Z}^T (\sigma^2 \mathbf{I_n} + \mathbf{Z} \mathbf{Z}^T)^{-1} \mathbf{Z} \boldsymbol{\Sigma}.
 $$
 Now by binomial inversion 
 $$
 \begin{eqnarray*}
-  & & \sigma^{-2} (\sigma^{-2} Z^T Z + \Sigma^{-1})^{-1 } Z^T (y - X \beta) \\
-  &=& \sigma^{-2} [\Sigma Z^T - \Sigma Z^T (Z \Sigma Z^T + \sigma^2 I)^{-1} Z \Sigma Z^T] (y - X \beta) \\
-  &=& \sigma^{-2} \Sigma Z^T [I - (Z \Sigma Z^T + \sigma^2 I)^{-1} Z \Sigma Z^T] (y - X \beta) \\
-  &=& \sigma^{-2} \Sigma Z^T [(Z \Sigma Z^T + \sigma^2 I)^{-1} (Z \Sigma Z^T + \sigma^2 I) - (Z \Sigma Z^T + \sigma^2 I)^{-1} Z \Sigma Z^T] (y - X \beta) \\
-  &=& \Sigma Z^T (Z \Sigma Z^T + \sigma^2 I)^{-1} (y - X \beta).
+  & & \sigma^{-2} (\sigma^{-2} \mathbf{Z}^T \mathbf{Z} + \Sigma^{-1})^{-1 } \mathbf{Z}^T (\mathbf{y} - \mathbf{X} \boldsymbol{\beta}) \\
+  &=& \sigma^{-2} [\Sigma \mathbf{Z}^T - \Sigma \mathbf{Z}^T (\mathbf{Z} \Sigma \mathbf{Z}^T + \sigma^2 \mathbf{I})^{-1} \mathbf{Z} \Sigma \mathbf{Z}^T] (\mathbf{y} - \mathbf{X} \boldsymbol{\beta}) \\
+  &=& \sigma^{-2} \Sigma \mathbf{Z}^T [\mathbf{I} - (\mathbf{Z} \Sigma \mathbf{Z}^T + \sigma^2 \mathbf{I})^{-1} \mathbf{Z} \Sigma \mathbf{Z}^T] (\mathbf{y} - \mathbf{X} \boldsymbol{\beta}) \\
+  &=& \sigma^{-2} \Sigma \mathbf{Z}^T [(\mathbf{Z} \Sigma \mathbf{Z}^T + \sigma^2 \mathbf{I})^{-1} (\mathbf{Z} \Sigma \mathbf{Z}^T + \sigma^2 \mathbf{I}) - (\mathbf{Z} \Sigma \mathbf{Z}^T + \sigma^2 \mathbf{I})^{-1} \mathbf{Z} \Sigma \mathbf{Z}^T] (\mathbf{y} - \mathbf{X} \boldsymbol{\beta}) \\
+  &=& \Sigma \mathbf{Z}^T (\mathbf{Z} \Sigma \mathbf{Z}^T + \sigma^2 \mathbf{I})^{-1} (\mathbf{y} - \mathbf{X} \boldsymbol{\beta}).
 \end{eqnarray*}
 $$
 So 
@@ -234,7 +343,16 @@ $$
 \mathbb{E} (\boldsymbol{\gamma} \mid \mathbf{y}) &=& \boldsymbol{\Sigma} \mathbf{Z}^T (\mathbf{Z} \boldsymbol{\Sigma} \mathbf{Z}^T + \sigma^2 \mathbf{I})^{-1} (\mathbf{y} - \mathbf{X} \boldsymbol{\beta})\\
 &=& \sigma_{\epsilon}^{-2} (\sigma_{\epsilon}^{-2} \mathbf{Z}^T \mathbf{Z} + \Sigma_{\epsilon}^{-1})^{-1 } \mathbf{Z}^T (\mathbf{y} - \mathbf{X} \boldsymbol{\beta}) \\
 \mathbf{Z}^T \mathbf{Z} &=& n \mathbf{I}_a, \quad \Sigma_{\epsilon} = \sigma_{\alpha}^2 \mathbf{I}_a\\
-\mathbb{E} (\boldsymbol{\gamma} \mid \mathbf{y})&=& \frac{n}{n + (\sigma_{\epsilon}/\sigma_{\alpha})^2} \begin{pmatrix}
+\mathbb{E} (\boldsymbol{\gamma} \mid \mathbf{y})&=& \begin{pmatrix}
+\frac{1}{n + (\sigma_{\epsilon}/\sigma_{\alpha})^2} & & \\
+& \vdots & \\
+& & \frac{1}{n + (\sigma_{\epsilon}/\sigma_{\alpha})^2}
+\end{pmatrix} \begin{pmatrix}
+ n\bar{y}_{1\cdot} - n\hat \mu \\
+\vdots \\
+n\bar{y}_{a\cdot} - n\hat \mu
+\end{pmatrix} \\
+&=&\frac{n}{n + (\sigma_{\epsilon}/\sigma_{\alpha})^2}\begin{pmatrix}
  \bar{y}_{1\cdot} - \hat \mu \\
 \vdots \\
 \bar{y}_{a\cdot} - \hat \mu
@@ -262,35 +380,21 @@ The ratdrink data consist of five weekly measurements of body weight for 27 rats
 library(ggplot2)
 library(gridExtra)
 library(tidyverse)
-ggplot(data = ratdrink) +
-  stat_summary(mapping = aes(x = weeks, y = wt, group = treat, 
-                             color = as.factor(treat)), geom = "line", 
-               fun.y = mean) +
-  labs(x = "Week", y = "Weight",
-       title = "Rat Weight Over Time",
-       col = "Treatment")
-
-control <- ratdrink |>
-  filter(treat == "control") |>
-  ggplot(aes(x = weeks, y = wt)) + 
-  geom_point() +
-  labs(title = "Control Rat Weight Over Time")
-
-thyroxine <- ratdrink |>
-  filter(treat == "thyroxine") |>
-  ggplot(aes(x = weeks, y = wt)) + 
-  geom_point() +
-  labs(title = "Thyroxine Rat Weight Over Time")
-
-thiouracil <- ratdrink |>
-  filter(treat == "thiouracil") |>
-  ggplot(aes(x = weeks, y = wt)) + 
-  geom_point() +
-  labs(title = "Thiouracil Rat Weight Over Time")
-
-grid.arrange(control, thyroxine, thiouracil, ncol = 2)
+ggplot(data = ratdrink, aes(x = weeks, y = wt, color = treat)) +
+  geom_line() +
+  facet_wrap(~subject) +
+  labs(x = "Week", y = "Weight")
 ```
-Control rats and thyroxine treated rats have similar weight gain over time, while thiouracil treated rats have a lower weight gain over time. From the one-panel plot, the mean value of weight gain for thiouracil also shows a lower weight gain compared to the other two groups.
+From this plot, we can see that the weight increases with age for all three treatment groups.
+
+```{r}
+ggplot(data = ratdrink, aes(x = weeks, y = wt, group = subject, 
+                            color = treat)) +
+  geom_line() +
+  facet_wrap(~treat) +
+  labs(x = "Week", y = "Weight")
+```
+Control rats and thyroxine treated rats have similar weight gain over time, while thiouracil treated rats have a lower weight gain over time.
 
 ### Q3.2
 (b) Fit a linear longitudinal model that allows for a random slope and intercept for each rat. Each group should have a different mean line. Give interpretation for the following estimates:
@@ -305,9 +409,9 @@ library(lme4)
 m1 <- lmer(wt ~ weeks * treat + (weeks | subject), data = ratdrink)
 summary(m1)
 ```
-+ The fixed effect intercept term: The estimated weight of the control group at week 0 is 52.88.
++ The fixed effect intercept term: The estimated average weight of the control group at week 0 is 52.88.
 
-+ The interaction between thiouracil and week: For every one week increase, the estimated weight gain for the thiouracil group is -9.37 weights lower than that for the control group.
++ The interaction between thiouracil and week: For every one week increase, the estimated average weight gain for the thiouracil group is -9.37 weights lower than that for the control group.
 
 + The intercept random effect SD: The standard deviation between subjects within the same treatment group is 5.7.
 
@@ -388,13 +492,18 @@ prop.table(table(table_data$years, table_data$smoke), 2)
 ```{r}
 library(ggplot2)
 ohio |>
-  filter(resp == 1) |>
-  count(age, smoke) |>
-  group_by(age) |>
+  count(age, smoke, resp) |>
+  group_by(age, smoke) |>
   mutate(prop = prop.table(n)) |>
-  ggplot() +
-  geom_line(mapping = aes(x = age, y = prop, group = smoke, color = factor(smoke))) +
-  labs(x = "Age", y = "Proportion")
+  filter(resp == 1) |>
+  mutate(age = factor(age, levels = c(-2, -1, 0, 1), 
+         labels = c(7, 8, 9, 10)), 
+         smoke = factor(smoke, levels = c(0, 1),
+                        labels = c("Nonsmoking", "Smoking"))) |>
+  ungroup() |>
+  ggplot(aes(x = age, y = prop, color = smoke, group = smoke)) +
+  geom_line() +
+  labs(x = "Age", y = "Proportion of children wheezing")
 ```
 
 ### Q4.4
@@ -422,7 +531,7 @@ library(MASS)
 pqlmod <- glmmPQL(resp ~ age + smoke, random = ~ 1 | id, family = binomial, data = ohio)
 summary(pqlmod)
 ```
-The odds of wheezing decreases by $1- e^{-0.182} = 16.6\%$ over time. The odds of wheezing for children of smoking mothers are $e^{0.325} = 1.384$ times higher than that for children of nonsmoking mothers.
+For every one year increase in age, the odds of wheezing decreases by $1- e^{-0.182} = 16.6\%$, controlling for smoking condition. The odds of wheezing for children of smoking mothers are $e^{0.325} = 1.384$ times higher than that for children of nonsmoking mothers, controlling for age. The odds of wheezing decreases by $1- e^{-0.182} = 16.6\%$ over time. 
 
 ### Q4.6
 (f) Now fit the same model but using adaptive Gaussian-Hermit quadrature. Compare to the previous model fit.
@@ -434,10 +543,10 @@ ghmod <- glmer(resp ~ age + smoke + (1 | id), nAGQ = 25, family = binomial,
                data = ohio)
 summary(ghmod)
 ```
-The coefficients of `age` and `smoke` are similar to the previous model fit. The odds of wheezing decreases by $1- e^{-0.176} = 16.1\%$ over time. The odds of wheezing for children of smoking mothers are $e^{0.399} = 1.49$ times higher than that for children of nonsmoking mothers.
+The coefficients of `age` and `smoke` are similar to the previous model fit. For every one year increase in age, the odds of wheezing decreases by $1- e^{-0.176} = 16.1\%$, controlling for smoking condition. The odds of wheezing for children of smoking mothers are $e^{0.399} = 1.49$ times higher than that for children of nonsmoking mothers, controlling for age. The odds of wheezing decreases by $1- e^{-0.176} = 16.1\%$ over time.
 
 ### Q4.7
-(g) Use INLA to fit the same model. What does this model say about the effect of age and maternal smoking?
+(g) Use INLA to fit the same model. What does this model say about the effect of age and maternal smoking (optional)?
 
 **Answer:**
 ```{r}
@@ -446,7 +555,7 @@ formula <- resp ~ age + smoke + f(id, model = "iid")
 inlamod <- inla(formula, family = "binomial", data = ohio)
 summary(inlamod)
 ```
-The odds of wheezing decreases by $1- e^{-0.173} = 15.9\%$ over time. The odds of wheezing for children of smoking mothers are $e^{0.385} = 1.47$ times higher than that for children of nonsmoking mothers.
+For every one year increase in age, the odds of wheezing decreases by $1- e^{-0.173} = 15.9\%$, controlling for smoking condition. The odds of wheezing for children of smoking mothers are $e^{0.385} = 1.47$ times higher than that for children of nonsmoking mothers, controlling for age.
 
 ### Q4.8
 (h) Use STAN to fit the same model. Check the MCMC diagnostics and again discuss the age and maternal smoking effects (optional).
@@ -458,12 +567,11 @@ The odds of wheezing decreases by $1- e^{-0.173} = 15.9\%$ over time. The odds o
 **Answer:**
 ```{r}
 library(geepack)
-geemod <- geeglm(resp ~ age + smoke, id = id, corstr = "ar1", 
-                 scale.fix = TRUE, data = ohio, 
+geemod <- geeglm(resp ~ age + smoke, id = id, corstr = "ar1", data = ohio, 
                  family =binomial(link = "logit"))
 summary(geemod)
 ```
-The odds of wheezing decreases by $1- e^{-0.115} = 10.86\%$ over time. The odds of wheezing for children of smoking mothers are $e^{0.233} = 1.262$ times higher than that for children of nonsmoking mothers. The correlation coefficient of the autoregressive error structure is $0.5$, which indicates that a child who already wheezes is likely to continue to wheeze.
+For every one year increase in age, the odds of wheezing decreases by $1- e^{-0.115} = 10.86\%$, controlling for smoking condition. The odds of wheezing for children of smoking mothers are $e^{0.233} = 1.262$ times higher than that for children of nonsmoking mothers, controlling for age. The odds of wheezing decreases by $1- e^{-0.115} = 10.86\%$ over time. The correlation coefficient of the autoregressive error structure is $0.5$, which indicates that a child who already wheezes is likely to continue to wheeze.
 
 ### Q4.10
 (j) What is your overall conclusion regarding the effect of age and maternal smoking? Can we trust the GLM result or are the GLMM models preferable?
