@@ -43,8 +43,6 @@ intestinal microbiota composition](https://genomebiology.biomedcentral.com/artic
   + OTU counts can be aggregated at higher phylogentic levels, e.g., species, genus, etc.
   + The higher the level the less zero-inflated the data is.
 
-![](./ngs16.png)
-
 - Features of microbiome data include
 
   + Zero-inflated: many OTUs are not observed in many samples
@@ -516,4 +514,111 @@ median(type1e_tbl$etype_1_error)
 
 # Re-do midterm questions (40 pts)
 ## Question 2 and 8
+### Q2.1
+Deviance = $2*\log\frac{L_{\Omega}}{L_{\omega}}$, where $L_{\Omega}$ is the likelihood of the saturated model and $L_{\omega}$ is the likelihood of the fitted model. Deviance values from R output is 0.95443 and we know AIC = Deviance + 2p, where p is the number of parameter so $37.666 = -2*l_{\omega} +2 \times 4$. So the log-likelihood = -14.833.
+
+### Q2.2
+$H_{0}$: The fitted model has a good fit (no big difference from saturated model) vs $H_{1}$: The fitted model is lack of fit.
+The deviance is 0.95443 and degree of freedom is 4. The 0.05 quantile of chi-square distribution with 4 degree of freedom is 9.488. Since 0.95443 < 9.488, we fail to reject the null hypothesis and conclude that the fitted model has a good fit.
+
+### Q2.3
+Difference between deviance of null model and fitted model is 21.33202 - 0.95443 = 20.37759. The difference between degree of freedom of null model and fitted model is 7-4 = 3. The 0.05 quantile of chi-square distribution with 3 degree of freedom is 7.815. Since 20.37759 > 7.815, we reject the null hypothesis and conclude that the fitted model is better than the null model.
+
+### Q2.4
+log(odds) $= -2.6163 + 0.6223 + 0.6157 +0.362 = -1.0163$. The odds ratio is $e^{-1.0163} = 0.362$. 
+
+### Q2.5
+We will have 8 parameters (1 intercept, 3 main effects, 3 2-way interactions, 1 3-way interactions). Since the number of parameter of this new fitted model is equal to the saturated model, the deviance of this new fitted model will be 0.
+
+### Q2.6
+The Hessian matrix of a logistic model is: $H_{\beta} = \sum_{i} \left[-\frac{e^{-\mathbf{x}_{i}^{T} \boldsymbol{\beta}}}{(1 + e^{-\mathbf{x}_{i}^{T} \boldsymbol{\beta}})^{2}} \mathbf{x}_{i}\mathbf{x}_{i}^{T} \right]$.  Let $\mathbf{v}$ be any vector such that $\mathbf{v} \in \mathbb{R}^{q}$ and $\mathbf{v} \ne \mathbf{0}$. So we can get
+$$
+\mathbf{v}^{T} (\mathbf{-H_{\beta}}) \mathbf{v} = \mathbf{v}^{T} \left( \sum_{i=1}^n \frac{e^{-\mathbf{x}_{i}^T \boldsymbol{\beta}}}{(1 + e^{-\mathbf{x}_{i}^{T} \boldsymbol{\beta}})^{2}} \mathbf{x}_{i}\mathbf{x}_{i}^{T} \right) \mathbf{v} = \sum_{i=1}^n \frac{e^{-\mathbf{x}_{i}^T \boldsymbol{\beta}}}{(1 + e^{-\mathbf{x}_{i}^{T} \boldsymbol{\beta}})^{2}} (\mathbf{x}_{i}^{T} \mathbf{v})^2 \ge 0,
+$$
+since $\frac{e^{-\mathbf{x}_{i}^T \boldsymbol{\beta}}}{(1 + e^{-\mathbf{x}_{i}^{T} \boldsymbol{\beta}})^{2}} \ge 0$ and $(\mathbf{x}_{i}^{T} \mathbf{v})^2 \ge 0$. So the negative Hessian is a positive semidefinite matrix and then the log-likelihood function of logistic regression is a concave function. If we use probit, it is still concave.
+
+### Q2.7
+It will be the same as our fitted model because binomial model can be viewed as the weighted bernoulli model.
+
+### Q8.1
+There are 7 parameters. Four for predictors and three for intercepts.
+
+### Q8.2
+$\log\left[\frac{P(D \le 1|x)}{P(D > 1|x)}\right] = \theta_{1} -age*\beta_{age}-gender*\beta_{gender}-smoke*\beta_{smoke}-hpt*\beta_{hpt}$
+
+So $\log\left[\frac{P(D \ge 2|x)}{P(D < 2|x)}\right] = -\theta_{1} +age*\beta_{age}+gender*\beta_{gender}+smoke*\beta_{smoke}+hpt*\beta_{hpt}$
+
+So log(odds) = $\log\left[\frac{P(D \ge 2|x)}{P(D < 2|x)}\right]=40\beta_{age}+\beta_{gender}+\beta_{smoke}-\theta_{1}$. 
+
+So the odds = $e^{(40\beta_{age}+\beta_{gender}+\beta_{smoke}-\theta_{1})}$
+
+### Q8.3
+$\log\left[\frac{P(D \le 0|x_{1})}{P(D > 0|x_{1})}\right] - \log\left[\frac{P(D \le 0|x_{2})}{P(D > 0|x_{2})}\right] = -\beta_{smoke}-\beta_{hpt}$
+
+So $\log\left[\frac{P(D \ge 1|x_{1})}{P(D < 1|x_{1})}\right] - \log\left[\frac{P(D \ge 1|x_{2})}{P(D < 1|x_{2})}\right] = \beta_{smoke}+\beta_{hpt}$
+
+So odds ratio = $e^{(\beta_{smoke}+\beta_{hpt})}$
+
+### Q8.4
+$\log\left[\frac{P(D \ge 3|x_{1})}{P(D < 3|x_{1})}\right] - \log\left[\frac{P(D \ge 3|x_{2})}{P(D < 3|x_{2})}\right] = \beta_{smoke}+\beta_{hpt}$
+
+So odds ratio = $e^{(\beta_{smoke}+\beta_{hpt})}$
+
+So odds (D $\ge$ 3) = $e^{(age*\beta_{age}+gender*\beta_{gender}+smoke*\beta_{smoke}+hpt*\beta_{hpt}-\theta_{2})}$
+
+### Q8.5
+odds ratio = $e^{(-\beta_{smoke}-\beta_{hpt})}$
+
+
 ## Optional: Question 4, 6, 9
+### Q4.1
+Because matching was done on age, race and county of residence. Age here is used to determine the matched group of each individual. It is a confounding factor.
+
+### Q4.2
+$e^{coef} = e^{0.66698} = 1.948$. So the odds ratio is 1.948.
+
+### Q4.3
+Because conditional logistic regression is used to analyze matched case-control studies, which is a type of survival analysis. This type of regression is well-suited for situations where the data involve matched pairs or strata, such as in survival analysis
+
+### Q4.4
+Conditional logistic regression should be preferred over unconditional logistic regression in situations where data are collected in matched pairs or sets, and where the matching is intended to control for confounding variables.
+
+### Q6.1
+5 parameters in one category and there are total 3 categories, so there are 15 parameters in total.
+
+### Q6.2
+odds (severe vs. none) = $e^{(\beta_{2,0} + 40*\beta_{2,age} + \beta_{2,gender} + \beta_{2, hpt})}$
+
+### Q6.3
+odds ratio for male vs. female, comparing mild disease to none = $e^{\beta_{1,gender}}$
+
+### Q6.4
+The small model does not have `smoke` and `hpt`. So $H_{0}$: $\beta_{g,smoke} = \beta_{g, hpt} = 0$ for g = 1, 2, 3 vs $H_{1}$: at least one of them is not 0. The test statistic = Deviance of small model - Deviance of large model. The distribution of this test statistic is chi-square distribution with degree of freedom = 6.
+
+### Q6.5
+In each category, there will be 2 more parameters. So in total, there will be 6 parameters added to the model.
+
+### Q9
+logit link function
+$$
+\eta = g(p) = \log \frac{p}{1-p}
+$$
+Latent variable distribution is logistic distribution.
+
+Probit link function
+$$
+\eta = g(p) = \Phi^{-1}(p),
+$$
+where $\Phi$ is the cumulative distribution function (cdf) of a standard normal. Latent variable distribution is normal distribution.
+
+Cauchit link function
+$$
+\eta = g(p) = \tan((p - 1/2) \pi).
+$$
+Latent variable distribution is Cauchy distribution.
+
+
+
+
+
+
