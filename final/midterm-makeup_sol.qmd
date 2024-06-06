@@ -59,39 +59,7 @@ intestinal microbiota composition](https://genomebiology.biomedcentral.com/artic
   + Negative Binomial
   + Zero Inflated Poisson
   + Zero Inflated Negative Binomial
-
-### Question 1
-
-- Compare the results from these models and discuss the pros and cons of each model.
-
-  + Create a table to summarize the significant microbiome clusters from these models.
   
-```{r}
-tibble::tibble(
-  Model = c("Quasi-Poisson", "Negative Binomial", "Zero Inflated Poisson", "Zero Inflated Negative Binomial"),
-  Significant = c(0, 0, 0, 0)
-)
-```
-  + Create a Venn Diagram to summarize the significant microbiome clusters overlaps from these models.
-  
-
-### Question 2
-- Evaluate empirical type I error rate of the methods adopted in this study for 41 genus and 101 species.
-  + Example code provided below.
-  + Summarize your median (IQR) of the type I error across genus and species in a table.
-
-```{r}
-tibble::tibble(
-  Method = c("Quasi-Poisson", "Negative Binomial", "Zero Inflated Poisson", "Zero Inflated Negative Binomial"),
-  Genus = c("0 IQR()" , "0 IQR()", "0 IQR()", "0 IQR()"),
-  Species = c("0 IQR()", "0 IQR()", "0 IQR()", "0 IQR()")
-)
-```
-### Question 3 
-- Comment on the model fit (Question 1) of different models using, for example, AIC, etc., the control type I error rate, and Summarize esults from the best model.
-
-## Example code
-### Load required packages 
 ```{r}
 # if (!require("BiocManager", quietly = TRUE))
 #    install.packages("BiocManager")
@@ -105,7 +73,7 @@ library(broom)
 ```
 
 ### Load data and process
-```{r}
+```{r, eval=FALSE}
 data(msd16s)
 msd16s
 ```
@@ -129,6 +97,7 @@ with the featureData and fData methods:
 featureData(msd16s)
 features <- fData(msd16s)
 ```
+
 ```{r}
 counts <- MRcounts(msd16s, norm = TRUE)
 dim(counts)
@@ -248,7 +217,6 @@ genus_tbl_t <- genus_tbl %>%
 
 #### Filter data at Species level
 - Aggregated counts at genus level
-
 ```{r}
 species_counts = aggTax(msd16s, lvl = "species", out = "matrix", norm = T)
 species_id <- rownames(species_counts)
@@ -297,8 +265,12 @@ species_tbl_t <- species_tbl %>%
   dplyr:: select(-`NA`)
 ```
 
+### Question 1
 
-### Differential abundance analysis
+- Compare the results from these models and discuss the pros and cons of each model.
+
+  + Create a table to summarize the significant microbiome clusters from these models.
+
 #### Genus level
 - Quasipoisson regression model
 ```{r}
@@ -314,7 +286,7 @@ results_genus_qpoisson <-
   filter(term == "TypeControl") %>% 
   arrange(p.value) 
 
-results_genus_qpoisson %>% filter(p.value < 0.05/41) %>%
+genus_qpoisson <- results_genus_qpoisson %>% filter(p.value < 0.05/41) %>%
   dplyr::select(response_variable, p.value) %>%
   print(n = 20)
 ```
@@ -336,9 +308,55 @@ results_genus_nb2 <-
   filter(term == "TypeControl") %>% 
   arrange(p.value) 
 
-results_genus_nb2 %>% filter(p.value < 0.05/41) %>%
+genus_nb2 <- results_genus_nb2 %>% filter(p.value < 0.05/41) %>%
   dplyr::select(response_variable, p.value) %>%
   print(n = Inf)
+```
+- Zero inflated poisson
+```{r}
+library(pscl)
+results_genus_zpoisson <- 
+  map_df(genusnames, function(response) {
+    genus_tbl_t[[response]] <- round(genus_tbl_t[[response]])
+    model <- zeroinfl(as.formula(paste(response, "~ Type")), 
+                 data = genus_tbl_t, dist = "poisson")
+    tidy(model, conf.int = TRUE) %>%
+      # Add a column for the response variable
+      mutate(response_variable = response)
+    }) %>% 
+  filter(term == "TypeControl") %>% 
+  arrange(p.value) 
+
+genus_zpoisson <- results_genus_zpoisson %>% filter(p.value < 0.05/41) %>%
+  dplyr::select(response_variable, p.value) %>%
+  print(n = 20)
+```
+
+- Zero inflated negative binomial
+```{r}
+library(pscl)
+results_genus_znegbin <- 
+  map_df(genusnames, function(response) {
+    genus_tbl_t[[response]] <- round(genus_tbl_t[[response]])
+    model <- zeroinfl(as.formula(paste(response, "~ Type")), 
+                 data = genus_tbl_t, dist = "negbin")
+    tidy(model, conf.int = TRUE) %>%
+      # Add a column for the response variable
+      mutate(response_variable = response)
+    }) %>% 
+  filter(term == "TypeControl") %>% 
+  arrange(p.value) 
+
+genus_znegbin <- results_genus_znegbin %>% filter(p.value < 0.05/41) %>%
+  dplyr::select(response_variable, p.value) %>%
+  print(n = 20)
+```
+
+```{r}
+tibble::tibble(
+  Model = c("Quasi-Poisson", "Negative Binomial", "Zero Inflated Poisson", "Zero Inflated Negative Binomial"),
+  Significant = c(12, 17, 0, 0)
+)
 ```
 
 #### Species level
@@ -376,7 +394,45 @@ results_species_nb2 <-
     }) %>% 
   filter(term == "TypeControl") %>% 
   arrange(p.value)
+
+results_species_nb2 %>% 
+  filter(p.value < 0.05/102) %>%
+  dplyr::select(response_variable, p.value) %>%
+  print(n = 20)
 ```
+
+```{r}
+tibble::tibble(
+  Model = c("Quasi-Poisson", "Negative Binomial", "Zero Inflated Poisson", "Zero Inflated Negative Binomial"),
+  Significant = c(20, 27, 0, 0)
+)
+```
+
+
+
+  
+
+  + Create a Venn Diagram to summarize the significant microbiome clusters overlaps from these models.
+  
+
+### Question 2
+- Evaluate empirical type I error rate of the methods adopted in this study for 41 genus and 101 species.
+  + Example code provided below.
+  + Summarize your median (IQR) of the type I error across genus and species in a table.
+
+```{r}
+tibble::tibble(
+  Method = c("Quasi-Poisson", "Negative Binomial", "Zero Inflated Poisson", "Zero Inflated Negative Binomial"),
+  Genus = c("0 IQR()" , "0 IQR()", "0 IQR()", "0 IQR()"),
+  Species = c("0 IQR()", "0 IQR()", "0 IQR()", "0 IQR()")
+)
+```
+### Question 3 
+- Comment on the model fit (Question 1) of different models using, for example, AIC, etc., the control type I error rate, and Summarize esults from the best model.
+
+
+
+
 
 ### Evaluate Type I Error rate
 - This section evaluates the Type I error rate of the models by simulating data under the null hypothesis of no association between the microbiome and the outcome variable.
