@@ -132,10 +132,10 @@ L(\mu, \sigma^2_\alpha, \sigma^2_\epsilon) &=& \prod_{i=1}^{a} \left[ \frac{1}{(
 \det (\sigma_{\alpha}^2 \mathbf{1}_n \mathbf{1}_n^T + \sigma_{\epsilon}^2 \mathbf{I}_n) &=& \sigma_{\epsilon}^{2n} (1 + n \frac{\sigma_{\alpha}^2}{\sigma_{\epsilon}^2})\\
 \\
 \ell(\mu, \sigma^2_\alpha, \sigma^2_\epsilon)&=& \sum_{i=1}^{a} \left[ -\frac{n}{2}\log(2\pi) - \frac{1}{2} \log(\sigma_{\epsilon}^{2n} (1 + n \frac{\sigma_{\alpha}^2}{\sigma_{\epsilon}^2})) - \frac{1}{2} (\mathbf{y}_i - \mu \mathbf{1}_n)^T (\sigma_{\epsilon}^{-2} \mathbf{I}_{n} - \frac{\sigma_{\epsilon}^{-2} \sigma_{\alpha}^2}{\sigma_{\epsilon}^2 + n\sigma_{\alpha}^2} \mathbf{1}_n \mathbf{1}_n^T) (\mathbf{y}_i - \mu \mathbf{1}_n) \right]\\
-&=&  -\frac{na}{2}\log(2\pi) -\frac{na}{2} \log \sigma_{\epsilon}^2 - \frac{a}{2} \log (1 + n\frac{\sigma_{\alpha}^2}{\sigma_{\epsilon}^2}) - \frac{1}{2\sigma_{\epsilon}^{2}} \frac{\text{SST}(\mu) + n\frac{\sigma_{\alpha}^2}{\sigma_{\epsilon}^2} \text{SSA}}{1 + n \lambda}\\
+&=&  -\frac{na}{2}\log(2\pi) -\frac{na}{2} \log \sigma_{\epsilon}^2 - \frac{a}{2} \log (1 + n\frac{\sigma_{\alpha}^2}{\sigma_{\epsilon}^2}) - \frac{1}{2\sigma_{\epsilon}^{2}} \frac{\text{SST}(\mu) + n\frac{\sigma_{\alpha}^2}{\sigma_{\epsilon}^2} \text{SSA}}{1 + n \frac{\sigma_{\alpha}^2}{\sigma_{\epsilon}^2}}\\
 \end{eqnarray*}
 $$
-Setting derivative with respect to $\sigma_{\epsilon}^2$ to 0 yields equation
+Let $\lambda = \frac{\sigma_{\alpha}^2}{\sigma_{\epsilon}^2}$ and setting derivative with respect to $\sigma_{\epsilon}^2$ to 0 yields equation
 $$
 \sigma_{\epsilon}^2 = \frac{\text{SST} - \frac{n\lambda}{1 + n\lambda} \text{SSA}}{na} = \frac{\text{SST} + n \lambda \text{SSE}}{na(1 + n\lambda)}.
 $$

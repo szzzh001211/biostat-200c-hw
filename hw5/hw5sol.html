@@ -3282,9 +3282,9 @@ L(\mu, \sigma^2_\alpha, \sigma^2_\epsilon) &amp;=&amp; \prod_{i=1}^{a} \left[ \f
 \det (\sigma_{\alpha}^2 \mathbf{1}_n \mathbf{1}_n^T + \sigma_{\epsilon}^2 \mathbf{I}_n) &amp;=&amp; \sigma_{\epsilon}^{2n} (1 + n \frac{\sigma_{\alpha}^2}{\sigma_{\epsilon}^2})\\
 \\
 \ell(\mu, \sigma^2_\alpha, \sigma^2_\epsilon)&amp;=&amp; \sum_{i=1}^{a} \left[ -\frac{n}{2}\log(2\pi) - \frac{1}{2} \log(\sigma_{\epsilon}^{2n} (1 + n \frac{\sigma_{\alpha}^2}{\sigma_{\epsilon}^2})) - \frac{1}{2} (\mathbf{y}_i - \mu \mathbf{1}_n)^T (\sigma_{\epsilon}^{-2} \mathbf{I}_{n} - \frac{\sigma_{\epsilon}^{-2} \sigma_{\alpha}^2}{\sigma_{\epsilon}^2 + n\sigma_{\alpha}^2} \mathbf{1}_n \mathbf{1}_n^T) (\mathbf{y}_i - \mu \mathbf{1}_n) \right]\\
-&amp;=&amp;  -\frac{na}{2}\log(2\pi) -\frac{na}{2} \log \sigma_{\epsilon}^2 - \frac{a}{2} \log (1 + n\frac{\sigma_{\alpha}^2}{\sigma_{\epsilon}^2}) - \frac{1}{2\sigma_{\epsilon}^{2}} \frac{\text{SST}(\mu) + n\frac{\sigma_{\alpha}^2}{\sigma_{\epsilon}^2} \text{SSA}}{1 + n \lambda}\\
+&amp;=&amp;  -\frac{na}{2}\log(2\pi) -\frac{na}{2} \log \sigma_{\epsilon}^2 - \frac{a}{2} \log (1 + n\frac{\sigma_{\alpha}^2}{\sigma_{\epsilon}^2}) - \frac{1}{2\sigma_{\epsilon}^{2}} \frac{\text{SST}(\mu) + n\frac{\sigma_{\alpha}^2}{\sigma_{\epsilon}^2} \text{SSA}}{1 + n \frac{\sigma_{\alpha}^2}{\sigma_{\epsilon}^2}}\\
 \end{eqnarray*}
-\]</span> Setting derivative with respect to <span class="math inline">\(\sigma_{\epsilon}^2\)</span> to 0 yields equation <span class="math display">\[
+\]</span> Let <span class="math inline">\(\lambda = \frac{\sigma_{\alpha}^2}{\sigma_{\epsilon}^2}\)</span> and setting derivative with respect to <span class="math inline">\(\sigma_{\epsilon}^2\)</span> to 0 yields equation <span class="math display">\[
 \sigma_{\epsilon}^2 = \frac{\text{SST} - \frac{n\lambda}{1 + n\lambda} \text{SSA}}{na} = \frac{\text{SST} + n \lambda \text{SSE}}{na(1 + n\lambda)}.
 \]</span> Substitution of the above expression into the log-likelihood shows we need to maximize <span class="math display">\[
 \begin{eqnarray*}
@@ -3661,17 +3661,17 @@ Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">confint</span>(m1, <span class="at">method =</span> <span class="st">&quot;boot&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>                            2.5 %    97.5 %
-.sig01                  3.3817751  7.730423
-.sig02                 -0.5427314  0.479139
-.sig03                  2.4815616  4.869120
-.sigma                  3.6497494  4.972010
-(Intercept)            48.4674328 56.729828
-weeks                  23.8489299 29.219436
-treatthiouracil        -0.8898686 11.007348
-treatthyroxine         -6.8308159  5.834421
-weeks:treatthiouracil -12.8616025 -5.690240
-weeks:treatthyroxine   -3.0898114  5.005409</code></pre>
+<pre><code>                            2.5 %     97.5 %
+.sig01                  3.4994519  7.7535801
+.sig02                 -0.5640239  0.5027692
+.sig03                  2.4404461  4.8876590
+.sigma                  3.6634824  4.9860911
+(Intercept)            48.8704652 56.9354323
+weeks                  23.7646689 29.0967885
+treatthiouracil        -0.7277688 10.8806278
+treatthyroxine         -7.2043999  5.4367604
+weeks:treatthiouracil -12.6932258 -5.4910512
+weeks:treatthyroxine   -3.2033677  4.0122335</code></pre>
 </div>
 </div>
 <p><code>sig01</code> is the variance of the random intercepts, <code>sig02</code> is the covariance between the random intercepts and slopes, and <code>sig03</code> is the variance of the random slopes. Both random intercepts and slopes are significant because their intervals do not include 0. The thyroxine group is not significantly different from the control group because the confidence interval includes 0.</p>
@@ -3912,7 +3912,7 @@ smoke -0.493 -0.008</code></pre>
 <span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(inlamod)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Time used:
-    Pre = 1.48, Running = 0.753, Post = 0.0481, Total = 2.28 
+    Pre = 1.6, Running = 1.44, Post = 0.0463, Total = 3.09 
 Fixed effects:
               mean    sd 0.025quant 0.5quant 0.975quant   mode kld
 (Intercept) -2.945 0.201     -3.362   -2.937     -2.573 -2.907   0
