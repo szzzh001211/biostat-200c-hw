@@ -593,10 +593,10 @@ predictors. Which terms are statistically significant? Discuss the coefficient f
 **Answer:**
 
 ```{r}
-mod <- lmer(narsp ~ . - msa + + (1 | msa), data = hprice)
+mod <- lm(narsp ~ . - msa, data = hprice)
 summary(mod)
 ```
-Coefficient for `time` = -1.265e-03. This means that the natural log of house price decreases by 0.001265 thousand dollars per year.
+`Intercept`, `ypc`, `perypc`, `regtest`, `rcdum`, and `time` are statistically significant. Coefficient for `time` = -1.77e-02. This means that for every additional year, the average house price in thousands of dollars is estimated to decrease by $1-e^{-0.0177} = 1.75\%$, controlling for all other variables in the model.
 
 3. Make a plot that shows how per-capita income changes over time. What is the nature of the increase? Make a similar plot to show how income growth changes over time. Comment on the plot.
 
