@@ -471,16 +471,105 @@ Your collaborator is interested in assessing the effect of treatment on the inci
 skin cancers over time. As the statistician on the project, provide an analysis of the data
 that addresses this question. Specifically, the investigator at Center=1 is interested in characterizing the distribution of risk among subjects at her center. In the following, only include the subset of subjects with Center=1 in the analysis.
 
+```{r}
+skin <- read.table("skin.txt", header = FALSE)
+colnames(skin) <- c("ID", "Center", "Age", "Skin", "Gender", "Exposure", "Y", 
+                    "Treatment", "Year")
+skin <- skin |>
+  filter(Center == 1) |>
+  mutate(Skin = factor(Skin, levels = c(0, 1), labels = c("otherwise", "burns")),
+         Gender = factor(Gender, levels = c(0, 1), labels = c("female", "male")),
+         Treatment = factor(Treatment, levels = c(0, 1), 
+                            labels = c("placebo", "beta-carotene"))) |>
+  print()
+```
+
 1. Provide an algebraic definition for a generalized linear marginal model (GEE) in which the only effects are for the intercept and Year (as a continuous variable). Fit this model and provide a table which includes the estimates of the parameters in your model.
+
+**Answer:** The GEE is defined as follows:
+Let $\mathbf{Y}_i$ be the response vector of $i$-th individual.
+$$
+\begin{eqnarray*}
+\mathbb{E} \mathbf{Y}_i &=& \boldsymbol{\mu}_i \\
+g(\boldsymbol{\mu}_i) &=& \mathbf{X}_i \boldsymbol{\beta} = \beta_0 + \beta_1 \text{Year}_i \\
+\mathbf{V}_i &=& \text{Var}(\mathbf{Y}_i) = \phi \mathbf{A}_i^{1/2} \mathbf{R}_i(\boldsymbol{\alpha}) \mathbf{A}_i^{1/2},
+\end{eqnarray*}
+$$
+where $\mathbf{A}_i = \text{diag}(a(\boldsymbol{\mu}))$ captures the individual variances and $\mathbf{R}_i(\boldsymbol{\alpha})$ is a **working correlation matrix**. Given estimates of $\phi$ and $\boldsymbol{\alpha}$, we solve the **estimation equation**
+$$
+\sum_i [D_{\boldsymbol{\beta}} \boldsymbol{\mu}_i(\boldsymbol{\beta})]^T \mathbf{V}_i^{-1}(\mathbf{Y}_i - \boldsymbol{\mu}_i) = \mathbf{0}.
+$$
+
+```{r}
+library(geepack)
+library(gtsummary)
+library(kableExtra)
+mmod <- geeglm(Y ~ Year, id = ID, data = skin, family = poisson, 
+               scale.fix = TRUE, corstr = "exchangeable")
+summary(mmod)
+tibble(Intercept = coef(mmod)[1], Year = coef(mmod)[2], alpha = 0.231) |>
+  kable("html") |>
+  kable_styling("striped", full_width = F)
+```
      
 2. Provide an algebraic definition for a generalized linear mixed model (GLMM) in which the only fixed effects are for the intercept and Year (as a continuous variable), and the only random effect is the intercept. What is being assumed about how the distribution of risk among subjects changes with time?
+
+**Answer:** The GLMM is defined as follows: In GLM, the distribution of $Y_i$ is from the exponential family of distributions of form
+$$
+  f(y_i \mid \theta_i, \phi) = \exp \left[ \frac{y \theta_i - b(\theta_i)}{a(\phi)} + c(y_i, \phi) \right].
+$$
+If we use the **canonical link**, then
+$$
+\theta_i = g(\mu_i) = \eta_i,
+$$
+where $\mu_i = \mathbb{E} Y_i$. Now let
+$$
+\eta_i = \mathbf{x}_i^T \boldsymbol{\beta} + \mathbf{z}_i^T \boldsymbol{\gamma}_i,
+$$
+where $\boldsymbol{\beta}$ is the fixed effects and $\boldsymbol{\gamma}$ is the random effects with density $h(\gamma \mid \boldsymbol{\Sigma})$. (Typically we assume multivariate normal with mean 0 and covariance $\boldsymbol{\Sigma}$.) Then the likelihood is
+$$
+L(\boldsymbol{\beta}, \phi, \boldsymbol{\Sigma}) = \prod_{i=1}^n \int f(y_i \mid \boldsymbol{\beta}, \phi, \boldsymbol{\gamma}) h(\boldsymbol{\gamma} \mid \boldsymbol{\Sigma}) \, d \boldsymbol{\gamma}
+$$
+and the log-likelihood is
+$$
+\ell(\boldsymbol{\beta}, \phi, \boldsymbol{\Sigma}) = \sum_{i=1}^n \log \int f(y_i \mid \boldsymbol{\beta}, \phi, \boldsymbol{\gamma}) h(\boldsymbol{\gamma} \mid \boldsymbol{\Sigma}) \, d \boldsymbol{\gamma}.
+$$
+This model, combining GLM and mixed effects model, is called the **generalized linear mixed effects model (GLMM)**. In this question,
+$$
+Y_{ij} \sim \text{Poisson}(\mu_{ij})\\ 
+\quad \log(\mu_{ij}) = \beta_0 + \beta_1 \text{Year}_i + \gamma_{0j}\\
+\gamma_{0j} \sim \text{Normal}(0, \sigma^2)
+$$
+It is assumed that number of new skin cancers in the Year of follow-up follows a Poisson distribution with mean $\mu_{ij}$, where $\mu_{ij}$ is a function of the fixed effects $\beta_0$ and $\beta_1$ and the random effect $\gamma_{0j}$. $\mu_{ij}$ is linear in Year and the random effect $\gamma_{0j}$ is assumed to be normally distributed with mean 0 and variance $\sigma^2$.
      
 3. Fit your chosen GLMM and provide a table from your output which includes the estimates for the parameters in your GLMM, and provide careful interpretation of the Year term.
+
+**Answer:**
+```{r}
+mmod1 <- glmer(Y ~ Year + (1 | ID), data = skin, family = poisson)
+summary(mmod1)
+tibble(Intercept = fixef(mmod1)[1], Year = fixef(mmod1)[2]) |>
+  kable("html") |>
+  kable_styling("striped", full_width = F)
+```
+
+Coefficient of `Year` = -0.108, which means for every additional year of follow-up after the beginning of the experiment at center 1, the estimated average number of new skin cancers decreases by $ 10.3\% = 1-e^{-0.1083}$.
      
 4. Are the estimates for the fixed intercept terms the same or different in the GLMM compared with the marginal model fitted in question (1)? Why are they the same or different?
+
+**Answer:** The estimates for the fixed intercept terms are different in the GLMM compared with the marginal model fitted in question (1). The fixed intercept term in the GLMM is -2.2988, while the fixed intercept term in the marginal model is -1.541.
+
+The fixed intercept term in GEE represents the average response across the population, while in GLMM, it represents the response within a typical cluster after adjusting for the random effects. To be specific, the fixed intercept term in the GLMM is the log of the expected number of new skin cancers at center 1 during the first year of follow-up, whereas the fixed intercept term in the marginal model is the log of the expected number of new skin cancers at center 1 during the first year of follow-up averaged over all centers.
      
 5. Use the parameter estimates from your GLMM and your model definition to characterize the distribution of expected counts of new skin cancers among subjects at center 1 during their first year of follow-up.
 
+**Answer:** 
+$$
+\log(\mu) = -2.2988  + -0.1083 +\gamma_{0j}= -2.4071 +\gamma_{0j}\\
+\gamma_{0j} \sim \text{Normal}(0, 1.57)\\
+\log(\mu) \sim \text{Normal}(-2.4071, 1.57)\\
+\mu \sim \text{Log-Normal}(-2.4071, 1.57)
+$$
 
 ## Q4. (25 pts) LMM and GAMM
 
