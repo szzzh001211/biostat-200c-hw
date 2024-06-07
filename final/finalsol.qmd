@@ -41,6 +41,8 @@ Consider following survival times of 25 patients with no history of chronic dies
 
 1. Manually fill in the missing information in the following tables of ordered failure times for groups 1 (`chr = 0`) and 2 (`chr = 1`). Explain how survival probabilities (last column) are calculated.
 
+**Answer:**
+
 Group 1 (`chr = 0`):
 
 | time | n.risk | n.event | survival |
@@ -50,7 +52,7 @@ Group 1 (`chr = 0`):
 | 2.5  | 23     | 1       | 0.88     |
 | 2.6  | 22     | 1       | 0.84     |
 | 3.0  | 21     | 1       | 0.80     |
-| 3.5  | 20     | **???** | **???**  |
+| 3.5  | 20     | **1** | **0.76**  |
 | 3.8  | 19     | 1       | 0.72     |
 | 5.3  | 18     | 1       | 0.68     |
 | 5.4  | 17     | 1       | 0.64     |
@@ -58,14 +60,14 @@ Group 1 (`chr = 0`):
 | 6.6  | 15     | 1       | 0.56     |
 | 8.2  | 14     | 1       | 0.52     |
 | 8.7  | 13     | 1       | 0.48     |
-| 9.2  | **???** | **???** | **???** |
+| 9.2  | **12** | **2** | **0.40** |
 | 9.8  | 10     | 1       | 0.36     |
 | 10.0 | 9      | 1       | 0.32     |
 | 10.2 | 8      | 1       | 0.28     |
 | 10.7 | 7      | 1       | 0.24     |
 | 11.0 | 6      | 1       | 0.20     |
 | 11.1 | 5      | 1       | 0.16     |
-| 11.7 | 4      | **???** | **???**  |
+| 11.7 | 4      | **4** | **0.00**  |
 
 Group 2 (`chr = 1`):
 
@@ -80,9 +82,9 @@ Group 2 (`chr = 1`):
 | 3.1  | 19     | 1       | 0.72     |
 | 3.5  | 18     | 1       | 0.68     |
 | 3.6  | 17     | 1       | 0.64     |
-| 3.9  | **???** | **???** | **???** |
-| 4.1  | **???** | **???** | **???** |
-| 4.2  | **???** | **???** | **???** |
+| 3.9  | **16** | **1** | **0.60** |
+| 4.1  | **15** | **1** | **0.56** |
+| 4.2  | **14** | **1** | **0.52** |
 | 4.7  | 13     | 1       | 0.48     |
 | 4.9  | 12     | 1       | 0.44     |
 | 5.2  | 11     | 1       | 0.40     |
@@ -93,18 +95,102 @@ Group 2 (`chr = 1`):
 | 8.3  | 6      | 1       | 0.20     |
 | 8.4  | 5      | 1       | 0.16     |
 | 8.8  | 4      | 1       | 0.12     |
-| 9.1  | **???** | **???** | 0.08    |
-| 9.9  | **???** | **???** | 0.04    |
+| 9.1  | **3** | **1** | 0.08    |
+| 9.9  | **2** | **1** | 0.04    |
 | 11.4 | 1      | 1       | 0.00     |
 
+The empirical survivor function, an estimate of the probability of survival beyond time $y$, is
+$$
+\widehat{S}(y) = \widehat{\mathbb{P}}(Y > y).
+$$
+Arrange the even times $y_{(1)} \le y_{(2)} \le \cdots \le y_{(k)}$.  **Kaplan-Meier formula** or **product limit formula**
+\begin{eqnarray*}
+\widehat{S}(y_{k}) &=& \widehat{\mathbb{P}}(Y > y_{(k)}) \\
+&=& \widehat{\mathbb{P}}(Y > y_{(k-1)}) \times \widehat{\mathbb{P}}(Y > y_{(k)} \mid Y > y_{(k-1)}) \\
+&=& \widehat{S}(y_{k-1}) \times \widehat{\mathbb{P}}(Y > y_{(k)} \mid Y > y_{(k-1)}) \\
+&=& \cdots \\
+&=& \prod_{j=1}^k \widehat{\mathbb{P}}(Y > y_{(j)} \mid Y > y_{(j-1)}) \\
+&=& \prod_{j=1}^k \left( \frac{n_j - d_j}{n_j} \right),
+\end{eqnarray*}
+where
+\begin{eqnarray*}
+n_j &=& \text{number of subjects who are alive just before time $y_{(j)}$}, \\
+d_j &=& \text{number of deaths that occur at time $y_{(j)}$}.
+\end{eqnarray*}
+Here we do not have cencored data so the survival probabilities in each row are calculated as $\frac{n.risk - n.event}{total\text{ }number}$. For example, the survival probability at time 3.5 for group 1 is calculated as $\frac{20 - 1}{25} = 0.76$. 
 
 2. Use R to display the Kaplan-Meier survival curves for groups 1 (`chr = 0`) and 2 (`chr = 1`). 
 
+**Answer:**
+
+```{r}
+library(survival)
+chr_data <- data.frame(
+  chr = c(rep(0, 25), rep(1, 25)),
+  time = c(1.8, 2.2, 2.5, 2.6, 3.0, 3.5, 3.8, 5.3, 5.4, 5.7, 6.6, 8.2, 8.7, 9.2, 
+           9.2,  9.8, 10.0, 10.2, 10.7, 11.0, 11.1, 11.7, 11.7, 11.7, 11.7, 1.4, 
+           1.6, 1.8, 2.4, 2.8, 2.9, 3.1, 3.5, 3.6, 3.9, 4.1, 4.2, 4.7, 4.9, 5.2, 
+           5.8, 5.9, 6.5, 7.8, 8.3, 8.4, 8.8, 9.1, 9.9, 11.4),
+  cen = c(rep(1, 50))
+)
+
+kmfit <- survfit(Surv(time, cen) ~ chr, data = chr_data)
+summary(kmfit)
+autoplot(kmfit)
+```
+
 3. Write down the log-likelihood of the parametric exponential (proportional hazard) model for survival times. Explain why this model can be fit as a generalized linear model with offset.
+
+**Answer:**
+- A datum of a survival data set is $(y_j, \delta_j, \mathbf{x}_j)$ where  
+    - $y_j$ is the survival time,  
+    - $\delta_j$ is the censoring indicator with $\delta_j = 1$ if the survival time is uncensored and $\delta_j=0$ if it is censored, and  
+    - $\mathbf{x}_j$ is the predictor vector. 
+    
+- Let $y_1, \ldots, y_r$ be the uncensored observations and $y_{r+1}, \ldots, y_n$ the censored ones. The likelihood is 
+$$
+L = \prod_{j=1}^r f(y_j) \times \prod_{j=r+1}^n S(y_j) = \prod_{j=1}^n f(y_j)^{\delta_j} S(y_j)^{1 - \delta_j}
+$$
+so the log-likelihood is
+$$
+\ell = \sum_{i=1}^n [\delta_j \log f(y_j) + (1 - \delta_j) \log S(y_j)] = \sum_{j=1}^n [\delta_j \log h(y_j) + \log S(y_j)]
+$$
+, where $h(y_j) = f(y_j) / S(y_j)$ is the hazard function and $S(y_j) = 1-F(y_j)$ is the survival function.
+
+- The log-likelihood for the exponential model is
+$$
+\ell(\boldsymbol{\theta}) = \sum_j [\delta_j \log h(y_j) + \log S(y_j)] = \sum_j (\delta_j \log \theta_j - \theta_j y_j),
+$$
+since the survival function is $S(y_j) = e^{-\theta_j y_j}$ and the hazard function is $h(y_j) = \theta_j$ for the exponential model. For poisson regression, the log-likelihood is
+$$
+\ell(\boldsymbol{\beta}) = \sum_i y_i \log \mu_i - \mu_i - \log y_i!
+$$
+If treating $\delta_j$ as Poisson$(\mu_j)$ where $\mu_j = \theta_j y_j$ then the log-likelihood for the poisson model is
+$$
+\ell(\boldsymbol{\theta}) = \sum_j y_j \log (\theta_j y_j) - \theta_j y_j - \log y_j!
+$$
+The log-likehood for the exponential model is
+$$
+\ell(\boldsymbol{\theta}) = \sum_j (\delta_j \log (\theta_j y_j) - \theta_j y_j- \delta_j \log y_j)
+$$
+Only the survival times $y_j$ are included in the model as an offset term $\log y_j$. And $\log \mu_j = \log (\theta_j y_j) = \mathbf{x}_j^T \boldsymbol{\beta} + \log(y_j)$. So the exponential model can be fit as a generalized linear model with offset.
+
 
 4. Fit the exponential (proportional hazard) model on the `chr` data using R. Interpret the coefficients.
 
+**Answer:**
+
+```{r}
+emod <- survreg(Surv(time, cen) ~ chr, dist = "exponential", data = chr_data)
+summary(emod)
+```
+Coefficient for `intercept` = -0.350: When patients do not have history of chronic disease, the hazard rate is $e^{-0.350} = 0.705$.
+
+Coefficient for `chr` = 2.014: When patients have history of chronic disease, the hazard rate is $e^{2.014} = 7.49$ times higher than those who do not have history of chronic disease.
+
 5. Comment on the limitation of exponential model compared to other more flexible models such as Weibull. 
+
+**Answer:** The exponential model assumes that the hazard rate is constant over time. This may not be realistic in many cases. The Weibull model is more flexible than the exponential model because it allows the hazard rate to change over time. 
 
 ## Q2 (25 pts). Longitudinal data analysis 
 
