@@ -124,7 +124,6 @@ Here we do not have cencored data so the survival probabilities in each row are 
 **Answer:**
 
 ```{r}
-library(survival)
 chr_data <- data.frame(
   chr = c(rep(0, 25), rep(1, 25)),
   time = c(1.8, 2.2, 2.5, 2.6, 3.0, 3.5, 3.8, 5.3, 5.4, 5.7, 6.6, 8.2, 8.7, 9.2, 
@@ -489,9 +488,38 @@ This question is adapted from Exercise 11.2 of ELMR (p251). Read the documentati
 
 1. Make a plot of the data on a single panel to show how housing prices increase by year. Describe what can be seen in the plot.
 
-2. Fit a linear model with the (log) house price as the response and all other variables (except msa) as fixed effect predictors. Which terms are statistically significant? Discuss the coefficient for time.
+**Answer:**
+
+```{r}
+data(hprice)
+ggplot(hprice, aes(x = time, y = narsp, group = msa)) + 
+  geom_line() +
+  labs(x = "Year", y = "Natural Log of House Price")
+```
+From the plot, we can see that most of MSA's house prices increase over time. Most of MSA's natural log average house prices are between 4 to 4.5 thousand dollars and these MSA has almost the same slope. Several MSA's natural log average house prices are around 5 thousand dollars and they have almost the same slope.
+
+2. Fit a linear model with the (log) house price as the response and all other variables (except msa) as fixed effect
+predictors. Which terms are statistically significant? Discuss the coefficient for time.
+
+**Answer:**
+
+```{r}
+mod <- lmer(narsp ~ . - msa + + (1 | msa), data = hprice)
+summary(mod)
+```
+Coefficient for `time` = -1.265e-03. This means that the natural log of house price decreases by 0.001265 thousand dollars per year.
 
 3. Make a plot that shows how per-capita income changes over time. What is the nature of the increase? Make a similar plot to show how income growth changes over time. Comment on the plot.
+
+**Answer:**
+
+```{r}
+ggplot(hprice, aes(x = time, y = perypc, group = msa)) + 
+  geom_line() +
+  labs(x = "Year", y = "Per Capita Income")
+```
+From the plot, we can see all the percentage growth in per capita income decreases in 1987 and then increases to a peak in 1989. After 1989, most of the percentage growth per capita income decreases, with some decreasing significantly and some slightly. Some percentage growth per capita income increases slightly after 1989. Finally, all percentage growth per capita income converge to around 4 percentage growth
+
 
 4. Create a new variable that is the per-capita income for the first time period for each MSA. Refit the same linear model but now using the initial income and not the income as it changes over time. Compare the two models.
 
