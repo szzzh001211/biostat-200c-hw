@@ -222,6 +222,75 @@ The researchers had several questions, which they stated to you as follows:
     - Based on the pattern observed, pick appropriate time trend in the LMM and provide an algebraic definition for your chosen LMM, e.g., is the linear trend model adequate? or quadratic trend is needed? or any other pattern is more approriate? justify your answer. 
     
     - Model the covariance: fit both random intercept and random slope model and determine which one fits the data better. 
+    
+**Answer:**
+
+```{r}
+toenail <- read.table("toenail.txt", header = FALSE)
+colnames(toenail) <- c("id", "health", "gender", "month", "length", "treatment")
+toenail$health <- factor(toenail$health, levels = c(0, 1), labels = c("Low", "High"))
+toenail$gender <- factor(toenail$gender, levels = c(0, 1), labels = c("Female", 
+                                                                      "Male"))
+toenail$treatment <- factor(toenail$treatment, levels = c(1, 2), 
+                            labels = c("Terbinafine", "Itraconazole"))
+```
+
+```{r}
+library(ggplot2)
+ggplot(toenail, aes(x = month, y = length, group = id, color = treatment)) + 
+  geom_line() +
+  facet_wrap(~treatment) +
+  labs(x = "Month", y = "Length (mm)")
+```
+It seems that the length of the unafflicted part of the nail increases over time for both treatments. The increase seems to be faster for itraconazole than terbinafine.
+
+From the plots above, it seems that the linear trend model is adequate. The length of the unafflicted part of the nail seems to increase linearly over time for both treatments. For the analysis part, we only include `treatment` and `month` and control for `health` and `gender`. We can also use the Kenward-Roger adjusted F-test to test the fixed effects to see if the linear trend model is adequate.
+
+```{r}
+library(pbkrtest)
+
+mmod <- lmer(length ~ month + treatment + (month | id), 
+             data = toenail, REML = TRUE)
+mmodr <- lmer(length ~ poly(month, 2) + treatment + 
+                (month | id), data = toenail, REML = TRUE)
+KRmodcomp(mmod, mmodr)
+```
+The p-value is 0.3992, so the quadratic trend model is not significantly better than the linear trend model. So the linear trend model is adequate. Next we test the interaction between treatment and month.
+
+```{r}
+library(pbkrtest)
+
+mmod <- lmer(length ~ month + treatment + (month | id), 
+             data = toenail, REML = TRUE)
+mmodr <- lmer(length ~ month * treatment + (month | id), data = toenail, 
+              REML = TRUE)
+KRmodcomp(mmod, mmodr)
+```
+The p-value is 0.002617 so the interaction between treatment and month is significant. We then consider the linear mixed model with random intercepts and random slopes:
+$$
+\text{length}_{ij} = \mu + \beta_1 \text{month}_{i} + \beta_2 \text{treatment}_{j} + \beta_3 \text{month}_{i} \times \text{treatment}_{j} + b_{0j} + b_{1j} \text{month}_{i} + \epsilon_{ij},
+$$
+where $i$ indexes month and $j$ indexes individual. The random intercepts and slopes are iid
+$$
+\begin{pmatrix}
+b_{0,j} \\
+b_{1,j}
+\end{pmatrix} \sim N(\mathbf{0}, \boldsymbol{\Sigma}).
+$$
+and the noise terms $\epsilon_{ij}$ are iid $N(0, \sigma^2)$.
+
+```{r}
+library(lme4)
+mmod <- lmer(length ~ month * treatment + (month | id), 
+             data = toenail)
+summary(mmod)
+```
+
+```{r}
+confint(mmod, method = "boot")
+```
+`sig01` is the variance of the random intercepts, `sig02` is the covariance between the random intercepts and slopes, and `sig03` is the variance of the random slopes. Both random intercepts and slopes are significant because their intervals do not include 0. The itraconazole group is not significantly different from the terbinafine group over a 12 month period because the confidence interval includes 0. 
+
 
 2. Use the linear mixed effect model (LMM) to answer: Is there an association between the pattern of change of nail lengths and gender and/or health club frequency in subjects taking terbinafine? This might indicate that this drug brings about relief more swiftly in some kinds of subject versus others. 
 
@@ -230,8 +299,155 @@ The researchers had several questions, which they stated to you as follows:
     - Based on the pattern observed from question 1, pick appropriate time trend in the LMM and provide an algebraic definition for your chosen LMM, e.g., is the linear trend model adequate? or quadratic trend is needed? or any other pattern is more approriate? justify your answer. 
     
     - Model the covariance: fit both random intercept and random slope model and determine which one fits the data better. 
-    
+
+**Answer:**
+
+- association between length and gender
+
+```{r}
+toenail |>
+  filter(treatment == "Terbinafine") |>
+  ggplot(aes(x = month, y = length, group = id, color = gender)) + 
+  geom_line() +
+  facet_wrap(~gender) +
+  labs(x = "Month", y = "Length (mm)")
+```
+It seems that the length of the unafflicted part of the nail increases over time for both `gender` groups when treatment is terbinafine. The length of the unafflicted part of the nail for female seems to be a little higher than the male.
+
+From the plots above, it seems that the linear trend model is adequate. The length of the unafflicted part of the nail seems to increase linearly over time for both genders. For the analysis part, we only include `gender` and `month` and control for `health` and `treatment`. We can also use the Kenward-Roger adjusted F-test to test the fixed effects to see if the linear trend model is adequate.
+```{r}
+library(pbkrtest)
+
+mmod <- lmer(length ~ month + gender + (month | id), 
+             data = filter(toenail, treatment == "Terbinafine"), REML = TRUE)
+mmodr <- lmer(length ~ poly(month, 2) + gender + 
+                (month | id), data = filter(toenail, treatment == "Terbinafine"), 
+              REML = TRUE)
+KRmodcomp(mmod, mmodr)
+```
+The p-value is 0.5956, so the quadratic trend model is not significantly better than the linear trend model. So the linear trend model is adequate. So the association between the pattern of change of nail lengths and gender is linear. Next we test the interaction between treatment and month.
+
+```{r}
+library(pbkrtest)
+
+mmod <- lmer(length ~ month + gender + (month | id), 
+             data = filter(toenail, treatment == "Terbinafine"), REML = TRUE)
+mmodr <- lmer(length ~ month * gender + (month | id), 
+              data = filter(toenail, treatment == "Terbinafine"), REML = TRUE)
+KRmodcomp(mmod, mmodr)
+```
+The p-value is 0.3564 so the interaction between month and gender is not significant. We do not need to include interaction term in the model. We then consider the linear mixed model with random intercepts and random slopes:
+$$
+\text{length}_{ij} = \mu + \beta_1 \text{month}_{i} + \beta_2 \text{gender}_{j} + b_{0j} + b_{1j} \text{month}_{i} + \epsilon_{ij},
+$$
+where $i$ indexes month and $j$ indexes individual. The random intercepts and slopes are iid
+$$
+\begin{pmatrix}
+b_{0,j} \\
+b_{1,j}
+\end{pmatrix} \sim N(\mathbf{0}, \boldsymbol{\Sigma}).
+$$
+and the noise terms $\epsilon_{ij}$ are iid $N(0, \sigma^2)$.
+
+```{r}
+library(lme4)
+mmod <- lmer(length ~ month + gender + (month | id), 
+             data = filter(toenail, treatment == "Terbinafine"))
+summary(mmod)
+```
+
+```{r}
+confint(mmod, method = "boot")
+```
+`sig01` is the variance of the random intercepts, `sig02` is the covariance between the random intercepts and slopes, and `sig03` is the variance of the random slopes. Both random intercepts and slopes are significant because their intervals do not include 0. The male group is not significantly different from the female group because the confidence interval includes 0. 
+
+
+- association between length and health club frequency
+
+```{r}
+toenail |>
+  filter(treatment == "Terbinafine") |>
+  ggplot(aes(x = month, y = length, group = id, color = health)) + 
+  geom_line() +
+  facet_wrap(~health) +
+  labs(x = "Month", y = "Length (mm)")
+```
+It seems that the length of the unafflicted part of the nail increases over time for both `gender` groups when treatment is terbinafine. The length of the unafflicted part of the nail for low health club frequency group seems to be higher than the high health club frequency group.
+
+From the plots above, it seems that the linear trend model is adequate. The length of the unafflicted part of the nail seems to increase linearly over time for both health frequencies. For the analysis part, we only include `health` and `month` and control for `gender` and `treatment`. We can also use the Kenward-Roger adjusted F-test to test the fixed effects to see if the linear trend model is adequate.
+```{r}
+library(pbkrtest)
+
+mmod <- lmer(length ~ month + health + (month | id), 
+             data = filter(toenail, treatment == "Terbinafine"), REML = TRUE)
+mmodr <- lmer(length ~ poly(month, 2) + health + 
+                (month | id), data = filter(toenail, treatment == "Terbinafine"), 
+              REML = TRUE)
+KRmodcomp(mmod, mmodr)
+```
+The p-value is 0.5956, so the quadratic trend model is not significantly better than the linear trend model. So the linear trend model is adequate. So the association between the pattern of change of nail lengths and health club frequency is linear. Next we test the interaction between treatment and month.
+
+```{r}
+library(pbkrtest)
+
+mmod <- lmer(length ~ month + health + (month | id), 
+             data = filter(toenail, treatment == "Terbinafine"), REML = TRUE)
+mmodr <- lmer(length ~ month * health + (month | id), 
+              data = filter(toenail, treatment == "Terbinafine"), REML = TRUE)
+KRmodcomp(mmod, mmodr)
+```
+The p-value is 0.9356 so the interaction between month and gender is not significant. We do not need to include interaction term in the model. We then consider the linear mixed model with random intercepts and random slopes:
+$$
+\text{length}_{ij} = \mu + \beta_1 \text{month}_{i} + \beta_2 \text{health}_{j} + b_{0j} + b_{1j} \text{month}_{i} + \epsilon_{ij},
+$$
+where $i$ indexes month and $j$ indexes individual. The random intercepts and slopes are iid
+$$
+\begin{pmatrix}
+b_{0,j} \\
+b_{1,j}
+\end{pmatrix} \sim N(\mathbf{0}, \boldsymbol{\Sigma}).
+$$
+and the noise terms $\epsilon_{ij}$ are iid $N(0, \sigma^2)$.
+
+```{r}
+library(lme4)
+mmod <- lmer(length ~ month + health + (month | id), 
+             data = filter(toenail, treatment == "Terbinafine"))
+summary(mmod)
+```
+
+```{r}
+confint(mmod, method = "boot")
+```
+`sig01` is the variance of the random intercepts, `sig02` is the covariance between the random intercepts and slopes, and `sig03` is the variance of the random slopes. Both random intercepts and slopes are significant because their intervals do not include 0. The high frequency group is significantly different from the low frequency group because the confidence interval includes 0. 
+
+  
 3. In answering these scientific questions of interest, clearly write out the analytic models you consider for answering these questions (as detailed in the sub-questions). Clearly outline your decision making process for how you selected your final models. Fit your chosen final models and report to the project investigators on the stated scientific questions of interest.
+
+**Answer:** From the Q2.1, we see that the linear trend model is adequate and we need to include the interaction term between `treatment` and `month`. From the t-value of the linear mixed model, we notice `month` and the interaction term is significant but the main effect of `treatment` is not significant. However, in order to maintain the hierarchically well-formulated principle, we include the `treatment` in the model. Also, by checking the confidence interval of random intercepts and slopes, we see that both are significant. 
+
+From the Q2.2, we see that both `month-gender` and `month-health` models are linear but two interactions are not significant. Also, from the t-value of linear mixed models, in `month-gender` model, `gender` is not significant, while in `month-health` model, `month` and health` are significant. By checking the confidence interval of random intercepts and slopes in two models, we see that both are significant.
+
+So we consider the linear mixed model with random intercepts and random slopes. The final model is
+$$
+\text{length}_{ij} = \mu + \beta_1 \text{month}_{i} + \beta_2 \text{treatment}_{j} + \beta_3 \text{month}_{i} \times \text{treatment}_{j}+\beta_4 \text{health}_{j} + b_{0j} + b_{1j} \text{month}_{i} + \epsilon_{ij},
+$$
+where $i$ indexes month and $j$ indexes individual. The random intercepts and slopes are iid
+$$
+\begin{pmatrix}
+b_{0,j} \\
+b_{1,j}
+\end{pmatrix} \sim N(\mathbf{0}, \boldsymbol{\Sigma}).
+$$
+and the noise terms $\epsilon_{ij}$ are iid $N(0, \sigma^2)$.
+
+```{r}
+mmod <- lmer(length ~ month * treatment + health + (month | id), 
+             data = toenail)
+summary(mmod)
+```
+We can report that the length of the unafflicted part of the nail increases linearly over time for both health frequencies and for both treatments. The high frequency group is significantly different from the low frequency group. It seems if we want to increase the length of the unafflicted part of the nail, we should reduce the health club frequency and use the itraconazole treatment.
+
 
 ## Q3 (25 pts). GEE and GLMM
 
