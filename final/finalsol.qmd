@@ -257,7 +257,6 @@ KRmodcomp(mmod, mmodr)
 The p-value is 0.3992, so the quadratic trend model is not significantly better than the linear trend model. So the linear trend model is adequate. Next we test the interaction between treatment and month.
 
 ```{r}
-library(pbkrtest)
 
 mmod <- lmer(length ~ month + treatment + (month | id), 
              data = toenail, REML = TRUE)
@@ -315,7 +314,6 @@ It seems that the length of the unafflicted part of the nail increases over time
 
 From the plots above, it seems that the linear trend model is adequate. The length of the unafflicted part of the nail seems to increase linearly over time for both genders. For the analysis part, we only include `gender` and `month` and control for `health` and `treatment`. We can also use the Kenward-Roger adjusted F-test to test the fixed effects to see if the linear trend model is adequate.
 ```{r}
-library(pbkrtest)
 
 mmod <- lmer(length ~ month + gender + (month | id), 
              data = filter(toenail, treatment == "Terbinafine"), REML = TRUE)
@@ -327,7 +325,6 @@ KRmodcomp(mmod, mmodr)
 The p-value is 0.5956, so the quadratic trend model is not significantly better than the linear trend model. So the linear trend model is adequate. So the association between the pattern of change of nail lengths and gender is linear. Next we test the interaction between treatment and month.
 
 ```{r}
-library(pbkrtest)
 
 mmod <- lmer(length ~ month + gender + (month | id), 
              data = filter(toenail, treatment == "Terbinafine"), REML = TRUE)
@@ -375,8 +372,6 @@ It seems that the length of the unafflicted part of the nail increases over time
 
 From the plots above, it seems that the linear trend model is adequate. The length of the unafflicted part of the nail seems to increase linearly over time for both health frequencies. For the analysis part, we only include `health` and `month` and control for `gender` and `treatment`. We can also use the Kenward-Roger adjusted F-test to test the fixed effects to see if the linear trend model is adequate.
 ```{r}
-library(pbkrtest)
-
 mmod <- lmer(length ~ month + health + (month | id), 
              data = filter(toenail, treatment == "Terbinafine"), REML = TRUE)
 mmodr <- lmer(length ~ poly(month, 2) + health + 
@@ -387,7 +382,6 @@ KRmodcomp(mmod, mmodr)
 The p-value is 0.5956, so the quadratic trend model is not significantly better than the linear trend model. So the linear trend model is adequate. So the association between the pattern of change of nail lengths and health club frequency is linear. Next we test the interaction between treatment and month.
 
 ```{r}
-library(pbkrtest)
 
 mmod <- lmer(length ~ month + health + (month | id), 
              data = filter(toenail, treatment == "Terbinafine"), REML = TRUE)
@@ -480,8 +474,9 @@ skin <- skin |>
   mutate(Skin = factor(Skin, levels = c(0, 1), labels = c("otherwise", "burns")),
          Gender = factor(Gender, levels = c(0, 1), labels = c("female", "male")),
          Treatment = factor(Treatment, levels = c(0, 1), 
-                            labels = c("placebo", "beta-carotene"))) |>
-  print()
+                            labels = c("placebo", "beta-carotene")))
+skin |>
+  head()
 ```
 
 1. Provide an algebraic definition for a generalized linear marginal model (GEE) in which the only effects are for the intercept and Year (as a continuous variable). Fit this model and provide a table which includes the estimates of the parameters in your model.
@@ -565,10 +560,12 @@ The fixed intercept term in GEE represents the average response across the popul
 
 **Answer:** 
 $$
-\log(\mu) = -2.2988  + -0.1083 +\gamma_{0j}= -2.4071 +\gamma_{0j}\\
-\gamma_{0j} \sim \text{Normal}(0, 1.57)\\
-\log(\mu) \sim \text{Normal}(-2.4071, 1.57)\\
-\mu \sim \text{Log-Normal}(-2.4071, 1.57)
+\begin{aligned}
+\log(\mu) &= -2.2988  + -0.1083 +\gamma_{0j}= -2.4071 +\gamma_{0j}\\
+\gamma_{0j} &\sim \text{Normal}(0, 1.57)\\
+\log(\mu) &\sim \text{Normal}(-2.4071, 1.57)\\
+\mu &\sim \text{Log-Normal}(-2.4071, 1.57)
+\end{aligned}
 $$
 
 ## Q4. (25 pts) LMM and GAMM
@@ -601,24 +598,85 @@ summary(mod)
 3. Make a plot that shows how per-capita income changes over time. What is the nature of the increase? Make a similar plot to show how income growth changes over time. Comment on the plot.
 
 **Answer:**
+```{r}
+ggplot(hprice, aes(x = time, y = ypc, group = msa)) + 
+  geom_line() +
+  labs(x = "Year", y = "Per Capita Income")
+```
+
+From the plot, all the MSA's per capita income increases over time and it seems the increase is linear. 
 
 ```{r}
 ggplot(hprice, aes(x = time, y = perypc, group = msa)) + 
   geom_line() +
   labs(x = "Year", y = "Per Capita Income")
 ```
-From the plot, we can see all the percentage growth in per capita income decreases in 1987 and then increases to a peak in 1989. After 1989, most of the percentage growth per capita income decreases, with some decreasing significantly and some slightly. Some percentage growth per capita income increases slightly after 1989. Finally, all percentage growth per capita income converge to around 4 percentage growth.
+From the plot, the percentage growth in per capita income is not linear but they have a similar pattern. We can see all the percentage growth in per capita income decreases in 1987 and then increases to a peak in 1989. After 1989, most of the percentage growth per capita income decreases, with some decreasing significantly and some slightly. Some percentage growth per capita income increases slightly after 1989. Finally, all percentage growth per capita income converge to around 4 percentage growth.
 
 
 4. Create a new variable that is the per-capita income for the first time period for each MSA. Refit the same linear model but now using the initial income and not the income as it changes over time. Compare the two models.
 
+**Answer:**
+
+```{r}
+hprice <- hprice |>
+  group_by(msa) |> 
+  mutate(ypc_initial = first(ypc))
+mod2 <- lm(narsp ~ . - msa - ypc + ypc_initial, data = hprice)
+summary(mod2)
+summary(mod)
+```
+In this new model, the first time per-capita income `ypc_initial` is also statistically significant. The coefficient of `time` becomes positive while in the previous model it was negative. Now the positive coefficient is consistent with the plot in Q3. The adjusted R-squared value of the new model is 0.762, which is slightly higher than the previous model's adjusted R-squared value of 0.753.
+
 5. Fit a mixed effects model that has a random intercept for each MSA. Why might this be reasonable? The rest of the model should have the same structure as in the previous question. Make a numerical interpretation of the coefficient of time in your model. Explain the difference between REML and MLE methods.
+
+**Answer:**
+
+```{r}
+mmod <- lmer(narsp ~ . - msa - ypc + ypc_initial + (1|msa), data = hprice)
+summary(mmod)
+```
+Coefficient of `time` = 3.68e-02. This means that for every additional year, the average house price in thousands of dollars is estimated to increase by $e^{0.0368}-1 = 3.75\%$, controlling for all other variables in the model.
+
+The maximum likelihood estimation method (MLE) is biased for the estimation of variance components. The restricted maximum likelihood estimation method (REML) tries to reduce bias in the variance components. The variance component parameters are estimated by MLE using transformed data and then fixed effects are estimated using general least squares. The REML estimate does not depend on the choice of data transformation in the model.
 
 6. Fit a model that omits the adjacent to water and rent control predictors. Test whether this reduction in the model can be supported.
 
+**Answer:**
+
+```{r}
+mmod2 <- lmer(narsp ~ . - msa - ypc + ypc_initial + (1|msa) - ajwtr - rcdum, 
+             data = hprice)
+summary(mmod2)
+KRmodcomp(mmod, mmod2)
+```
+The p-value is 0.17, which is greater than 0.05. Therefore, we fail to reject the null hypothesis that the reduced model is significantly different from the full model. So the reduction in the model can be supported.
+
 7. It is possible that the increase in prices may not be linear in year. Fit an additive mixed model where smooth is added to year. Make a plot to show how prices have increased over time.
 
+**Answer:**
+
+```{r}
+library(mgcv)
+mmod3 <- gamm(narsp ~ perypc + regtest + ypc_initial + s(time, k = 9), 
+              random = list(msa = ~1), data = hprice) 
+summary(mmod3$gam)
+```
+```{r}
+plot(mmod3$gam, residuals = TRUE, select = 1)
+```
+
 8. Interpret the coefficients in the previous model for the initial annual income, growth and regulation predictors.
+
+**Answer:**
+```{r}
+summary(mmod3$gam)
+```
+Coefficient of `ypc_initial` = 1.01e-04. This means that for every 1,000 dollars increase in the initial per capita income, the average house price in thousands of dollars is estimated to increase by $e^{0.101}-1 = 10.6\%$, controlling for all other variables in the model.
+
+Coefficient of `perypc` = -1.12e-02. This means that for every $1\%$ increase in percentage growth in per capita income, the average house price in thousands of dollars is estimated to decrease by $1-e^{-0.0112} = 1.11\%$, controlling for all other variables in the model.
+
+Coefficient of `regtest` = 3.56e-02. This means that for every one index increase in the regulation test, the average house price in thousands of dollars is estimated to increase by $e^{0.0356}-1 = 3.62\%$, controlling for all other variables in the model.
 
 ## Optional Extra Credit Problem* 
 
