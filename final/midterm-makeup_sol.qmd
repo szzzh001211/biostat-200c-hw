@@ -370,7 +370,7 @@ genus_znegbin <- results_genus_znegbin %>% filter(p.value < 0.05/41) %>%
 ```{r}
 tibble::tibble(
   Model = c("Quasi-Poisson", "Negative Binomial", "Zero Inflated Poisson", "Zero Inflated Negative Binomial"),
-  Significant = c(12, 17, 22,3)
+  Significant = c(12, 17, 22, 3)
 )
 ```
 
@@ -385,6 +385,7 @@ venn_data <- list(
 ggVennDiagram(venn_data, label = "count") + 
   scale_fill_gradient(low = "white", high = "dodgerblue")
 ```
+We can see from above table and Venn diagram that the zero inflated poisson model has the most significant microbiome clusters. The zero inflated negative binomial model has the least significant microbiome clusters. The negative binomial model has more significant microbiome clusters than the quasi-poisson model. We can say that the zero inflated negative binomial model is the most conservative model in terms of significance and the zero inflated poisson model is the least conservative model in terms of significance.
 
 #### Species level
 - Quasipoisson regression model
@@ -505,7 +506,8 @@ venn_data <- list(
 ggVennDiagram(venn_data, label = "count") + 
   scale_fill_gradient(low = "white", high = "dodgerblue")
 ```
-  
+
+We can see that the Zero Inflated Poisson model has the most significant microbiome clusters, followed by the Negative Binomial model. The Quasi-Poisson model has the least number of significant microbiome clusters. The negative binomial model has more significant microbiome clusters than the quasi-poisson model. We can say that the zero inflated negative binomial model is the most conservative model in terms of significance and the zero inflated poisson model is the least conservative model in terms of significance. 
 
 ### Question 2
 - Evaluate empirical type I error rate of the methods adopted in this study for 41 genus and 101 species.
@@ -597,9 +599,11 @@ type1e <- function(genusname) {
                       dist = "poisson")
     summary_model <- summary(model)
     coefs <- summary_model$coefficients$count
+    coefs1 <- summary_model$coefficients$zero
     p_values <- data.frame(
       term = rownames(coefs),
-      p.value = coefs[, "Pr(>|z|)"],
+      p.value = coefs[2, "Pr(>|z|)"],
+      p.value_zero = coefs1[2, "Pr(>|z|)"],
       variable = variable
     )
     p_values
@@ -609,7 +613,7 @@ type1e <- function(genusname) {
   filtered_results <- results %>%
     filter(term != "(Intercept)")
   
-  return(mean(filtered_results$p.value < 0.05))
+  return(mean(filtered_results$p.value < 0.05 & filtered_results$p.value_zero < 0.05))
 }
 
 
@@ -640,9 +644,11 @@ type1e <- function(genusname) {
                       dist = "negbin")
     summary_model <- summary(model)
     coefs <- summary_model$coefficients$count
+    coefs1 <- summary_model$coefficients$zero
     p_values <- data.frame(
       term = rownames(coefs),
-      p.value = coefs[, "Pr(>|z|)"],
+      p.value = coefs[2, "Pr(>|z|)"],
+      p.value_zero = coefs1[2, "Pr(>|z|)"],
       variable = variable
     )
     p_values
@@ -652,14 +658,15 @@ type1e <- function(genusname) {
   filtered_results <- results %>%
     filter(term != "(Intercept)")
   
-  return(mean(filtered_results$p.value < 0.05))
+  return(mean(filtered_results$p.value < 0.05 & 
+                filtered_results$p.value_zero < 0.05))
 }
 
 
 type1e_tbl = tibble(genus_name = genusnames, 
        etype_1_error = map_dbl(genusnames, type1e)) 
-median(type1e_tbl$etype_1_error)
-IQR(type1e_tbl$etype_1_error)
+median(type1e_tbl$etype_1_error, na.rm = TRUE)
+IQR(type1e_tbl$etype_1_error, na.rm = TRUE)
 ```
 
 
@@ -750,9 +757,11 @@ type1e <- function(speciesname) {
                       dist = "poisson")
     summary_model <- summary(model)
     coefs <- summary_model$coefficients$count
+    coefs1 <- summary_model$coefficients$zero
     p_values <- data.frame(
       term = rownames(coefs),
-      p.value = coefs[, "Pr(>|z|)"],
+      p.value = coefs[2, "Pr(>|z|)"],
+      p.value_zero = coefs1[2, "Pr(>|z|)"],
       variable = variable
     )
     p_values
@@ -762,7 +771,8 @@ type1e <- function(speciesname) {
   filtered_results <- results %>%
     filter(term != "(Intercept)")
   
-  return(mean(filtered_results$p.value < 0.05))
+  return(mean(filtered_results$p.value < 0.05 & 
+                filtered_results$p.value_zero < 0.05))
 }
 
 type1e_tbl = tibble(species_name = names(species_tbl_t)[2:102], 
@@ -793,9 +803,11 @@ type1e <- function(speciesname) {
                       dist = "poisson")
     summary_model <- summary(model)
     coefs <- summary_model$coefficients$count
+    coefs1 <- summary_model$coefficients$zero
     p_values <- data.frame(
       term = rownames(coefs),
-      p.value = coefs[, "Pr(>|z|)"],
+      p.value = coefs[2, "Pr(>|z|)"],
+      p.value_zero = coefs1[2, "Pr(>|z|)"],
       variable = variable
     )
     p_values
@@ -805,45 +817,33 @@ type1e <- function(speciesname) {
   filtered_results <- results %>%
     filter(term != "(Intercept)")
   
-  return(mean(filtered_results$p.value < 0.05))
+  return(mean(filtered_results$p.value < 0.05 & 
+                filtered_results$p.value_zero < 0.05))
 }
 
 type1e_tbl = tibble(species_name = names(species_tbl_t)[2:102], 
        etype_1_error = map_dbl(names(species_tbl_t)[2:102], type1e))
-median(type1e_tbl$etype_1_error)
-IQR(type1e_tbl$etype_1_error)
+median(type1e_tbl$etype_1_error, na.rm = TRUE)
+IQR(type1e_tbl$etype_1_error, na.rm = TRUE)
 ```
 
 ```{r}
 tibble::tibble(
   Method = c("Quasi-Poisson", "Negative Binomial", "Zero Inflated Poisson", "Zero Inflated Negative Binomial"),
-  Genus = c("0.05 IQR(0.03)" , "0.07 IQR(0.05)", "0.97 IQR(0.05)", "0 IQR()"),
-  Species = c("0.03 IQR(0.04)", "0.07 IQR(0.05)", "0.97 IQR(0.0525)", "0 IQR()")
+  Genus = c("0.05 IQR(0.03)" , "0.07 IQR(0.05)", "0.04 IQR(0.03)", "0 IQR()"),
+  Species = c("0.03 IQR(0.04)", "0.07 IQR(0.05)", "0.05 IQR(0.03)", "0.04 IQR(0.03)")
 )
 ```
-
-
-
 
 
 ### Question 3 
 - Comment on the model fit (Question 1) of different models using, for example, AIC, etc., the control type I error rate, and Summarize results from the best model.
 
+**Answer:** From the control type I error rate, on Genus level, the quasi-poisson model is closest (0.05) to the nominal type I error rate (0.05) with an IQR of 0.03. The zero inflated poisson model is the second closest (0.04) to the nominal type I error rate (0.05) with an IQR of 0.03 while the zero inflated negative binomial is the least close (0) to the nominal type I error rate (0.05) with an IQR of 0. So from Genus level, we can conclude the quasi-poisson model is the best model while the zero inflated negative binomial model is conservative and negative binomial is inflated.
 
+On Species level, the zero inflated poisson model is the closest (0.05) to the nominal type I error rate (0.05) with an IQR of 0.03. The zero inflated negative binomial model is the second closest (0.04) to the nominal type I error rate (0.05) with an IQR of 0.03 while the quasi-poisson model is the least close (0.03) to the nominal type I error rate (0.05) with an IQR of 0.04. So from Species level, we can conclude the zero inflated poisson model is the best model while the quasi-poisson model is conservative and negative binomial is inflated.
 
-
-
-### Evaluate Type I Error rate
-- This section evaluates the Type I error rate of the models by simulating data under the null hypothesis of no association between the microbiome and the outcome variable.
-- We simulate binary labels 100 times using a Bernoulli distribution with a probability of 0.512 (estimated from the data) for each sample.
-- We evaluate the association between each genus and the outcome variable using different regression models, document the proportion of significant associations using threshold of 0.05 over 100 replicates (e.g., empirical type I error).
-- We repeat the same process for the species level data.
-- If the empirical type I error rate is close to the nominal type I error rate (0.05), then the model is considered to have good control over the Type I error rate.
-- If the empirical type I error rate is much lower than the nominal type I error rate, then the model is considered to be conservative.
-- If the empirical type I error rate is much higher than the nominal type I error rate, then the model is considered to be inflated (i.e., false positive rate is higher than expected).
-
-
-
+In summary, the zero inflated poisson model is the best model for both Genus and Species level while the zero inflated negative binomial model is conservative and negative binomial is inflated.
 
 
 # Re-do midterm questions (40 pts)
