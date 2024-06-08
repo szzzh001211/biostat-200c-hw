@@ -319,16 +319,23 @@ results_genus_zpoisson <-
   map_df(genusnames, function(response) {
     genus_tbl_t[[response]] <- round(genus_tbl_t[[response]])
     model <- zeroinfl(as.formula(paste(response, "~ Type")), 
-                 data = genus_tbl_t, dist = "poisson")
-    tidy(model, conf.int = TRUE) %>%
-      # Add a column for the response variable
-      mutate(response_variable = response)
-    }) %>% 
+                      data = genus_tbl_t, dist = "poisson")
+    coefs <- summary(model)$coefficients$count
+    coefs1 <- summary(model)$coefficients$zero
+    p_values <- data.frame(
+      term = rownames(coefs),
+      p.value = coefs[, "Pr(>|z|)"],
+      p.value_zero = coefs1[2, "Pr(>|z|)"],
+      response_variable = response
+    )
+    p_values
+  }) %>% 
   filter(term == "TypeControl") %>% 
   arrange(p.value) 
 
 genus_zpoisson <- results_genus_zpoisson %>% filter(p.value < 0.05/41) %>%
-  dplyr::select(response_variable, p.value) %>%
+  filter(p.value_zero < 0.05/41) %>%
+  dplyr::select(response_variable, p.value, p.value_zero) %>%
   print(n = 20)
 ```
 
@@ -339,24 +346,44 @@ results_genus_znegbin <-
   map_df(genusnames, function(response) {
     genus_tbl_t[[response]] <- round(genus_tbl_t[[response]])
     model <- zeroinfl(as.formula(paste(response, "~ Type")), 
-                 data = genus_tbl_t, dist = "negbin")
-    tidy(model, conf.int = TRUE) %>%
-      # Add a column for the response variable
-      mutate(response_variable = response)
-    }) %>% 
-  filter(term == "TypeControl") %>% 
-  arrange(p.value) 
+                      data = genus_tbl_t, dist = "negbin")
+    coefs <- summary(model)$coefficients$count
+    coefs1 <- summary(model)$coefficients$zero
+    p_values <- data.frame(
+      term = rownames(coefs),
+      p.value = coefs[2, "Pr(>|z|)"],
+      p.value_zero = coefs1[2, "Pr(>|z|)"],
+      response_variable = response
+    )
+    
+    p_values
+  }) %>% 
+  filter(term == "TypeControl") %>%
+  arrange(p.value)
 
 genus_znegbin <- results_genus_znegbin %>% filter(p.value < 0.05/41) %>%
-  dplyr::select(response_variable, p.value) %>%
+  filter(p.value_zero < 0.05/41) %>%
+  dplyr::select(response_variable, p.value, p.value_zero) %>%
   print(n = 20)
 ```
 
 ```{r}
 tibble::tibble(
   Model = c("Quasi-Poisson", "Negative Binomial", "Zero Inflated Poisson", "Zero Inflated Negative Binomial"),
-  Significant = c(12, 17, 0, 0)
+  Significant = c(12, 17, 22,3)
 )
+```
+
+```{r}
+library(ggVennDiagram)
+venn_data <- list(
+    QuasiPoisson = genus_qpoisson$response_variable,
+    NegativeBinomial = genus_nb2$response_variable,
+    ZeroInflatedPoisson = genus_zpoisson$response_variable,
+    ZeroInflatedNegativeBinomial = genus_znegbin$response_variable
+    )
+ggVennDiagram(venn_data, label = "count") + 
+  scale_fill_gradient(low = "white", high = "dodgerblue")
 ```
 
 #### Species level
@@ -374,7 +401,7 @@ results_species_qpoisson <-
   filter(term == "TypeControl") %>% 
   arrange(p.value) 
 
-results_species_qpoisson %>% 
+species_qpoi <- results_species_qpoisson %>% 
   filter(p.value < 0.05/102) %>%
   dplyr::select(response_variable, p.value) %>%
   print(n = 20)
@@ -383,7 +410,7 @@ results_species_qpoisson %>%
 - Negative binomial regression model
 ```{r}
 results_species_nb2 <- 
-  map_df(speciesnames, function(response) {
+  map_df(names(species_tbl_t)[2:102], function(response) {
     # print(response)
     model <- glm(as.formula(paste("`", response, "`", "~ Type", sep = "")), 
                  family = negative.binomial(20),
@@ -395,54 +422,96 @@ results_species_nb2 <-
   filter(term == "TypeControl") %>% 
   arrange(p.value)
 
-results_species_nb2 %>% 
+species_nb2 <- results_species_nb2 %>% 
   filter(p.value < 0.05/102) %>%
   dplyr::select(response_variable, p.value) %>%
+  print(n = 20)
+```
+- Zero inflated poisson
+```{r}
+results_species_zpoi <- 
+  map_df(names(species_tbl_t)[2:102], function(response) {
+    # print(response)
+    species_tbl_t[[response]] <- round(species_tbl_t[[response]])
+    model <- zeroinfl(as.formula(paste("`", response, "`", "~ Type", sep = "")), 
+                      data = species_tbl_t, dist = "poisson")
+    coefs <- summary(model)$coefficients$count
+    coefs1 <- summary(model)$coefficients$zero
+    p_values <- data.frame(
+      term = rownames(coefs),
+      p.value = coefs[2, "Pr(>|z|)"],
+      p.value_zero = coefs1[2, "Pr(>|z|)"],
+      response_variable = response
+    )
+    
+    p_values
+  }) %>% 
+  filter(term == "TypeControl") %>% 
+  arrange(p.value)
+
+species_zpoi <- results_species_zpoi %>% 
+  filter(p.value < 0.05/102) %>%
+  filter(p.value_zero < 0.05/102) %>%
+  dplyr::select(response_variable, p.value, p.value_zero) %>%
+  print(n = 20)
+```
+
+- Zero inflated negative binomial
+```{r}
+results_species_znegbin <- 
+  map_df(names(species_tbl_t)[2:102], function(response) {
+    # print(response)
+    species_tbl_t[[response]] <- round(species_tbl_t[[response]])
+    model <- zeroinfl(as.formula(paste("`", response, "`", "~ Type", sep = "")), 
+                      data = species_tbl_t, dist = "negbin")
+    coefs <- summary(model)$coefficients$count
+    coefs1 <- summary(model)$coefficients$zero
+    p_values <- data.frame(
+      term = rownames(coefs),
+      p.value = coefs[2, "Pr(>|z|)"],
+      p.value_zero = coefs1[2, "Pr(>|z|)"],
+      response_variable = response
+    )
+    
+    p_values
+  }) %>% 
+  filter(term == "TypeControl") %>% 
+  arrange(p.value)
+
+species_znegbin <- results_species_znegbin %>% 
+  filter(p.value < 0.05/102) %>%
+  filter(p.value_zero < 0.05/102) %>%
+  dplyr::select(response_variable, p.value, p.value_zero) %>%
   print(n = 20)
 ```
 
 ```{r}
 tibble::tibble(
   Model = c("Quasi-Poisson", "Negative Binomial", "Zero Inflated Poisson", "Zero Inflated Negative Binomial"),
-  Significant = c(20, 27, 0, 0)
+  Significant = c(20, 27, 49, 8)
 )
 ```
 
-
-
-  
-
   + Create a Venn Diagram to summarize the significant microbiome clusters overlaps from these models.
+
+```{r}
+venn_data <- list(
+  QuasiPoisson = species_qpoi$response_variable,
+  NegativeBinomial = species_nb2$response_variable,
+  ZeroInflatedPoisson = species_zpoi$response_variable,
+  ZeroInflatedNegativeBinomial = species_znegbin$response_variable
+)
+
+ggVennDiagram(venn_data, label = "count") + 
+  scale_fill_gradient(low = "white", high = "dodgerblue")
+```
   
 
 ### Question 2
 - Evaluate empirical type I error rate of the methods adopted in this study for 41 genus and 101 species.
   + Example code provided below.
   + Summarize your median (IQR) of the type I error across genus and species in a table.
-
-```{r}
-tibble::tibble(
-  Method = c("Quasi-Poisson", "Negative Binomial", "Zero Inflated Poisson", "Zero Inflated Negative Binomial"),
-  Genus = c("0 IQR()" , "0 IQR()", "0 IQR()", "0 IQR()"),
-  Species = c("0 IQR()", "0 IQR()", "0 IQR()", "0 IQR()")
-)
-```
-### Question 3 
-- Comment on the model fit (Question 1) of different models using, for example, AIC, etc., the control type I error rate, and Summarize esults from the best model.
-
-
-
-
-
-### Evaluate Type I Error rate
-- This section evaluates the Type I error rate of the models by simulating data under the null hypothesis of no association between the microbiome and the outcome variable.
-- We simulate binary labels 100 times using a Bernoulli distribution with a probability of 0.512 (estimated from the data) for each sample.
-- We evaluate the association between each genus and the outcome variable using different regression models, document the proportion of significant associations using threshold of 0.05 over 100 replicates (e.g., empirical type I error).
-- We repeat the same process for the species level data.
-- If the empirical type I error rate is close to the nominal type I error rate (0.05), then the model is considered to have good control over the Type I error rate.
-- If the empirical type I error rate is much lower than the nominal type I error rate, then the model is considered to be conservative.
-- If the empirical type I error rate is much higher than the nominal type I error rate, then the model is considered to be inflated (i.e., false positive rate is higher than expected).
-
+  
 #### Genus level
 - Quasipoisson regression model
 ```{r}
@@ -454,7 +523,7 @@ set.seed(10)
 # Generate the tibble with 100 columns of random normal values
 type1e <- function(genusname) {
   sim_tbl <- tibble(
-    y = genus_tbl_t %>% dplyr::select(all_of(genusname)) %>% pull,
+    y = genus_tbl_t %>% dplyr::select(all_of(genusname)) %>% pull ,
     as_tibble(
     matrix(sample(0:1, num_columns * num_rows, replace=T, prob=c(p_control, p_case)), 
            nrow = num_rows, ncol = num_columns, 
@@ -472,6 +541,7 @@ type1e <- function(genusname) {
 type1e_tbl = tibble(genus_name = genusnames, 
        etype_1_error = map_dbl(genusnames, type1e)) 
 median(type1e_tbl$etype_1_error)
+IQR(type1e_tbl$etype_1_error)
 ```
 
 - Negative binomial regression model
@@ -503,7 +573,96 @@ type1e <- function(genusname) {
 type1e_tbl = tibble(genus_name = genusnames, 
        etype_1_error = map_dbl(genusnames, type1e)) 
 median(type1e_tbl$etype_1_error)
+IQR(type1e_tbl$etype_1_error)
 ```
+
+- Zero inflated poisson
+```{r}
+# Set the number of columns 
+num_columns <- 100
+num_rows <- dim(genus_tbl_t)[1] 
+set.seed(10)
+
+# Generate the tibble with 100 columns of random normal values
+type1e <- function(genusname) {
+  sim_tbl <- tibble(
+    y = genus_tbl_t %>% dplyr::select(all_of(genusname)) %>% pull %>% round,
+    as_tibble(
+    matrix(sample(0:1, num_columns * num_rows, replace=T, prob=c(p_control, p_case)), 
+           nrow = num_rows, ncol = num_columns, 
+         dimnames = list(NULL, paste0("x", 1:num_columns)))))
+
+  extract_pvalues <- function(variable, data) {
+    model <- zeroinfl(reformulate(variable, response = "y"), data = sim_tbl, 
+                      dist = "poisson")
+    summary_model <- summary(model)
+    coefs <- summary_model$coefficients$count
+    p_values <- data.frame(
+      term = rownames(coefs),
+      p.value = coefs[, "Pr(>|z|)"],
+      variable = variable
+    )
+    p_values
+  }
+  results <- map_df(names(sim_tbl)[-1], ~ extract_pvalues(.x, sim_tbl))
+  
+  filtered_results <- results %>%
+    filter(term != "(Intercept)")
+  
+  return(mean(filtered_results$p.value < 0.05))
+}
+
+
+type1e_tbl = tibble(genus_name = genusnames, 
+       etype_1_error = map_dbl(genusnames, type1e)) 
+median(type1e_tbl$etype_1_error)
+IQR(type1e_tbl$etype_1_error)
+```
+
+- Zero inflated negative binomial
+```{r}
+# Set the number of columns 
+num_columns <- 100
+num_rows <- dim(genus_tbl_t)[1] 
+set.seed(10)
+
+# Generate the tibble with 100 columns of random normal values
+type1e <- function(genusname) {
+  sim_tbl <- tibble(
+    y = genus_tbl_t %>% dplyr::select(all_of(genusname)) %>% pull %>% round,
+    as_tibble(
+    matrix(sample(0:1, num_columns * num_rows, replace=T, prob=c(p_control, p_case)), 
+           nrow = num_rows, ncol = num_columns, 
+         dimnames = list(NULL, paste0("x", 1:num_columns)))))
+
+  extract_pvalues <- function(variable, data) {
+    model <- zeroinfl(reformulate(variable, response = "y"), data = sim_tbl, 
+                      dist = "negbin")
+    summary_model <- summary(model)
+    coefs <- summary_model$coefficients$count
+    p_values <- data.frame(
+      term = rownames(coefs),
+      p.value = coefs[, "Pr(>|z|)"],
+      variable = variable
+    )
+    p_values
+  }
+  results <- map_df(names(sim_tbl)[-1], ~ extract_pvalues(.x, sim_tbl))
+  
+  filtered_results <- results %>%
+    filter(term != "(Intercept)")
+  
+  return(mean(filtered_results$p.value < 0.05))
+}
+
+
+type1e_tbl = tibble(genus_name = genusnames, 
+       etype_1_error = map_dbl(genusnames, type1e)) 
+median(type1e_tbl$etype_1_error)
+IQR(type1e_tbl$etype_1_error)
+```
+
+
 
 #### Species level
 - Quasipoisson regression model
@@ -533,6 +692,7 @@ type1e <- function(speciesnames) {
 type1e_tbl = tibble(species_name = names(species_tbl_t)[2:102], 
        etype_1_error = map_dbl(names(species_tbl_t)[2:102], type1e))
 median(type1e_tbl$etype_1_error)
+IQR(type1e_tbl$etype_1_error)
 ```
 
 - Negative binomial regression model
@@ -562,11 +722,129 @@ type1e <- function(speciesname) {
   return(mean(results$p.value < 0.05))
 }
 
-type1e_tbl = tibble(
-       species_name = speciesnames, 
-       etype_1_error = map_dbl(speciesnames, type1e))
+type1e_tbl = tibble(species_name = names(species_tbl_t)[2:102], 
+       etype_1_error = map_dbl(names(species_tbl_t)[2:102], type1e))
 median(type1e_tbl$etype_1_error)
+IQR(type1e_tbl$etype_1_error)
 ```
+
+- Zero inflated poisson regression model
+```{r}
+# Set the number of columns
+num_columns <- 100
+num_rows <- 992
+
+
+# Generate the tibble with 100 columns of random normal values
+type1e <- function(speciesname) {
+  sim_tbl <- tibble(
+    y = species_tbl_t %>% 
+      dplyr::select(all_of(speciesname)) %>% pull %>% round, 
+    as_tibble(
+    matrix(sample(0:1, num_columns * num_rows, replace=T, prob=c(p_control, p_case)),
+           nrow = num_rows, ncol = num_columns, 
+           dimnames = list(NULL, paste0("x", 1:num_columns)))))
+
+    extract_pvalues <- function(variable, data) {
+    model <- zeroinfl(reformulate(variable, response = "y"), data = sim_tbl, 
+                      dist = "poisson")
+    summary_model <- summary(model)
+    coefs <- summary_model$coefficients$count
+    p_values <- data.frame(
+      term = rownames(coefs),
+      p.value = coefs[, "Pr(>|z|)"],
+      variable = variable
+    )
+    p_values
+  }
+  results <- map_df(names(sim_tbl)[-1], ~ extract_pvalues(.x, sim_tbl))
+  
+  filtered_results <- results %>%
+    filter(term != "(Intercept)")
+  
+  return(mean(filtered_results$p.value < 0.05))
+}
+
+type1e_tbl = tibble(species_name = names(species_tbl_t)[2:102], 
+       etype_1_error = map_dbl(names(species_tbl_t)[2:102], type1e))
+median(type1e_tbl$etype_1_error, na.rm = TRUE)
+IQR(type1e_tbl$etype_1_error, na.rm = TRUE)
+```
+
+- Zero inflated negative binomial regression model
+```{r}
+# Set the number of columns
+num_columns <- 100
+num_rows <- 992
+
+
+# Generate the tibble with 100 columns of random normal values
+type1e <- function(speciesname) {
+  sim_tbl <- tibble(
+    y = species_tbl_t %>% 
+      dplyr::select(all_of(speciesname)) %>% pull %>% round, 
+    as_tibble(
+    matrix(sample(0:1, num_columns * num_rows, replace=T, prob=c(p_control, p_case)),
+           nrow = num_rows, ncol = num_columns, 
+           dimnames = list(NULL, paste0("x", 1:num_columns)))))
+
+    extract_pvalues <- function(variable, data) {
+    model <- zeroinfl(reformulate(variable, response = "y"), data = sim_tbl, 
+                      dist = "poisson")
+    summary_model <- summary(model)
+    coefs <- summary_model$coefficients$count
+    p_values <- data.frame(
+      term = rownames(coefs),
+      p.value = coefs[, "Pr(>|z|)"],
+      variable = variable
+    )
+    p_values
+  }
+  results <- map_df(names(sim_tbl)[-1], ~ extract_pvalues(.x, sim_tbl))
+  
+  filtered_results <- results %>%
+    filter(term != "(Intercept)")
+  
+  return(mean(filtered_results$p.value < 0.05))
+}
+
+type1e_tbl = tibble(species_name = names(species_tbl_t)[2:102], 
+       etype_1_error = map_dbl(names(species_tbl_t)[2:102], type1e))
+median(type1e_tbl$etype_1_error)
+IQR(type1e_tbl$etype_1_error)
+```
+
+```{r}
+tibble::tibble(
+  Method = c("Quasi-Poisson", "Negative Binomial", "Zero Inflated Poisson", "Zero Inflated Negative Binomial"),
+  Genus = c("0.05 IQR(0.03)" , "0.07 IQR(0.05)", "0.97 IQR(0.05)", "0 IQR()"),
+  Species = c("0.03 IQR(0.04)", "0.07 IQR(0.05)", "0.97 IQR(0.0525)", "0 IQR()")
+)
+```
+
+
+
+
+
+### Question 3 
+- Comment on the model fit (Question 1) of different models using, for example, AIC, etc., the control type I error rate, and Summarize results from the best model.
+
+
+
+
+
+### Evaluate Type I Error rate
+- This section evaluates the Type I error rate of the models by simulating data under the null hypothesis of no association between the microbiome and the outcome variable.
+- We simulate binary labels 100 times using a Bernoulli distribution with a probability of 0.512 (estimated from the data) for each sample.
+- We evaluate the association between each genus and the outcome variable using different regression models, document the proportion of significant associations using threshold of 0.05 over 100 replicates (e.g., empirical type I error).
+- We repeat the same process for the species level data.
+- If the empirical type I error rate is close to the nominal type I error rate (0.05), then the model is considered to have good control over the Type I error rate.
+- If the empirical type I error rate is much lower than the nominal type I error rate, then the model is considered to be conservative.
+- If the empirical type I error rate is much higher than the nominal type I error rate, then the model is considered to be inflated (i.e., false positive rate is higher than expected).
+
+
+
+
 
 # Re-do midterm questions (40 pts)
 ## Question 2 and 8
