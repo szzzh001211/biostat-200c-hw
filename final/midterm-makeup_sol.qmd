@@ -73,7 +73,7 @@ library(broom)
 ```
 
 ### Load data and process
-```{r, eval=FALSE}
+```{r}
 data(msd16s)
 msd16s
 ```
@@ -288,7 +288,7 @@ results_genus_qpoisson <-
 
 genus_qpoisson <- results_genus_qpoisson %>% filter(p.value < 0.05/41) %>%
   dplyr::select(response_variable, p.value) %>%
-  print(n = 20)
+  print()
 ```
 - Negative binomial regression model
 ```{r}
@@ -310,7 +310,7 @@ results_genus_nb2 <-
 
 genus_nb2 <- results_genus_nb2 %>% filter(p.value < 0.05/41) %>%
   dplyr::select(response_variable, p.value) %>%
-  print(n = Inf)
+  print()
 ```
 - Zero inflated poisson
 ```{r}
@@ -336,7 +336,7 @@ results_genus_zpoisson <-
 genus_zpoisson <- results_genus_zpoisson %>% filter(p.value < 0.05/41) %>%
   filter(p.value_zero < 0.05/41) %>%
   dplyr::select(response_variable, p.value, p.value_zero) %>%
-  print(n = 20)
+  print()
 ```
 
 - Zero inflated negative binomial
@@ -364,7 +364,7 @@ results_genus_znegbin <-
 genus_znegbin <- results_genus_znegbin %>% filter(p.value < 0.05/41) %>%
   filter(p.value_zero < 0.05/41) %>%
   dplyr::select(response_variable, p.value, p.value_zero) %>%
-  print(n = 20)
+  print()
 ```
 
 ```{r}
@@ -405,7 +405,7 @@ results_species_qpoisson <-
 species_qpoi <- results_species_qpoisson %>% 
   filter(p.value < 0.05/102) %>%
   dplyr::select(response_variable, p.value) %>%
-  print(n = 20)
+  print()
 ```
 
 - Negative binomial regression model
@@ -426,7 +426,7 @@ results_species_nb2 <-
 species_nb2 <- results_species_nb2 %>% 
   filter(p.value < 0.05/102) %>%
   dplyr::select(response_variable, p.value) %>%
-  print(n = 20)
+  print()
 ```
 - Zero inflated poisson
 ```{r}
@@ -454,7 +454,7 @@ species_zpoi <- results_species_zpoi %>%
   filter(p.value < 0.05/102) %>%
   filter(p.value_zero < 0.05/102) %>%
   dplyr::select(response_variable, p.value, p.value_zero) %>%
-  print(n = 20)
+  print()
 ```
 
 - Zero inflated negative binomial
@@ -483,7 +483,7 @@ species_znegbin <- results_species_znegbin %>%
   filter(p.value < 0.05/102) %>%
   filter(p.value_zero < 0.05/102) %>%
   dplyr::select(response_variable, p.value, p.value_zero) %>%
-  print(n = 20)
+  print()
 ```
 
 ```{r}
@@ -831,7 +831,7 @@ IQR(type1e_tbl$etype_1_error, na.rm = TRUE)
 tibble::tibble(
   Method = c("Quasi-Poisson", "Negative Binomial", "Zero Inflated Poisson", "Zero Inflated Negative Binomial"),
   Genus = c("0.05 IQR(0.03)" , "0.07 IQR(0.05)", "0.04 IQR(0.03)", "0 IQR()"),
-  Species = c("0.03 IQR(0.04)", "0.07 IQR(0.05)", "0.05 IQR(0.03)", "0.04 IQR(0.03)")
+  Species = c("0.03 IQR(0.04)", "0.07 IQR(0.05)", "0.05 IQR(0.035)", "0.04 IQR(0.03)")
 )
 ```
 
