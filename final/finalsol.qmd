@@ -183,9 +183,9 @@ Only the survival times $y_j$ are included in the model as an offset term $\log 
 emod <- survreg(Surv(time, cen) ~ chr, dist = "exponential", data = chr_data)
 summary(emod)
 ```
-Coefficient for `intercept` = -0.350: When patients do not have history of chronic disease, the hazard rate is $e^{-0.350} = 0.705$.
+Coefficient for `intercept` = 2.014: When patients do not have history of chronic disease, the hazard rate is $e^{-2.014} = 0.133$.
 
-Coefficient for `chr` = 2.014: When patients have history of chronic disease, the hazard rate is $e^{2.014} = 7.49$ times higher than those who do not have history of chronic disease.
+Coefficient for `chr` = -0.350: When patients have history of chronic disease, the hazard rate is $e^{0.350} = 1.419$ times higher than those who do not have history of chronic disease.
 
 5. Comment on the limitation of exponential model compared to other more flexible models such as Weibull. 
 
@@ -232,6 +232,7 @@ toenail$gender <- factor(toenail$gender, levels = c(0, 1), labels = c("Female",
                                                                       "Male"))
 toenail$treatment <- factor(toenail$treatment, levels = c(1, 2), 
                             labels = c("Terbinafine", "Itraconazole"))
+head(toenail)
 ```
 
 ```{r}
@@ -283,6 +284,10 @@ mmod <- lmer(length ~ month * treatment + (month | id),
              data = toenail)
 summary(mmod)
 ```
+$$
+\text{length}_{ij} = 5.341 + 0.271* \text{month}_{i} + 0.101* I\{\text{treatment}_{j}=2\} + 0.149* \text{month}_{i} \times \{\text{treatment}_{j}=2\} + b_{0j} + b_{1j} \text{month}_{i} + \epsilon_{ij},
+$$
+where $b_{0j}$ is random intercept and $b_{1j}$ is random slope. The random intercepts and slopes are $b_{0j} \sim N(0, 2.2121)$, $b_{1j} \sim N(0, 0.1104)$, and $\epsilon_{ij}$ is error term $\epsilon_{ij} \sim N(0, 0.9412)$.
 
 ```{r}
 confint(mmod, method = "boot")
@@ -351,6 +356,10 @@ mmod <- lmer(length ~ month + gender + (month | id),
              data = filter(toenail, treatment == "Terbinafine"))
 summary(mmod)
 ```
+$$
+\text{length}_{ij} = 5.175 + 0.272* \text{month}_{i} + 0.326* I\{\text{gender}_{j}=Male\} + b_{0j} + b_{1j} \text{month}_{i} + \epsilon_{ij},
+$$
+where $b_{0j} \sim N(0, 2.1884)$, $b_{1j} \sim N(0, 0.0467)$, and $\epsilon_{ij} \sim N(0, 0.9367)$.
 
 ```{r}
 confint(mmod, method = "boot")
@@ -408,18 +417,34 @@ mmod <- lmer(length ~ month + health + (month | id),
              data = filter(toenail, treatment == "Terbinafine"))
 summary(mmod)
 ```
+$$
+\text{length}_{ij} = 6.143 + 0.272* \text{month}_{i}  -1.197* I\{\text{health}_{j}=High\} + b_{0j} + b_{1j} \text{month}_{i} + \epsilon_{ij},
+$$
+where $b_{0j} \sim N(0, 1.891)$, $b_{1j} \sim N(0, 0.0467)$, and $\epsilon_{ij} \sim N(0, 0.9367)$.
 
 ```{r}
 confint(mmod, method = "boot")
 ```
 `sig01` is the variance of the random intercepts, `sig02` is the covariance between the random intercepts and slopes, and `sig03` is the variance of the random slopes. Both random intercepts and slopes are significant because their intervals do not include 0. The high frequency group is significantly different from the low frequency group because the confidence interval includes 0. 
 
+```{r}
+mmod <- lmer(length ~ month + health + gender + (month | id), 
+             data = filter(toenail, treatment == "Terbinafine"), REML = TRUE)
+mmod1 <- lmer(length ~ month + health + (month | id), 
+              data = filter(toenail, treatment == "Terbinafine"), REML = TRUE)
+mmod2 <- lmer(length ~ month + gender + (month | id), 
+              data = filter(toenail, treatment == "Terbinafine"), REML = TRUE)
+
+KRmodcomp(mmod, mmod1)
+KRmodcomp(mmod, mmod2)
+```
+From the p-value of above two tests, we can see that if we only remove `gender` from the model, the p-value is 0.083, which means that the model with `gender` is not significantly better than the smaller model without `gender`. If we only remove `health` from the model, the p-value is 0.00011, which means that the model with `health` is significantly better than the smaller model without `health`. So we include `health` in the model but not `gender`.
   
 3. In answering these scientific questions of interest, clearly write out the analytic models you consider for answering these questions (as detailed in the sub-questions). Clearly outline your decision making process for how you selected your final models. Fit your chosen final models and report to the project investigators on the stated scientific questions of interest.
 
 **Answer:** From the Q2.1, we see that the linear trend model is adequate and we need to include the interaction term between `treatment` and `month`. From the t-value of the linear mixed model, we notice `month` and the interaction term is significant but the main effect of `treatment` is not significant. However, in order to maintain the hierarchically well-formulated principle, we include the `treatment` in the model. Also, by checking the confidence interval of random intercepts and slopes, we see that both are significant. 
 
-From the Q2.2, we see that both `month-gender` and `month-health` models are linear but two interactions are not significant. Also, from the t-value of linear mixed models, in `month-gender` model, `gender` is not significant, while in `month-health` model, `month` and health` are significant. By checking the confidence interval of random intercepts and slopes in two models, we see that both are significant.
+From the Q2.2, we see that both `month-gender` and `month-health` models are linear but two interactions are not significant. Also, from the t-value of linear mixed models, in `month-gender` model, `gender` is not significant, while in `month-health` model, `month` and `health` are significant. And by using the Kenward-Roger adjusted F-test, we can also see that we should include `health` in the model and remove `gender`. By checking the confidence interval of random intercepts and slopes in two models, we see that both are significant.
 
 So we consider the linear mixed model with random intercepts and random slopes. The final model is
 $$
@@ -439,6 +464,14 @@ mmod <- lmer(length ~ month * treatment + health + (month | id),
              data = toenail)
 summary(mmod)
 ```
+$$
+\begin{align*}
+\text{length}_{ij}& = 6.067 + 0.272* \text{month}_{i} + 0.09* I\{\text{treatment}_{j}=2\} + 0.149* \text{month}_{i} \times I\{\text{treatment}_{j}=2\}\\
+&-1.083* I\{\text{health}_{j}=High\} + b_{0j} + b_{1j} \text{month}_{i} + \epsilon_{ij}
+\end{align*}
+$$
+where $b_{0j} \sim N(0, 2.06)$, $b_{1j} \sim N(0, 0.11)$, and $\epsilon_{ij} \sim N(0, 0.941)$.
+
 We can report that the length of the unafflicted part of the nail increases linearly over time for both health frequencies and for both treatments. The high frequency group is significantly different from the low frequency group. It seems if we want to increase the length of the unafflicted part of the nail, we should reduce the health club frequency and use the itraconazole treatment.
 
 
@@ -531,9 +564,11 @@ $$
 $$
 This model, combining GLM and mixed effects model, is called the **generalized linear mixed effects model (GLMM)**. In this question,
 $$
-Y_{ij} \sim \text{Poisson}(\mu_{ij})\\ 
-\quad \log(\mu_{ij}) = \beta_0 + \beta_1 \text{Year}_i + \gamma_{0j}\\
-\gamma_{0j} \sim \text{Normal}(0, \sigma^2)
+\begin{eqnarray*}
+Y_{ij} &\sim \text{Poisson}(\mu_{ij})\\ 
+\quad \log(\mu_{ij}) &= \beta_0 + \beta_1 \text{Year}_i + \gamma_{0j}\\
+\gamma_{0j} &\sim \text{Normal}(0, \sigma^2)
+\end{eqnarray*}
 $$
 It is assumed that number of new skin cancers in the Year of follow-up follows a Poisson distribution with mean $\mu_{ij}$, where $\mu_{ij}$ is a function of the fixed effects $\beta_0$ and $\beta_1$ and the random effect $\gamma_{0j}$. $\mu_{ij}$ is linear in Year and the random effect $\gamma_{0j}$ is assumed to be normally distributed with mean 0 and variance $\sigma^2$.
      
@@ -541,30 +576,31 @@ It is assumed that number of new skin cancers in the Year of follow-up follows a
 
 **Answer:**
 ```{r}
-mmod1 <- glmer(Y ~ Year + (1 | ID), data = skin, family = poisson)
+mmod1 <- glmer(Y ~ Year + (1 | ID), data = skin, family = poisson, nAGQ = 25)
 summary(mmod1)
 tibble(Intercept = fixef(mmod1)[1], Year = fixef(mmod1)[2]) |>
+  cbind(tibble(randomeffect_std = 1.21)) |>
   kable("html") |>
   kable_styling("striped", full_width = F)
 ```
 
-Coefficient of `Year` = -0.108, which means for every additional year of follow-up after the beginning of the experiment at center 1, the estimated average number of new skin cancers decreases by $ 10.3\% = 1-e^{-0.1083}$.
+Coefficient of `Year` = -0.108, which means for every additional year of follow-up after the beginning of the experiment at center 1, the estimated average number of new skin cancers decreases by $10.3\% = 1-e^{-0.1083}$.
      
 4. Are the estimates for the fixed intercept terms the same or different in the GLMM compared with the marginal model fitted in question (1)? Why are they the same or different?
 
-**Answer:** The estimates for the fixed intercept terms are different in the GLMM compared with the marginal model fitted in question (1). The fixed intercept term in the GLMM is -2.2988, while the fixed intercept term in the marginal model is -1.541.
+**Answer:** The estimates for the fixed intercept terms are different in the GLMM (-2.25, sd = 0.17) compared with the marginal model fitted in question (1) (-1.54, sd = 0.167). They are different.
 
-The fixed intercept term in GEE represents the average response across the population, while in GLMM, it represents the response within a typical cluster after adjusting for the random effects. To be specific, the fixed intercept term in the GLMM is the log of the expected number of new skin cancers at center 1 during the first year of follow-up, whereas the fixed intercept term in the marginal model is the log of the expected number of new skin cancers at center 1 during the first year of follow-up averaged over all centers.
+The difference may be because of different methods to cope with the correlation. In GLMM, it models the random effects by a normal distribution, while in GEE, it uses a working correlation matrix to account for the correlation within a cluster. The fixed intercept term in GEE represents the average response across the population, while in GLMM, it represents the response within a typical cluster after adjusting for the random effects. To be specific, the fixed intercept term in the GLMM is the log of the expected number of new skin cancers at center 1 during the first year of follow-up, whereas the fixed intercept term in the marginal model is the log of the expected number of new skin cancers at center 1 during the first year of follow-up averaged over all centers.
      
 5. Use the parameter estimates from your GLMM and your model definition to characterize the distribution of expected counts of new skin cancers among subjects at center 1 during their first year of follow-up.
 
 **Answer:** 
 $$
 \begin{aligned}
-\log(\mu) &= -2.2988  + -0.1083 +\gamma_{0j}= -2.4071 +\gamma_{0j}\\
-\gamma_{0j} &\sim \text{Normal}(0, 1.57)\\
-\log(\mu) &\sim \text{Normal}(-2.4071, 1.57)\\
-\mu &\sim \text{Log-Normal}(-2.4071, 1.57)
+\log(\mu) &= -2.25  + -0.1082 +\gamma_{0j}= -2.3582 +\gamma_{0j}\\
+\gamma_{0j} &\sim \text{Normal}(0, 1.47)\\
+\log(\mu) &\sim \text{Normal}(-2.3582, 1.47)\\
+\mu &\sim \text{Log-Normal}(-2.3582, 1.47)
 \end{aligned}
 $$
 
@@ -626,7 +662,7 @@ mod2 <- lm(narsp ~ . - msa - ypc + ypc_initial, data = hprice)
 summary(mod2)
 summary(mod)
 ```
-In this new model, the first time per-capita income `ypc_initial` is also statistically significant. The coefficient of `time` becomes positive while in the previous model it was negative. Now the positive coefficient is consistent with the plot in Q3. The adjusted R-squared value of the new model is 0.762, which is slightly higher than the previous model's adjusted R-squared value of 0.753.
+In this new model, the first time per-capita income `ypc_initial` is also statistically significant. The coefficient of `time` becomes positive while in the previous model it was negative, from -0.0177 to 0.0371. Now the positive coefficient is consistent with the plot in Q3. The adjusted R-squared value of the new model is 0.762, which is slightly higher than the previous model's adjusted R-squared value of 0.753.
 
 5. Fit a mixed effects model that has a random intercept for each MSA. Why might this be reasonable? The rest of the model should have the same structure as in the previous question. Make a numerical interpretation of the coefficient of time in your model. Explain the difference between REML and MLE methods.
 

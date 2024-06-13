@@ -664,7 +664,9 @@ type1e <- function(genusname) {
 
 
 type1e_tbl = tibble(genus_name = genusnames, 
-       etype_1_error = map_dbl(genusnames, type1e)) 
+       etype_1_error = map_dbl(genusnames, type1e)) |>
+  suppressWarnings()
+
 median(type1e_tbl$etype_1_error, na.rm = TRUE)
 IQR(type1e_tbl$etype_1_error, na.rm = TRUE)
 ```
@@ -830,7 +832,7 @@ IQR(type1e_tbl$etype_1_error, na.rm = TRUE)
 ```{r}
 tibble::tibble(
   Method = c("Quasi-Poisson", "Negative Binomial", "Zero Inflated Poisson", "Zero Inflated Negative Binomial"),
-  Genus = c("0.05 IQR(0.03)" , "0.07 IQR(0.05)", "0.04 IQR(0.03)", "0 IQR()"),
+  Genus = c("0.05 IQR(0.03)" , "0.07 IQR(0.05)", "0.04 IQR(0.03)", "0 IQR(0)"),
   Species = c("0.03 IQR(0.04)", "0.07 IQR(0.05)", "0.05 IQR(0.035)", "0.04 IQR(0.03)")
 )
 ```
@@ -843,7 +845,7 @@ tibble::tibble(
 
 On Species level, the zero inflated poisson model is the closest (0.05) to the nominal type I error rate (0.05) with an IQR of 0.03. The zero inflated negative binomial model is the second closest (0.04) to the nominal type I error rate (0.05) with an IQR of 0.03 while the quasi-poisson model is the least close (0.03) to the nominal type I error rate (0.05) with an IQR of 0.04. So from Species level, we can conclude the zero inflated poisson model is the best model while the quasi-poisson model is conservative and negative binomial is inflated.
 
-In summary, the zero inflated poisson model is the best model for both Genus and Species level while the zero inflated negative binomial model is conservative and negative binomial is inflated.
+In summary, although the zero inflated poisson model spends more time on running the model than the quasi-poisson model, the zero inflated poisson model is the best model for both Genus and Species level while the zero inflated negative binomial model is conservative and negative binomial is inflated.
 
 
 # Re-do midterm questions (40 pts)
