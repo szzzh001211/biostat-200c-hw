@@ -851,7 +851,7 @@ In summary, although the zero inflated poisson model spends more time on running
 # Re-do midterm questions (40 pts)
 ## Question 2 and 8
 ### Q2.1
-Deviance = $2*\log\frac{L_{\Omega}}{L_{\omega}}$, where $L_{\Omega}$ is the likelihood of the saturated model and $L_{\omega}$ is the likelihood of the fitted model. Deviance values from R output is 0.95443 and we know AIC = Deviance + 2p, where p is the number of parameter so $37.666 = -2*l_{\omega} +2 \times 4$. So the log-likelihood = -14.833.
+Deviance = $2*\log\frac{L_{\Omega}}{L_{\omega}}$, where $L_{\Omega}$ is the likelihood of the saturated model and $L_{\omega}$ is the likelihood of the fitted model. Deviance values from R output is 0.95443 and we know AIC = -2 * maximum log-likelihood + 2p, where p is the number of parameter so $37.666 = -2*l_{\omega} +2 \times 4$. So the log-likelihood = -14.833.
 
 ### Q2.2
 $H_{0}$: The fitted model has a good fit (no big difference from saturated model) vs $H_{1}$: The fitted model is lack of fit.
